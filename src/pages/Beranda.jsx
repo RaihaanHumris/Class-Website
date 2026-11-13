@@ -1,413 +1,342 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Clock, MapPin, User, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  Users,
+  GraduationCap,
+  Calendar,
+  Megaphone,
+  ArrowRight,
+  Clock,
+  Laptop,
+  CheckCircle2,
+  Quote,
+  Layers,
+  Compass,
+  Terminal,
+  Sparkles
+} from 'lucide-react';
 import Hero from '../components/common/Hero';
 import StudentWall from '../components/features/StudentWall';
-import { jadwalMingguan } from '../data/jadwal';
-import { jadwalPiket } from '../data/piket';
-import { daftarTugas } from '../data/tugas';
-import { albumGaleri } from '../data/galeri';
 import { infoKelas } from '../data/kelas';
-import {
-  getHariInfo,
-  formatTanggalIndo,
-  getCountdownTenggat,
-  getStatusSesiMapel,
-  getSiswaById,
-  getInitials
-} from '../utils/helpers';
+import { daftarAnggota } from '../data/anggota';
 
 export default function Beranda() {
-  const hariInfo = getHariInfo();
-
-  // Jadwal & Piket hari ini
-  const jadwalHariIni =
-    jadwalMingguan.find((j) => j.dayIndex === hariInfo.index) || jadwalMingguan[0];
-  const piketHariIni =
-    jadwalPiket.find((p) => p.dayIndex === hariInfo.index) || jadwalPiket[0];
-  const petugasPiket = (piketHariIni?.idSiswa || []).map((id) => getSiswaById(id));
-
-  // Tugas yang belum selesai
-  const tugasAktif = daftarTugas.filter((t) => t.status !== 'selesai').slice(0, 3);
-
-  // Cuplikan 3 foto galeri
-  const cuplikanFoto = albumGaleri.slice(0, 3);
+  const totalSiswa = daftarAnggota.length;
 
   return (
-    <div className="space-y-0 pb-0">
+    <div className="w-full bg-[#FBF8FF] min-h-screen">
       
-      {/* 1. Hero Full-Bleed Navy dengan Foto Duotone & Code Window */}
+      {/* 1. Hero Section (Stitch Style) */}
       <Hero />
 
-      {/* 2. Dinding 23 Siswa (Latar Mist Penuh) */}
-      <StudentWall />
+      {/* 2. Wave Divider SVG (Stitch Style) */}
+      <div className="w-full overflow-hidden leading-none bg-[#FBF8FF] -mt-px select-none pointer-events-none">
+        <svg
+          className="block w-full h-12 md:h-16 text-[#0077B6] fill-current"
+          preserveAspectRatio="none"
+          viewBox="0 0 1440 96"
+        >
+          <path d="M0,32L48,42.7C96,53,192,75,288,74.7C384,75,480,53,576,42.7C672,32,768,32,864,42.7C960,53,1056,75,1152,69.3C1248,64,1344,32,1392,16L1440,0L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path>
+        </svg>
+      </div>
 
-      {/* 3. Papan Informasi Harian: Jadwal & Piket Hari Ini (Latar Putih) */}
-      <section className="bg-white py-12 md:py-16 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            
-            {/* Kolom Kiri: Jadwal Hari Ini dengan Penanda Sesi Aktif (7 Kolom) */}
-            <div className="lg:col-span-7 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 border-b-2 border-[#03045E] pb-3">
-                <div>
-                  <span className="text-xs font-bold text-[#0077B6] uppercase tracking-wider block">
-                    Jadwal Pelajaran
-                  </span>
-                  <h2 className="text-2xl sm:text-3xl font-extrabold font-heading text-[#03045E]">
-                    Jadwal Hari {jadwalHariIni.hari}
-                  </h2>
-                </div>
-                <Link
-                  to="/jadwal"
-                  className="text-xs sm:text-sm font-semibold text-[#0077B6] hover:text-[#03045E] flex items-center gap-1 group"
-                >
-                  <span>Lihat Jadwal 5 Hari</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-
-              {/* Status Akhir Pekan Jika Libur */}
-              {hariInfo.isWeekend && (
-                <div className="p-3.5 rounded-lg bg-[#CAF0F8] text-[#03045E] text-xs font-medium border border-[#90E0EF]">
-                  🎉 <strong>Hari ini libur akhir pekan!</strong> Menampilkan pratinjau jadwal pelajaran untuk hari <strong>Senin</strong> mendatang.
-                </div>
-              )}
-
-              {/* Daftar Sesi Pembelajaran dengan Status Real-Time */}
-              <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                {jadwalHariIni.mapel.map((item, idx) => {
-                  const isBreak =
-                    item.nama.toLowerCase().includes('istirahat') ||
-                    item.nama.toLowerCase().includes('ishoma');
-
-                  // Cek status sesi apakah sedang berlangsung saat ini
-                  const sesiStatus = !hariInfo.isWeekend && !isBreak
-                    ? getStatusSesiMapel(item.jam)
-                    : { status: 'upcoming', sisaMenit: null };
-
-                  const isSesiAktif = sesiStatus.status === 'active';
-                  const isSesiLewat = sesiStatus.status === 'passed';
-
-                  return (
-                    <div
-                      key={idx}
-                      className={`p-4 transition-colors ${
-                        isSesiAktif
-                          ? 'bg-[#CAF0F8]/70 border-l-4 border-l-[#0077B6]'
-                          : isSesiLewat
-                          ? 'opacity-60 bg-slate-50'
-                          : isBreak
-                          ? 'bg-slate-50/70 text-slate-500'
-                          : 'hover:bg-slate-50'
-                      }`}
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs font-bold text-[#0077B6]">
-                              {item.jam}
-                            </span>
-                            {isSesiAktif && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-[#0077B6] text-white">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                                Sedang Berlangsung {sesiStatus.sisaMenit ? `(sisa ${sesiStatus.sisaMenit} mnt)` : ''}
-                              </span>
-                            )}
-                          </div>
-                          <h3 className={`font-heading font-bold text-base ${
-                            isBreak ? 'text-slate-600' : 'text-[#03045E]'
-                          }`}>
-                            {item.nama}
-                          </h3>
-                          {!isBreak && item.guru !== '-' && (
-                            <p className="text-xs text-slate-500">
-                              Guru Pengampu: {item.guru}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="sm:text-right flex-shrink-0">
-                          <span className={`inline-block text-xs font-bold px-3 py-1 rounded ${
-                            isBreak
-                              ? 'bg-slate-200 text-slate-700'
-                              : 'bg-[#CAF0F8] text-[#03045E]'
-                          }`}>
-                            {item.ruang}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Kolom Kanan: Piket Hari Ini (5 Kolom) */}
-            <div className="lg:col-span-5 space-y-4">
-              <div className="border-b-2 border-[#03045E] pb-3 flex items-baseline justify-between">
-                <div>
-                  <span className="text-xs font-bold text-[#0077B6] uppercase tracking-wider block">
-                    Kebersihan & Ketertiban
-                  </span>
-                  <h2 className="text-2xl sm:text-3xl font-extrabold font-heading text-[#03045E]">
-                    Piket Hari {piketHariIni.hari}
-                  </h2>
-                </div>
-                <Link
-                  to="/piket"
-                  className="text-xs sm:text-sm font-semibold text-[#0077B6] hover:underline"
-                >
-                  Roster Piket →
-                </Link>
-              </div>
-
-              <div className="bg-[#CAF0F8]/40 border border-[#90E0EF] rounded-xl p-5 space-y-4">
-                <p className="text-sm font-bold text-[#03045E]">
-                  Hari ini piket: siapa yang kebagian tugas?
-                </p>
-
-                {/* Daftar Nama Petugas Hari Ini */}
-                <div className="space-y-2">
-                  {petugasPiket.map((siswa) => (
-                    <div
-                      key={siswa.id}
-                      className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-slate-200 shadow-xs"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="w-7 h-7 rounded-full bg-[#03045E] text-white text-xs font-mono font-bold flex items-center justify-center">
-                          {siswa.id}
-                        </span>
-                        <div>
-                          <p className="font-heading font-bold text-sm text-[#03045E]">
-                            {siswa.nama}
-                          </p>
-                          <p className="text-[11px] text-slate-500">{siswa.peran}</p>
-                        </div>
-                      </div>
-                      <span className="text-xs font-medium text-[#0077B6] bg-[#CAF0F8] px-2 py-0.5 rounded">
-                        Wajib Hadir
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {piketHariIni.tugasKhusus && (
-                  <div className="pt-3 border-t border-[#90E0EF] text-xs text-slate-700">
-                    <strong className="text-[#03045E] block mb-0.5">Tugas Hari Ini:</strong>
-                    {piketHariIni.tugasKhusus}
-                  </div>
-                )}
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Section Tugas: FULL OCEAN BLOCKING (Ritme Gelap-Terang yang Kuat!) */}
-      <section className="bg-[#0077B6] text-white py-14 md:py-20 border-b-4 border-[#03045E]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      {/* 3. Quick Stats Bar Floating Overlap (Stitch Style) */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full -mt-6 sm:-mt-8 relative z-20 mb-12 sm:mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-white/20 pb-4">
-            <div>
-              <span className="text-xs font-bold text-[#CAF0F8] uppercase tracking-wider block">
-                Deadline & Proyek
+          {/* Stat 1 */}
+          <div className="flex items-center gap-4 p-4 sm:p-5 rounded-full bg-white shadow-[0_8px_24px_rgba(3,4,94,0.08)] hover:shadow-md transition-shadow border border-slate-100">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-[#90E0EF] flex items-center justify-center text-[#0077B6]">
+              <Users className="w-6 h-6 sm:w-7 sm:h-7" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="font-heading text-lg sm:text-xl text-[#03045E] font-bold tracking-tight">
+                {totalSiswa} Siswa
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-white">
-                Tugas yang Bikin Deg-degan Minggu Ini
-              </h2>
+              <span className="text-xs text-slate-500 truncate">
+                Calon Software Engineer & Game Dev
+              </span>
             </div>
-            <Link
-              to="/tugas"
-              className="text-sm font-semibold text-[#CAF0F8] hover:text-white flex items-center gap-1 group"
-            >
-              <span>Semua Daftar Tugas</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
           </div>
 
-          {/* Grid Tugas Berlatar Kontras */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {tugasAktif.map((tugas) => {
-              const countdown = getCountdownTenggat(tugas.deadline);
-              const isUrgent = countdown.status === 'urgent';
+          {/* Stat 2 */}
+          <div className="flex items-center gap-4 p-4 sm:p-5 rounded-full bg-white shadow-[0_8px_24px_rgba(3,4,94,0.08)] hover:shadow-md transition-shadow border border-slate-100">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-[#CAF0F8] flex items-center justify-center text-[#0077B6]">
+              <GraduationCap className="w-6 h-6 sm:w-7 sm:h-7" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="font-heading text-base sm:text-lg text-[#03045E] font-bold tracking-tight truncate">
+                {infoKelas.waliKelas.nama}
+              </span>
+              <span className="text-xs text-slate-500 truncate">
+                Wali Kelas Inspiratif
+              </span>
+            </div>
+          </div>
 
-              return (
-                <div
-                  key={tugas.id}
-                  className="bg-white rounded-xl p-5 text-slate-800 shadow-lg flex flex-col justify-between border-2 border-[#CAF0F8] hover:border-white transition-all"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-[#0077B6] bg-[#CAF0F8] px-2.5 py-1 rounded">
-                        {tugas.mapel}
-                      </span>
-                      <span
-                        className={`text-xs font-extrabold px-2.5 py-0.5 rounded font-mono ${
-                          isUrgent
-                            ? 'bg-rose-600 text-white animate-pulse'
-                            : 'bg-amber-100 text-amber-900'
-                        }`}
-                      >
-                        ⏱ {countdown.text}
-                      </span>
-                    </div>
-
-                    <h3 className="font-heading font-extrabold text-base text-[#03045E] leading-snug">
-                      {tugas.judul}
-                    </h3>
-
-                    {tugas.deskripsi && (
-                      <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
-                        {tugas.deskripsi}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                    <span className="text-slate-500 font-medium">
-                      Tenggat: {formatTanggalIndo(tugas.deadline)}
-                    </span>
-                    <Link
-                      to="/tugas"
-                      className="font-bold text-[#0077B6] hover:underline"
-                    >
-                      Buka →
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
+          {/* Stat 3 */}
+          <div className="flex items-center gap-4 p-4 sm:p-5 rounded-full bg-white shadow-[0_8px_24px_rgba(3,4,94,0.08)] hover:shadow-md transition-shadow border border-slate-100">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-[#CAF0F8] flex items-center justify-center text-[#03045E]">
+              <Calendar className="w-6 h-6 sm:w-7 sm:h-7" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="font-heading text-lg sm:text-xl text-[#03045E] font-bold tracking-tight">
+                TA {infoKelas.tahunAjaran}
+              </span>
+              <span className="text-xs text-slate-500 truncate">
+                Semester Genap Berkelanjutan
+              </span>
+            </div>
           </div>
 
         </div>
       </section>
 
-      {/* 5. Wali Kelas & Struktur Pengurus Kelas (Latar Mist) */}
-      <section className="bg-[#CAF0F8]/50 py-12 md:py-16 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          
-          <div className="border-b border-[#90E0EF] pb-4">
-            <span className="text-xs font-bold text-[#0077B6] uppercase tracking-wider block">
-              Bimbingan & Kepengurusan
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-heading text-[#03045E]">
-              Wali Kelas & Pengurus XII PPLG 3
+      {/* 4. Section Pengumuman Terbaru (Stitch Style) */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-6 sm:py-8">
+        
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
+          <div className="flex flex-col">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0077B6] tracking-wide uppercase">
+              <Megaphone className="w-4 h-4" />
+              <span>Papan Informasi Terpusat</span>
+            </div>
+            <h2 className="font-heading text-2xl sm:text-3xl font-extrabold text-[#03045E] mt-1">
+              Pengumuman Terbaru
             </h2>
           </div>
+          <Link
+            to="/tugas"
+            className="inline-flex items-center gap-1.5 text-[#0077B6] hover:text-[#03045E] font-semibold text-xs sm:text-sm group"
+          >
+            <span>Arsip Seluruh Agenda</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
-            {/* Profil Wali Kelas Berwibawa (5 Kolom) */}
-            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-[#03045E] text-white flex items-center justify-center font-heading font-extrabold text-xl flex-shrink-0">
-                  UD
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-[#0077B6] uppercase tracking-wider block">
-                    Wali Kelas
-                  </span>
-                  <h3 className="font-heading font-extrabold text-lg text-[#03045E]">
-                    {infoKelas.waliKelas.nama}
-                  </h3>
-                  <p className="text-xs text-slate-500">Tahun Ajaran {infoKelas.tahunAjaran}</p>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Card A */}
+          <div className="flex flex-col justify-between p-6 rounded-[24px] bg-white shadow-[0_8px_24px_rgba(3,4,94,0.06)] hover:shadow-[0_12px_28px_rgba(3,4,94,0.12)] transition-all border border-slate-100">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <span className="px-3 py-1 rounded-full bg-[#00B4D8] text-[#03045E] text-xs font-bold">
+                  Penting
+                </span>
+                <span className="text-xs text-slate-400 font-medium">Batas: 7 Hari</span>
               </div>
-
-              <blockquote className="text-sm text-slate-700 italic border-l-4 border-[#0077B6] pl-3 py-1 leading-relaxed">
-                "{infoKelas.waliKelas.sambutan}"
-              </blockquote>
-
-              <Link
-                to="/profil"
-                className="inline-block text-xs font-bold text-[#0077B6] hover:underline pt-1"
-              >
-                Baca profil kelas selengkapnya →
+              <h3 className="font-heading font-bold text-base sm:text-lg text-[#03045E] mb-2 leading-snug">
+                Proyek Akhir Pemrograman Web Fullstack
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                Setiap kelompok wajib menyelesaikan integrasi RESTful API, otentikasi JWT, dan dashboard responsif sebelum penilaian kurikulum pekan depan.
+              </p>
+            </div>
+            <div className="pt-2 flex items-center justify-between bg-[#CAF0F8]/50 p-3 rounded-xl">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-[#03045E]">
+                <Clock className="w-3.5 h-3.5 text-[#0077B6]" />
+                <span>Senin, 08:00 WITA</span>
+              </div>
+              <Link to="/tugas" className="text-xs font-bold text-[#0077B6] hover:underline">
+                Detail →
               </Link>
             </div>
+          </div>
 
-            {/* 4 Pengurus Kelas Terstruktur (7 Kolom) */}
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {infoKelas.pengurus.map((p, idx) => {
-                const siswa = getSiswaById(p.idAnggota);
-                const initials = getInitials(siswa.nama);
-
-                return (
-                  <div
-                    key={idx}
-                    className="p-4 bg-white border border-slate-200 rounded-xl flex items-center gap-3.5 shadow-xs"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-[#0077B6] text-white flex items-center justify-center font-heading font-bold text-sm flex-shrink-0">
-                      {initials}
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-[11px] font-extrabold text-[#0077B6] uppercase tracking-wide block">
-                        {p.peran}
-                      </span>
-                      <p className="font-heading font-bold text-sm text-[#03045E] truncate">
-                        {siswa.nama}
-                      </p>
-                      <p className="text-[11px] text-slate-500">
-                        Absen #{String(siswa.id).padStart(2, '0')} · {siswa.minat}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+          {/* Card B */}
+          <div className="flex flex-col justify-between p-6 rounded-[24px] bg-white shadow-[0_8px_24px_rgba(3,4,94,0.06)] hover:shadow-[0_12px_28px_rgba(3,4,94,0.12)] transition-all border border-slate-100">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <span className="px-3 py-1 rounded-full bg-[#90E0EF] text-[#03045E] text-xs font-bold">
+                  Baru
+                </span>
+                <span className="text-xs text-slate-400 font-medium">Praktikum</span>
+              </div>
+              <h3 className="font-heading font-bold text-base sm:text-lg text-[#03045E] mb-2 leading-snug">
+                Persiapan Ujian Praktik PBO & Game Dev
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                Instalasi dependensi Godot Engine 4.x dan JDK 21 di workstation Lab 1 wajib disinkronisasikan sebelum gladi bersih hari Kamis.
+              </p>
             </div>
+            <div className="pt-2 flex items-center justify-between bg-[#CAF0F8]/50 p-3 rounded-xl">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-[#03045E]">
+                <Laptop className="w-3.5 h-3.5 text-[#0077B6]" />
+                <span>Lab Komputer 1</span>
+              </div>
+              <Link to="/jadwal" className="text-xs font-bold text-[#0077B6] hover:underline">
+                Kisi-kisi →
+              </Link>
+            </div>
+          </div>
 
+          {/* Card C */}
+          <div className="flex flex-col justify-between p-6 rounded-[24px] bg-white shadow-[0_8px_24px_rgba(3,4,94,0.06)] hover:shadow-[0_12px_28px_rgba(3,4,94,0.12)] transition-all border border-slate-100">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <span className="px-3 py-1 rounded-full bg-[#CAF0F8] text-[#0077B6] text-xs font-bold">
+                  Informasi
+                </span>
+                <span className="text-xs text-slate-400 font-medium">Kedisiplinan</span>
+              </div>
+              <h3 className="font-heading font-bold text-base sm:text-lg text-[#03045E] mb-2 leading-snug">
+                Jadwal Piket Bersih Lab Komputer 2
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                Regu piket harian bertanggung jawab mematikan seluruh terminal server mini, merapikan kabel peripheral, dan mengunci kabinet perangkat keras.
+              </p>
+            </div>
+            <div className="pt-2 flex items-center justify-between bg-[#CAF0F8]/50 p-3 rounded-xl">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-[#03045E]">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#0077B6]" />
+                <span>Setiap Sore</span>
+              </div>
+              <Link to="/piket" className="text-xs font-bold text-[#0077B6] hover:underline">
+                Cek Regu →
+              </Link>
+            </div>
           </div>
 
         </div>
       </section>
 
-      {/* 6. Cuplikan Foto Dokumentasi Kelas (Latar Putih) */}
-      <section className="bg-white py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-slate-200 pb-4">
-            <div>
-              <span className="text-xs font-bold text-[#0077B6] uppercase tracking-wider block">
-                Dokumentasi & Kenangan
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-heading text-[#03045E]">
-                Momen Seru di Kelas & Lab
-              </h2>
+      {/* 5. Section Suasana Kelas & Visual Galeri (Stitch Style - Grid 12 Kolom) */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-10 sm:py-14">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          
+          {/* Media Photo 1 (4 Kolom) */}
+          <div className="lg:col-span-4 rounded-[24px] overflow-hidden shadow-[0_8px_24px_rgba(3,4,94,0.08)] bg-white flex flex-col border border-slate-100">
+            <div className="relative w-full h-56 bg-slate-100">
+              <img
+                className="w-full h-full object-cover"
+                alt="Praktikum Siswa PPLG di Lab MAKN Ende"
+                src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#03045E]/85 via-transparent to-transparent" />
+              <div className="absolute bottom-3 left-4 right-4 text-white">
+                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#0077B6] text-white">
+                  Laboratorium RPL
+                </span>
+                <div className="font-heading text-base font-bold text-white mt-1">
+                  Sesi Coding Kolaboratif
+                </div>
+              </div>
             </div>
-            <Link
-              to="/galeri"
-              className="text-xs sm:text-sm font-semibold text-[#0077B6] hover:underline"
-            >
-              Lihat Album Galeri Lengkap →
-            </Link>
+            <div className="p-5 flex-1 flex flex-col justify-between">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Aktivitas harian pengerjaan sprint pengembangan software dan review baris kode bersama mentor di Lab MAKN Ende.
+              </p>
+              <div className="mt-4 flex items-center gap-1.5 text-[#0077B6] text-xs font-semibold">
+                <Terminal className="w-4 h-4" />
+                <span>Git Version Control · Linux Workstation</span>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {cuplikanFoto.map((foto) => (
-              <Link
-                key={foto.id}
-                to="/galeri"
-                className="group block border border-slate-200 bg-white rounded-xl overflow-hidden hover:border-[#0077B6] transition-all shadow-xs"
-              >
-                <div className="aspect-[16/10] overflow-hidden bg-slate-100">
-                  <img
-                    src={foto.thumb}
-                    alt={foto.judul}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                  />
-                </div>
-                <div className="p-4 space-y-1">
-                  <span className="text-[10px] font-bold text-[#0077B6] uppercase tracking-wider block">
-                    {foto.kategori}
-                  </span>
-                  <p className="font-heading font-bold text-sm text-[#03045E] line-clamp-1 group-hover:text-[#0077B6] transition-colors">
-                    {foto.judul}
-                  </p>
-                  <p className="text-xs text-slate-500">{foto.tanggal}</p>
-                </div>
-              </Link>
-            ))}
+          {/* Center Feature: Kutipan Inspiratif & Filosofi Wali Kelas (5 Kolom) */}
+          <div className="lg:col-span-5 rounded-[24px] bg-white p-6 sm:p-8 shadow-[0_8px_24px_rgba(3,4,94,0.08)] flex flex-col justify-between relative overflow-hidden border border-slate-100">
+            {/* Ambient decorative glow */}
+            <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-[#CAF0F8]/60 blur-3xl pointer-events-none -mr-16 -mt-16" />
+            <div className="relative z-10">
+              <div className="w-12 h-12 rounded-full bg-[#CAF0F8] flex items-center justify-center text-[#0077B6] mb-4">
+                <Quote className="w-6 h-6" />
+              </div>
+              <blockquote className="font-heading text-base sm:text-lg text-[#03045E] leading-relaxed mb-4 font-bold">
+                “Baris demi baris logika yang kita susun hari ini adalah ikhtiar nyata santri kejuruan dalam menjemput peradaban digital Indonesia yang berkeadaban.”
+              </blockquote>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Filosofi belajar XII PPLG 3 menekankan bahwa teknologi terbaik bukan hanya sekadar canggih, namun membawa maslahat dan kemudahan bagi sesama insan.
+              </p>
+            </div>
+            <div className="relative z-10 pt-6 flex items-center gap-3.5 border-t border-slate-100 mt-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#0077B6] to-[#00B4D8] flex items-center justify-center text-white font-heading font-extrabold text-base shadow-sm">
+                UD
+              </div>
+              <div className="flex flex-col">
+                <span className="font-heading font-bold text-sm sm:text-base text-[#03045E] leading-tight">
+                  {infoKelas.waliKelas.nama}
+                </span>
+                <span className="text-xs text-[#0077B6] font-medium">
+                  {infoKelas.waliKelas.peran} · {infoKelas.sekolah}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Media Photo 2 & Mini Metrics: Visi Prestasi (3 Kolom) */}
+          <div className="lg:col-span-3 rounded-[24px] bg-gradient-to-br from-[#0077B6] to-[#03045E] text-white p-6 shadow-[0_8px_24px_rgba(3,4,94,0.12)] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <Layers className="w-7 h-7 text-[#90E0EF]" />
+                <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-white/15 text-[#CAF0F8]">
+                  TA 2025/2026
+                </span>
+              </div>
+              <h4 className="font-heading font-bold text-lg text-white mb-2">
+                Visi Prestasi
+              </h4>
+              <p className="text-xs sm:text-sm text-[#CAF0F8]/90 leading-relaxed mb-4">
+                Menghasilkan karya rekayasa perangkat lunak mandiri, siap sertifikasi kompetensi industri, dan berkarya untuk nusa bangsa.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 pt-2 border-t border-white/15">
+              <div className="flex items-center justify-between text-xs font-semibold text-[#CAF0F8]">
+                <span>Siklus Sprint Semester</span>
+                <span className="font-bold text-white font-mono">78%</span>
+              </div>
+              {/* Capsule Progress Tracker */}
+              <div className="w-full h-3 rounded-full bg-white/20 overflow-hidden p-0.5">
+                <div className="h-full rounded-full bg-gradient-to-r from-[#00B4D8] to-[#CAF0F8] w-[78%] transition-all duration-500" />
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-white/70 mt-1">
+                <span>Modul 01 - Dasar</span>
+                <span>Uji Kompetensi Akhir</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 6. Dinding Siswa Kelas */}
+      <StudentWall />
+
+      {/* 7. Interactive Filter/Pill Fast Navigation Helper (Stitch Style) */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full pb-16">
+        <div className="p-6 rounded-[24px] bg-[#EEECFF]/60 border border-[#90E0EF]/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-left">
+            <div className="w-10 h-10 rounded-full bg-[#CAF0F8] flex items-center justify-center text-[#0077B6] shrink-0">
+              <Compass className="w-5 h-5" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-heading font-bold text-sm sm:text-base text-[#03045E]">
+                Ingin mengakses informasi spesifik?
+              </span>
+              <span className="text-xs text-slate-500">
+                Jelajahi portal digital kelas XII PPLG 3 secara instan.
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              to="/anggota"
+              className="px-4 py-2 rounded-full bg-white text-[#03045E] font-semibold text-xs shadow-xs hover:bg-[#CAF0F8] transition-colors"
+            >
+              Daftar Siswa
+            </Link>
+            <Link
+              to="/piket"
+              className="px-4 py-2 rounded-full bg-white text-[#03045E] font-semibold text-xs shadow-xs hover:bg-[#CAF0F8] transition-colors"
+            >
+              Jadwal Piket
+            </Link>
+            <Link
+              to="/galeri"
+              className="px-4 py-2 rounded-full bg-white text-[#03045E] font-semibold text-xs shadow-xs hover:bg-[#CAF0F8] transition-colors"
+            >
+              Galeri Kegiatan
+            </Link>
           </div>
         </div>
       </section>

@@ -27,9 +27,9 @@ export const infoKelas = {
   ],
   pengurus: [
     { peran: "Ketua Kelas", idAnggota: 17 }, // Muhammad Raihaan Humris
-    { peran: "Wakil Ketua Kelas", idAnggota: 3 }, // Ali Abdillah Mutawab
-    { peran: "Sekretaris", idAnggota: 10 }, // Hafizah Aulia Ibrahim
-    { peran: "Bendahara", idAnggota: 8 } // Dian Syafitri Syarif
+    { peran: "Wakil Ketua Kelas", idAnggota: 22 }, // Yusuf
+    { peran: "Sekretaris", idAnggota: 21 }, // Yunitha Olivia Putri
+    { peran: "Bendahara", idAnggota: 7 } // Babby Aulia Maharani
   ],
   kontak: {
     email: "xiirpl3.maknende@gmail.com",

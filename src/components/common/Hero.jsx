@@ -1,128 +1,147 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, ArrowRight } from 'lucide-react';
-import Button from './Button';
-import AvatarStack from './AvatarStack';
-import CodeEditorWindow from '../features/CodeEditorWindow';
+import {
+  Code2,
+  Calendar,
+  Users,
+  Terminal,
+  Gamepad2,
+  Dns,
+  ShieldCheck,
+  Server
+} from 'lucide-react';
 import { infoKelas } from '../../data/kelas';
 import { daftarAnggota } from '../../data/anggota';
-import { getSapaanWaktu, getHariInfo } from '../../utils/helpers';
 
 export default function Hero() {
-  const sapaan = getSapaanWaktu();
-  const hariInfo = getHariInfo();
   const totalSiswa = daftarAnggota.length;
-  const adaFotoHero = Boolean(infoKelas.fotoHero && infoKelas.fotoHero.trim());
 
   return (
-    <section
-      className="bg-gradient-to-b from-[#03045E] via-[#03045E] to-[#003859] text-white relative overflow-hidden py-16 md:py-24"
-      style={{
-        clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 2.5rem), 0 100%)',
-      }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+    <section className="relative overflow-hidden bg-gradient-to-b from-[#CAF0F8] via-[#90E0EF]/80 to-[#0077B6] text-slate-800 pt-6 sm:pt-10 pb-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
           
-          {/* Kolom Kiri: 7 Urutan Tepat Tanpa Lapisan Berlebih (7 Kolom) */}
-          <div className="lg:col-span-7 space-y-4 sm:space-y-5">
+          {/* Hero Left Content */}
+          <div className="lg:col-span-7 flex flex-col items-start gap-4 sm:gap-5">
             
-            {/* a) Baris kecil: sapaan + tanggal */}
-            <p className="text-xs sm:text-sm font-medium text-[#CAF0F8]/80">
-              {sapaan} · {hariInfo.tanggalLengkap}
+            {/* Overline Tag Pill */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/85 shadow-xs backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-[#0077B6] animate-pulse" />
+              <span className="text-[11px] sm:text-xs font-bold text-[#03045E] uppercase tracking-wider">
+                {infoKelas.jurusan} · {infoKelas.sekolah}
+              </span>
+            </div>
+
+            {/* Hero Headings */}
+            <div className="flex flex-col gap-1">
+              <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#03045E] tracking-tight leading-none">
+                {infoKelas.nama}
+              </h1>
+              <p className="font-heading text-xl sm:text-2xl font-bold text-[#03045E]/90 mt-1">
+                {infoKelas.tagline}
+              </p>
+            </div>
+
+            {/* Description */}
+            <p className="text-base sm:text-lg text-[#03045E]/85 max-w-xl leading-relaxed">
+              Wadah belajar siswa madrasah aliyah kejuruan di pesisir Ende yang berdedikasi menguasai logika pemrograman modern, rekayasa perangkat lunak, dan cipta gim interaktif berlandaskan akhlak karimah.
             </p>
 
-            {/* b) Judul Besar */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold font-heading text-white tracking-tight leading-none">
-              {infoKelas.nama}
-            </h1>
-
-            {/* c) Subjudul */}
-            <p className="text-lg sm:text-xl font-medium text-[#90E0EF]">
-              {infoKelas.jurusan}
-            </p>
-
-            {/* d) Baris meta kecil */}
-            <p className="text-xs sm:text-sm text-[#CAF0F8]/80 font-medium">
-              {infoKelas.sekolah} · Wali kelas {infoKelas.waliKelas.nama}
-            </p>
-
-            {/* e) Kalimat bersuara (20px, medium, 90% white, bukan bold) */}
-            <p className="text-[20px] font-medium text-white/90 leading-relaxed max-w-xl">
-              "{infoKelas.suaraKelas || '23 orang, satu kelas, satu proyek besar bernama kelulusan.'}"
-            </p>
-
-            {/* f) CTA: tombol utama + tautan sekunder */}
-            <div className="pt-2 flex flex-wrap items-center gap-4">
-              <Button
-                to="/jadwal"
-                variant="primary"
-                size="md"
-                icon={Calendar}
-                iconPosition="left"
-                className="bg-[#0077B6] hover:bg-[#00B4D8] text-white hover:text-[#03045E] font-semibold min-h-[44px] px-5 py-2.5"
-              >
-                Cek jadwal pelajaran
-              </Button>
+            {/* Dual CTA Buttons */}
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <Link
-                to="/anggota"
-                className="text-sm sm:text-base font-semibold text-[#90E0EF] hover:text-white flex items-center gap-1.5 underline underline-offset-4 min-h-[44px] py-2"
+                to="/jadwal"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0077B6] text-white font-semibold text-sm shadow-md hover:bg-[#03045E] transition-all duration-200 transform hover:-translate-y-0.5 min-h-[44px]"
               >
-                <span>Kenalan dengan {totalSiswa} siswa</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Lihat Jadwal Pelajaran</span>
+                <Calendar className="w-4 h-4" />
+              </Link>
+              <Link
+                to="/profil"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#90E0EF] text-[#03045E] font-semibold text-sm shadow-xs hover:bg-white transition-all duration-200 min-h-[44px]"
+              >
+                <span>Kenali Pengurus Kelas</span>
+                <Users className="w-4 h-4" />
               </Link>
             </div>
 
-            {/* g) AvatarStack */}
-            <div className="pt-1">
-              <AvatarStack />
+            {/* Mini Terminal Line */}
+            <div className="mt-1 inline-flex items-center gap-2 text-xs font-mono font-medium text-[#03045E] bg-white/60 px-4 py-1.5 rounded-full border border-white/40">
+              <Terminal className="w-3.5 h-3.5 text-[#0077B6]" />
+              <span>makn-ende:~$ git commit -m "build the future"</span>
             </div>
 
           </div>
 
-          {/* Kolom Kanan: Komposisi Tunggal Terpadu (5 Kolom) */}
-          <div className="lg:col-span-5 relative mt-4 lg:mt-0">
-            
-            {/* Foto Duotone di Belakang (Hanya Tampil Jika fotoHero Terisi) */}
-            {adaFotoHero ? (
-              <div className="relative">
-                {/* Layer Foto Belakang: Bergeser ke kanan-atas dan sebagian tertutup CodeWindow */}
-                <div
-                  className="absolute -top-6 -right-4 sm:-top-8 sm:-right-8 w-4/5 h-44 sm:h-56 rounded-xl overflow-hidden shadow-lg z-0 pointer-events-none"
-                  aria-hidden="true"
-                >
-                  <div className="relative w-full h-full bg-[#03045E]">
-                    <img
-                      src={infoKelas.fotoHero}
-                      alt=""
-                      className="w-full h-full object-cover filter grayscale contrast-125 opacity-85"
-                    />
-                    {/* Duotone Murni: Navy Multiply + Cyan Screen */}
-                    <div className="absolute inset-0 bg-[#03045E] mix-blend-multiply" />
-                    <div className="absolute inset-0 bg-[#00B4D8] mix-blend-screen opacity-35" />
+          {/* Hero Right: Stacked Capsules Visual Mosaic (Sesuai Export Stitch) */}
+          <div className="lg:col-span-5 relative flex flex-col items-center lg:items-end justify-center pt-4 lg:pt-0">
+            <div className="relative w-full max-w-sm flex flex-col gap-3 py-2">
+              
+              {/* Capsule 1: Navy */}
+              <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-full bg-[#03045E] text-white shadow-lg transform hover:scale-[1.02] transition-transform">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Code2 className="w-5 h-5 text-[#90E0EF]" />
+                  </div>
+                  <div>
+                    <div className="font-heading font-bold text-sm sm:text-base leading-tight">Clean Code</div>
+                    <div className="text-[11px] text-[#90E0EF]/80">Architecture & Clean Logic</div>
                   </div>
                 </div>
+                <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-white/10 text-[#CAF0F8]">
+                  v3.2
+                </span>
+              </div>
 
-                {/* CodeWindow sebagai Elemen Utama di Depan */}
-                <div className="relative z-10 w-full sm:w-[94%]">
-                  <CodeEditorWindow />
+              {/* Capsule 2: Ocean */}
+              <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-full bg-[#0077B6] text-white shadow-md sm:-ml-3 transform hover:scale-[1.02] transition-transform">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <Gamepad2 className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-heading font-bold text-sm sm:text-base leading-tight">Game Engine</div>
+                    <div className="text-[11px] text-white/80">2D & 3D Mechanics</div>
+                  </div>
+                </div>
+                <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs">
+                  🎮
+                </span>
+              </div>
+
+              {/* Capsule 3: Cyan */}
+              <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-full bg-[#00B4D8] text-[#03045E] shadow-md sm:ml-3 transform hover:scale-[1.02] transition-transform">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/40 flex items-center justify-center flex-shrink-0">
+                    <Terminal className="w-5 h-5 text-[#03045E]" />
+                  </div>
+                  <div>
+                    <div className="font-heading font-bold text-sm sm:text-base leading-tight">Fullstack Dev</div>
+                    <div className="text-[11px] text-[#03045E]/80 font-medium">REST API & Database</div>
+                  </div>
+                </div>
+                <Server className="w-5 h-5 text-[#03045E] mr-2" />
+              </div>
+
+              {/* Capsule 4: Sky / Mist */}
+              <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-full bg-white text-[#03045E] shadow-md transform hover:scale-[1.02] transition-transform">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#CAF0F8] flex items-center justify-center flex-shrink-0">
+                    <ShieldCheck className="w-5 h-5 text-[#0077B6]" />
+                  </div>
+                  <div>
+                    <div className="font-heading font-bold text-sm sm:text-base leading-tight">Akhlak & Kolaborasi</div>
+                    <div className="text-[11px] text-slate-500">Sinergi Santri Digital</div>
+                  </div>
+                </div>
+                <div className="flex -space-x-2 mr-1">
+                  <span className="w-7 h-7 rounded-full bg-[#0077B6] text-white text-[10px] flex items-center justify-center font-bold">1</span>
+                  <span className="w-7 h-7 rounded-full bg-[#00B4D8] text-[#03045E] text-[10px] flex items-center justify-center font-bold">2</span>
+                  <span className="w-7 h-7 rounded-full bg-[#03045E] text-white text-[10px] flex items-center justify-center font-bold">3</span>
                 </div>
               </div>
-            ) : (
-              /* Komposisi Bersih Tanpa Foto Stok */
-              <div className="relative">
-                {/* Aksen Layer Kartu Halus di Belakang CodeWindow */}
-                <div
-                  className="hidden sm:block absolute -top-3 -right-3 w-full h-full rounded-xl bg-white/5 border border-white/10 z-0 pointer-events-none"
-                  aria-hidden="true"
-                />
-                {/* CodeWindow Fokus Utama */}
-                <div className="relative z-10 w-full">
-                  <CodeEditorWindow />
-                </div>
-              </div>
-            )}
 
+            </div>
           </div>
 
         </div>
