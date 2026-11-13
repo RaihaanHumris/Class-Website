@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users,
@@ -14,7 +14,9 @@ import {
   Compass,
   Terminal,
   Sparkles,
-  Camera
+  Camera,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import Hero from '../components/common/Hero';
 import StudentWall from '../components/features/StudentWall';
@@ -27,10 +29,59 @@ export default function Beranda() {
   const totalSiswa = daftarAnggota.length;
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const scrollContainerRef = useRef(null);
+
+  // Mouse drag state untuk desktop swipe & scroll
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeftPos, setScrollLeftPos] = useState(0);
+  const [hasDragged, setHasDragged] = useState(false);
 
   const handleOpenLightbox = (index) => {
     setActivePhotoIndex(index);
     setLightboxOpen(true);
+  };
+
+  const handleScrollLeft = () => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = scrollContainerRef.current.clientWidth >= 768 ? 380 : 310;
+      scrollContainerRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const handleScrollRight = () => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = scrollContainerRef.current.clientWidth >= 768 ? 380 : 310;
+      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  // Mouse Drag Handlers untuk Desktop Drag-to-Scroll
+  const handleMouseDown = (e) => {
+    if (!scrollContainerRef.current) return;
+    setIsMouseDown(true);
+    setHasDragged(false);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeftPos(scrollContainerRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isMouseDown || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 1.3;
+    if (Math.abs(walk) > 6) {
+      setHasDragged(true);
+    }
+    scrollContainerRef.current.scrollLeft = scrollLeftPos - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsMouseDown(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsMouseDown(false);
   };
 
   // Data pengurus kelas untuk Struktur Organisasi
@@ -248,72 +299,143 @@ export default function Beranda() {
         </div>
       </section>
 
-      {/* 5. Section Foto Kenangan Asli */}
+      {/* 5. Section Foto Kenangan Highlight Slider (Horizontal Carousel di Desktop & Mobile) */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-10 sm:py-14">
         
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-4">
           <div className="flex flex-col">
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0077B6] tracking-wide uppercase">
               <Camera className="w-4 h-4" />
-              <span>Dokumentasi & Memori Asli</span>
+              <span>Highlight Dokumentasi & Memori</span>
             </div>
             <h2 className="font-heading text-2xl sm:text-3xl font-extrabold text-[#03045E] mt-1">
               Foto Kenangan
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl">
-              Potret kebersamaan, kepanduan pramuka, dan hari-hari bersejarah seluruh siswa {infoKelas.nama} di {infoKelas.sekolah}.
+              Sorotan momen berharga, kepanduan pramuka, dan hari-hari bersejarah seluruh siswa {infoKelas.nama} di {infoKelas.sekolah}.
             </p>
           </div>
-          <Link
-            to="/galeri"
-            className="inline-flex items-center gap-1.5 text-[#0077B6] hover:text-[#03045E] font-semibold text-xs sm:text-sm group cursor-pointer"
-          >
-            <span>Buka Galeri Lengkap</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
+
+          <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+            {/* Tombol Navigasi Slider Kiri / Kanan (Tampil di Desktop & Mobile) */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleScrollLeft}
+                className="w-10 h-10 rounded-full bg-white border border-slate-200 text-[#03045E] flex items-center justify-center shadow-xs hover:bg-[#CAF0F8] hover:border-[#00B4D8] active:scale-95 transition-all cursor-pointer"
+                aria-label="Geser ke foto sebelumnya"
+                title="Foto Sebelumnya"
+              >
+                <ChevronLeft className="w-5 h-5 text-[#0077B6]" />
+              </button>
+              <button
+                type="button"
+                onClick={handleScrollRight}
+                className="w-10 h-10 rounded-full bg-white border border-slate-200 text-[#03045E] flex items-center justify-center shadow-xs hover:bg-[#CAF0F8] hover:border-[#00B4D8] active:scale-95 transition-all cursor-pointer"
+                aria-label="Geser ke foto berikutnya"
+                title="Foto Berikutnya"
+              >
+                <ChevronRight className="w-5 h-5 text-[#0077B6]" />
+              </button>
+            </div>
+
+            <Link
+              to="/galeri"
+              className="inline-flex items-center gap-1.5 text-[#0077B6] hover:text-[#03045E] font-semibold text-xs sm:text-sm group cursor-pointer px-3 py-2 rounded-full hover:bg-white border border-transparent hover:border-slate-200 transition-all"
+            >
+              <span>Semua Galeri</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
 
-        {/* Grid Foto Kenangan */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {albumGaleri.map((foto, idx) => (
-            <div
-              key={foto.id}
-              onClick={() => handleOpenLightbox(idx)}
-              className="group bg-white border border-slate-100 rounded-[24px] overflow-hidden cursor-pointer hover:border-[#0077B6]/40 transition-all shadow-[0_8px_24px_rgba(3,4,94,0.06)] hover:shadow-[0_12px_28px_rgba(3,4,94,0.12)] hover:-translate-y-1 flex flex-col"
-            >
-              <div className="aspect-[16/10] overflow-hidden bg-slate-100 relative">
-                <img
-                  src={foto.thumb}
-                  alt={foto.judul}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#03045E]/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                  <span className="text-xs font-bold text-white bg-[#0077B6]/90 px-3 py-1 rounded-full backdrop-blur-sm">
-                    Perbesar Foto ↗
-                  </span>
-                </div>
-              </div>
-              <div className="p-5 flex-1 flex flex-col justify-between space-y-2">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="text-[11px] font-bold text-[#0077B6] uppercase tracking-wider px-3 py-0.5 rounded-full bg-[#CAF0F8] border border-[#90E0EF]/60">
-                      {foto.kategori}
-                    </span>
-                    <span className="text-xs text-slate-400 font-medium">
-                      {foto.tanggal}
+        {/* Highlight Slider Track dengan Floating Arrows & Drag Support */}
+        <div className="relative group/carousel">
+          {/* Floating Arrow Left (Desktop) */}
+          <button
+            type="button"
+            onClick={handleScrollLeft}
+            className="hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 text-[#03045E] shadow-lg border border-slate-200 hover:bg-[#CAF0F8] hover:text-[#0077B6] hover:scale-105 active:scale-95 items-center justify-center transition-all opacity-0 group-hover/carousel:opacity-100 cursor-pointer"
+            aria-label="Geser ke kiri"
+          >
+            <ChevronLeft className="w-6 h-6 text-[#0077B6]" />
+          </button>
+
+          {/* Floating Arrow Right (Desktop) */}
+          <button
+            type="button"
+            onClick={handleScrollRight}
+            className="hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/95 text-[#03045E] shadow-lg border border-slate-200 hover:bg-[#CAF0F8] hover:text-[#0077B6] hover:scale-105 active:scale-95 items-center justify-center transition-all opacity-0 group-hover/carousel:opacity-100 cursor-pointer"
+            aria-label="Geser ke kanan"
+          >
+            <ChevronRight className="w-6 h-6 text-[#0077B6]" />
+          </button>
+
+          {/* Carousel / Slider dengan Efek Slide & Snapping Halus */}
+          <div
+            ref={scrollContainerRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            className={`flex gap-5 sm:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0 select-none ${
+              isMouseDown ? 'cursor-grabbing' : 'cursor-grab'
+            }`}
+          >
+            {albumGaleri.map((foto, idx) => (
+              <div
+                key={foto.id}
+                onClick={() => {
+                  if (!hasDragged) handleOpenLightbox(idx);
+                }}
+                className="w-[82vw] sm:w-[340px] md:w-[350px] lg:w-[360px] shrink-0 snap-start group/card bg-white border border-slate-100 rounded-[24px] overflow-hidden cursor-pointer hover:border-[#0077B6]/40 transition-all shadow-[0_8px_24px_rgba(3,4,94,0.06)] hover:shadow-[0_12px_28px_rgba(3,4,94,0.12)] hover:-translate-y-1 flex flex-col"
+              >
+                <div className="aspect-[16/10] overflow-hidden bg-slate-100 relative">
+                  <img
+                    src={foto.thumb}
+                    alt={foto.judul}
+                    loading="lazy"
+                    draggable="false"
+                    className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300 pointer-events-none"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#03045E]/50 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity flex items-end p-4">
+                    <span className="text-xs font-bold text-white bg-[#0077B6]/90 px-3 py-1 rounded-full backdrop-blur-sm">
+                      Perbesar Foto ↗
                     </span>
                   </div>
-                  <h3 className="font-heading font-bold text-base text-[#03045E] line-clamp-1 group-hover:text-[#0077B6] transition-colors">
-                    {foto.judul}
-                  </h3>
-                  <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
-                    {foto.deskripsi}
-                  </p>
+                </div>
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-2">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="text-[11px] font-bold text-[#0077B6] uppercase tracking-wider px-3 py-0.5 rounded-full bg-[#CAF0F8] border border-[#90E0EF]/60">
+                        {foto.kategori}
+                      </span>
+                      <span className="text-xs text-slate-400 font-medium">
+                        {foto.tanggal}
+                      </span>
+                    </div>
+                    <h3 className="font-heading font-bold text-base text-[#03045E] line-clamp-1 group-hover/card:text-[#0077B6] transition-colors">
+                      {foto.judul}
+                    </h3>
+                    <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                      {foto.deskripsi}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+
+        {/* Petunjuk Interaksi & Keterangan Geser */}
+        <div className="mt-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+          <div className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-[#0077B6] font-medium bg-[#CAF0F8]/50 py-1 px-3.5 rounded-full border border-[#90E0EF]/50">
+            <span className="sm:hidden">⟵ Geser ke kanan atau kiri untuk melihat foto lainnya ⟶</span>
+            <span className="hidden sm:inline">💡 Geser dengan mouse drag atau klik tombol panah untuk menjelajahi highlight foto kenangan.</span>
+          </div>
+          <span className="text-[11px] font-mono text-slate-400">
+            Total {albumGaleri.length} Foto Kenangan
+          </span>
         </div>
       </section>
 
