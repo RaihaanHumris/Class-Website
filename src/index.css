@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #03045E;
+  --color-ocean: #0077B6;
+  --color-cyan: #00B4D8;
+  --color-sky: #90E0EF;
+  --color-mist: #CAF0F8;
+  --font-heading: "Poppins", sans-serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+/* Layer Base & Aksesibilitas */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  /* Target sentuh minimal 44px untuk elemen interaktif */
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+  }
+
+  /* Fokus keyboard yang jelas & terlihat */
+  :focus-visible {
+    outline: 2px solid #00B4D8;
+    outline-offset: 2px;
+  }
+}
+
+/* Hormati preferensi pengguna yang sensitif gerak */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
