@@ -33,7 +33,7 @@ export default function App() {
       <ScrollToTop />
       <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 font-sans selection:bg-[#00B4D8] selection:text-[#03045E]">
         <Navbar />
-        <main className="flex-1">
+        <main className="flex-1 pt-16 md:pt-20">
           <Routes>
             <Route path="/" element={<Beranda />} />
             <Route path="/profil" element={<Profil />} />

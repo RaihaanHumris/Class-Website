@@ -6,7 +6,6 @@ import {
   Users,
   Terminal,
   Gamepad2,
-  Dns,
   ShieldCheck,
   Server
 } from 'lucide-react';

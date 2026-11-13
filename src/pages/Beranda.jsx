@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users,
@@ -13,24 +13,72 @@ import {
   Layers,
   Compass,
   Terminal,
-  Sparkles
+  Sparkles,
+  Camera
 } from 'lucide-react';
 import Hero from '../components/common/Hero';
 import StudentWall from '../components/features/StudentWall';
+import Lightbox from '../components/common/Lightbox';
 import { infoKelas } from '../data/kelas';
 import { daftarAnggota } from '../data/anggota';
+import { albumGaleri } from '../data/galeri';
 
 export default function Beranda() {
   const totalSiswa = daftarAnggota.length;
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+
+  const handleOpenLightbox = (index) => {
+    setActivePhotoIndex(index);
+    setLightboxOpen(true);
+  };
+
+  // Data pengurus kelas untuk Struktur Organisasi
+  const pengurusData = infoKelas.pengurus.map((p) => {
+    const anggota = daftarAnggota.find((a) => a.id === p.idAnggota);
+    return {
+      peran: p.peran,
+      nama: anggota ? anggota.nama : '-',
+      minat: anggota ? anggota.minat : '',
+    };
+  });
+
+  // Icon & warna untuk setiap peran pengurus
+  const peranStyle = {
+    'Ketua Kelas': {
+      icon: Sparkles,
+      gradient: 'from-[#03045E] to-[#0077B6]',
+      iconBg: 'bg-[#90E0EF]',
+      iconColor: 'text-[#03045E]',
+    },
+    'Wakil Ketua Kelas': {
+      icon: Users,
+      gradient: 'from-[#0077B6] to-[#00B4D8]',
+      iconBg: 'bg-[#CAF0F8]',
+      iconColor: 'text-[#0077B6]',
+    },
+    'Sekretaris': {
+      icon: Layers,
+      gradient: 'from-[#00B4D8] to-[#90E0EF]',
+      iconBg: 'bg-[#CAF0F8]',
+      iconColor: 'text-[#0077B6]',
+    },
+    'Bendahara': {
+      icon: CheckCircle2,
+      gradient: 'from-[#0077B6] to-[#03045E]',
+      iconBg: 'bg-[#90E0EF]',
+      iconColor: 'text-[#03045E]',
+    },
+  };
 
   return (
-    <div className="w-full bg-[#FBF8FF] min-h-screen">
+    <div className="w-full bg-slate-50 min-h-screen">
       
-      {/* 1. Hero Section (Stitch Style) */}
+      {/* 1. Hero Section */}
       <Hero />
 
-      {/* 2. Wave Divider SVG (Stitch Style) */}
-      <div className="w-full overflow-hidden leading-none bg-[#FBF8FF] -mt-px select-none pointer-events-none">
+      {/* 2. Wave Divider SVG */}
+      <div className="w-full overflow-hidden leading-none bg-slate-50 -mt-px select-none pointer-events-none">
         <svg
           className="block w-full h-12 md:h-16 text-[#0077B6] fill-current"
           preserveAspectRatio="none"
@@ -40,13 +88,13 @@ export default function Beranda() {
         </svg>
       </div>
 
-      {/* 3. Quick Stats Bar Floating Overlap (Stitch Style) */}
+      {/* 3. Quick Stats Bar */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full -mt-6 sm:-mt-8 relative z-20 mb-12 sm:mb-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           
           {/* Stat 1 */}
           <div className="flex items-center gap-4 p-4 sm:p-5 rounded-full bg-white shadow-[0_8px_24px_rgba(3,4,94,0.08)] hover:shadow-md transition-shadow border border-slate-100">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-[#90E0EF] flex items-center justify-center text-[#0077B6]">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-[#90E0EF] flex items-center justify-center text-[#03045E]">
               <Users className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <div className="flex flex-col min-w-0">
@@ -61,7 +109,7 @@ export default function Beranda() {
 
           {/* Stat 2 */}
           <div className="flex items-center gap-4 p-4 sm:p-5 rounded-full bg-white shadow-[0_8px_24px_rgba(3,4,94,0.08)] hover:shadow-md transition-shadow border border-slate-100">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-[#CAF0F8] flex items-center justify-center text-[#0077B6]">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-[#90E0EF] flex items-center justify-center text-[#03045E]">
               <GraduationCap className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <div className="flex flex-col min-w-0">
@@ -76,7 +124,7 @@ export default function Beranda() {
 
           {/* Stat 3 */}
           <div className="flex items-center gap-4 p-4 sm:p-5 rounded-full bg-white shadow-[0_8px_24px_rgba(3,4,94,0.08)] hover:shadow-md transition-shadow border border-slate-100">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-[#CAF0F8] flex items-center justify-center text-[#03045E]">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full bg-[#90E0EF] flex items-center justify-center text-[#03045E]">
               <Calendar className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <div className="flex flex-col min-w-0">
@@ -92,7 +140,7 @@ export default function Beranda() {
         </div>
       </section>
 
-      {/* 4. Section Pengumuman Terbaru (Stitch Style) */}
+      {/* 4. Section Pengumuman Terbaru */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-6 sm:py-8">
         
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
@@ -120,7 +168,7 @@ export default function Beranda() {
           <div className="flex flex-col justify-between p-6 rounded-[24px] bg-white shadow-[0_8px_24px_rgba(3,4,94,0.06)] hover:shadow-[0_12px_28px_rgba(3,4,94,0.12)] transition-all border border-slate-100">
             <div className="flex flex-col">
               <div className="flex items-center justify-between mb-3">
-                <span className="px-3 py-1 rounded-full bg-[#00B4D8] text-[#03045E] text-xs font-bold">
+                <span className="px-3 py-1 rounded-full bg-[#03045E] text-white text-xs font-bold">
                   Penting
                 </span>
                 <span className="text-xs text-slate-400 font-medium">Batas: 7 Hari</span>
@@ -147,7 +195,7 @@ export default function Beranda() {
           <div className="flex flex-col justify-between p-6 rounded-[24px] bg-white shadow-[0_8px_24px_rgba(3,4,94,0.06)] hover:shadow-[0_12px_28px_rgba(3,4,94,0.12)] transition-all border border-slate-100">
             <div className="flex flex-col">
               <div className="flex items-center justify-between mb-3">
-                <span className="px-3 py-1 rounded-full bg-[#90E0EF] text-[#03045E] text-xs font-bold">
+                <span className="px-3 py-1 rounded-full bg-[#0077B6] text-white text-xs font-bold">
                   Baru
                 </span>
                 <span className="text-xs text-slate-400 font-medium">Praktikum</span>
@@ -174,7 +222,7 @@ export default function Beranda() {
           <div className="flex flex-col justify-between p-6 rounded-[24px] bg-white shadow-[0_8px_24px_rgba(3,4,94,0.06)] hover:shadow-[0_12px_28px_rgba(3,4,94,0.12)] transition-all border border-slate-100">
             <div className="flex flex-col">
               <div className="flex items-center justify-between mb-3">
-                <span className="px-3 py-1 rounded-full bg-[#CAF0F8] text-[#0077B6] text-xs font-bold">
+                <span className="px-3 py-1 rounded-full bg-[#00B4D8] text-white text-xs font-bold">
                   Informasi
                 </span>
                 <span className="text-xs text-slate-400 font-medium">Kedisiplinan</span>
@@ -200,41 +248,81 @@ export default function Beranda() {
         </div>
       </section>
 
-      {/* 5. Section Suasana Kelas & Visual Galeri (Stitch Style - Grid 12 Kolom) */}
+      {/* 5. Section Foto Kenangan Asli */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-10 sm:py-14">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          
-          {/* Media Photo 1 (4 Kolom) */}
-          <div className="lg:col-span-4 rounded-[24px] overflow-hidden shadow-[0_8px_24px_rgba(3,4,94,0.08)] bg-white flex flex-col border border-slate-100">
-            <div className="relative w-full h-56 bg-slate-100">
-              <img
-                className="w-full h-full object-cover"
-                alt="Praktikum Siswa PPLG di Lab MAKN Ende"
-                src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#03045E]/85 via-transparent to-transparent" />
-              <div className="absolute bottom-3 left-4 right-4 text-white">
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#0077B6] text-white">
-                  Laboratorium RPL
-                </span>
-                <div className="font-heading text-base font-bold text-white mt-1">
-                  Sesi Coding Kolaboratif
+        
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
+          <div className="flex flex-col">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0077B6] tracking-wide uppercase">
+              <Camera className="w-4 h-4" />
+              <span>Dokumentasi & Memori Asli</span>
+            </div>
+            <h2 className="font-heading text-2xl sm:text-3xl font-extrabold text-[#03045E] mt-1">
+              Foto Kenangan
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl">
+              Potret kebersamaan, kepanduan pramuka, dan hari-hari bersejarah seluruh siswa {infoKelas.nama} di {infoKelas.sekolah}.
+            </p>
+          </div>
+          <Link
+            to="/galeri"
+            className="inline-flex items-center gap-1.5 text-[#0077B6] hover:text-[#03045E] font-semibold text-xs sm:text-sm group cursor-pointer"
+          >
+            <span>Buka Galeri Lengkap</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+
+        {/* Grid Foto Kenangan */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {albumGaleri.map((foto, idx) => (
+            <div
+              key={foto.id}
+              onClick={() => handleOpenLightbox(idx)}
+              className="group bg-white border border-slate-100 rounded-[24px] overflow-hidden cursor-pointer hover:border-[#0077B6]/40 transition-all shadow-[0_8px_24px_rgba(3,4,94,0.06)] hover:shadow-[0_12px_28px_rgba(3,4,94,0.12)] hover:-translate-y-1 flex flex-col"
+            >
+              <div className="aspect-[16/10] overflow-hidden bg-slate-100 relative">
+                <img
+                  src={foto.thumb}
+                  alt={foto.judul}
+                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#03045E]/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                  <span className="text-xs font-bold text-white bg-[#0077B6]/90 px-3 py-1 rounded-full backdrop-blur-sm">
+                    Perbesar Foto ↗
+                  </span>
+                </div>
+              </div>
+              <div className="p-5 flex-1 flex flex-col justify-between space-y-2">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-[11px] font-bold text-[#0077B6] uppercase tracking-wider px-3 py-0.5 rounded-full bg-[#CAF0F8] border border-[#90E0EF]/60">
+                      {foto.kategori}
+                    </span>
+                    <span className="text-xs text-slate-400 font-medium">
+                      {foto.tanggal}
+                    </span>
+                  </div>
+                  <h3 className="font-heading font-bold text-base text-[#03045E] line-clamp-1 group-hover:text-[#0077B6] transition-colors">
+                    {foto.judul}
+                  </h3>
+                  <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                    {foto.deskripsi}
+                  </p>
                 </div>
               </div>
             </div>
-            <div className="p-5 flex-1 flex flex-col justify-between">
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Aktivitas harian pengerjaan sprint pengembangan software dan review baris kode bersama mentor di Lab MAKN Ende.
-              </p>
-              <div className="mt-4 flex items-center gap-1.5 text-[#0077B6] text-xs font-semibold">
-                <Terminal className="w-4 h-4" />
-                <span>Git Version Control · Linux Workstation</span>
-              </div>
-            </div>
-          </div>
+          ))}
+        </div>
+      </section>
 
-          {/* Center Feature: Kutipan Inspiratif & Filosofi Wali Kelas (5 Kolom) */}
-          <div className="lg:col-span-5 rounded-[24px] bg-white p-6 sm:p-8 shadow-[0_8px_24px_rgba(3,4,94,0.08)] flex flex-col justify-between relative overflow-hidden border border-slate-100">
+      {/* 6. Section Kutipan Inspiratif & Visi Prestasi */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-6 sm:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          
+          {/* Kutipan Inspiratif (7 Kolom) */}
+          <div className="lg:col-span-7 rounded-[24px] bg-white p-6 sm:p-8 shadow-[0_8px_24px_rgba(3,4,94,0.06)] flex flex-col justify-between relative overflow-hidden border border-slate-100">
             {/* Ambient decorative glow */}
             <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-[#CAF0F8]/60 blur-3xl pointer-events-none -mr-16 -mt-16" />
             <div className="relative z-10">
@@ -242,14 +330,14 @@ export default function Beranda() {
                 <Quote className="w-6 h-6" />
               </div>
               <blockquote className="font-heading text-base sm:text-lg text-[#03045E] leading-relaxed mb-4 font-bold">
-                “Baris demi baris logika yang kita susun hari ini adalah ikhtiar nyata santri kejuruan dalam menjemput peradaban digital Indonesia yang berkeadaban.”
+                "Baris demi baris logika yang kita susun hari ini adalah ikhtiar nyata santri kejuruan dalam menjemput peradaban digital Indonesia yang berkeadaban."
               </blockquote>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 Filosofi belajar XII PPLG 3 menekankan bahwa teknologi terbaik bukan hanya sekadar canggih, namun membawa maslahat dan kemudahan bagi sesama insan.
               </p>
             </div>
             <div className="relative z-10 pt-6 flex items-center gap-3.5 border-t border-slate-100 mt-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#0077B6] to-[#00B4D8] flex items-center justify-center text-white font-heading font-extrabold text-base shadow-sm">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#0077B6] to-[#00B4D8] flex items-center justify-center text-white font-heading font-extrabold text-base shadow-sm ring-2 ring-[#CAF0F8]">
                 UD
               </div>
               <div className="flex flex-col">
@@ -263,13 +351,13 @@ export default function Beranda() {
             </div>
           </div>
 
-          {/* Media Photo 2 & Mini Metrics: Visi Prestasi (3 Kolom) */}
-          <div className="lg:col-span-3 rounded-[24px] bg-gradient-to-br from-[#0077B6] to-[#03045E] text-white p-6 shadow-[0_8px_24px_rgba(3,4,94,0.12)] flex flex-col justify-between">
+          {/* Visi Prestasi (5 Kolom) */}
+          <div className="lg:col-span-5 rounded-[24px] bg-gradient-to-br from-[#0077B6] to-[#03045E] text-white p-6 sm:p-8 shadow-[0_8px_24px_rgba(3,4,94,0.12)] flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <Layers className="w-7 h-7 text-[#90E0EF]" />
                 <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-white/15 text-[#CAF0F8]">
-                  TA 2025/2026
+                  TA {infoKelas.tahunAjaran}
                 </span>
               </div>
               <h4 className="font-heading font-bold text-lg text-white mb-2">
@@ -299,12 +387,107 @@ export default function Beranda() {
         </div>
       </section>
 
-      {/* 6. Dinding Siswa Kelas */}
+      {/* 7. Dinding Siswa Kelas */}
       <StudentWall />
 
-      {/* 7. Interactive Filter/Pill Fast Navigation Helper (Stitch Style) */}
+      {/* 8. Struktur Organisasi Kelas */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-12 sm:py-16">
+        
+        <div className="flex flex-col items-center text-center mb-10 sm:mb-12">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0077B6] tracking-wide uppercase mb-2">
+            <Sparkles className="w-4 h-4" />
+            <span>Pengurus Kelas</span>
+          </div>
+          <h2 className="font-heading text-2xl sm:text-3xl font-extrabold text-[#03045E]">
+            Struktur Organisasi
+          </h2>
+          <p className="text-sm text-slate-500 mt-2 max-w-md">
+            Pengurus kelas XII PPLG 3 yang bertanggung jawab menjalankan amanah organisasi kelas.
+          </p>
+        </div>
+
+        {/* Wali Kelas di atas */}
+        <div className="flex justify-center mb-8">
+          <div className="relative flex flex-col items-center p-6 sm:p-8 rounded-[24px] bg-gradient-to-br from-[#03045E] to-[#0077B6] text-white shadow-[0_12px_32px_rgba(3,4,94,0.18)] max-w-sm w-full">
+            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white font-heading font-extrabold text-xl mb-3 ring-4 ring-white/30">
+              UD
+            </div>
+            <span className="font-heading font-bold text-base sm:text-lg text-white">
+              {infoKelas.waliKelas.nama}
+            </span>
+            <span className="text-xs text-[#90E0EF] font-medium mt-0.5">
+              {infoKelas.waliKelas.peran}
+            </span>
+            <div className="mt-3 px-3 py-1 rounded-full bg-white/15 text-[11px] font-bold text-[#CAF0F8]">
+              Pembina & Penasehat Kelas
+            </div>
+          </div>
+        </div>
+
+        {/* Garis penghubung vertikal */}
+        <div className="flex justify-center mb-8">
+          <div className="w-px h-10 bg-gradient-to-b from-[#0077B6] to-[#90E0EF]"></div>
+        </div>
+
+        {/* Grid Pengurus */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+          {pengurusData.map((pengurus, idx) => {
+            const style = peranStyle[pengurus.peran] || peranStyle['Ketua Kelas'];
+            const IconComp = style.icon;
+            
+            return (
+              <div
+                key={idx}
+                className="relative flex flex-col items-center p-6 rounded-[24px] bg-white shadow-[0_8px_24px_rgba(3,4,94,0.06)] hover:shadow-[0_12px_28px_rgba(3,4,94,0.12)] transition-all border border-slate-100 group"
+              >
+                {/* Gradient top accent */}
+                <div className={`absolute top-0 left-0 right-0 h-1.5 rounded-t-[24px] bg-gradient-to-r ${style.gradient}`} />
+                
+                {/* Icon */}
+                <div className={`w-14 h-14 rounded-full ${style.iconBg} flex items-center justify-center ${style.iconColor} mb-3 mt-2 group-hover:scale-105 transition-transform`}>
+                  <IconComp className="w-7 h-7" />
+                </div>
+
+                {/* Peran */}
+                <span className={`px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r ${style.gradient} mb-3`}>
+                  {pengurus.peran}
+                </span>
+
+                {/* Nama */}
+                <span className="font-heading font-bold text-sm sm:text-base text-[#03045E] text-center leading-tight">
+                  {pengurus.nama}
+                </span>
+
+                {/* Minat */}
+                <span className="text-[11px] text-slate-500 text-center mt-1">
+                  {pengurus.minat}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Anggota info */}
+        <div className="mt-8 flex justify-center">
+          <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-[#CAF0F8]/50 border border-[#90E0EF]/50">
+            <Users className="w-5 h-5 text-[#0077B6]" />
+            <span className="text-sm font-semibold text-[#03045E]">
+              + {totalSiswa - infoKelas.pengurus.length} Anggota Kelas
+            </span>
+            <Link
+              to="/anggota"
+              className="text-xs font-bold text-[#0077B6] hover:text-[#03045E] flex items-center gap-1 group"
+            >
+              <span>Lihat Semua</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 9. Interactive Filter/Pill Fast Navigation */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full pb-16">
-        <div className="p-6 rounded-[24px] bg-[#EEECFF]/60 border border-[#90E0EF]/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="p-6 rounded-[24px] bg-[#CAF0F8]/40 border border-[#90E0EF]/50 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 text-left">
             <div className="w-10 h-10 rounded-full bg-[#CAF0F8] flex items-center justify-center text-[#0077B6] shrink-0">
               <Compass className="w-5 h-5" />
@@ -340,6 +523,15 @@ export default function Beranda() {
           </div>
         </div>
       </section>
+
+      {/* Lightbox Modal untuk Foto Kenangan */}
+      <Lightbox
+        isOpen={lightboxOpen}
+        images={albumGaleri}
+        currentIndex={activePhotoIndex}
+        onClose={() => setLightboxOpen(false)}
+        onNavigate={(newIndex) => setActivePhotoIndex(newIndex)}
+      />
 
     </div>
   );

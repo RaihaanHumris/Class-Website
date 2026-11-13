@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 /**
- * Button Component - Bersih, fungsional, tanpa efek melayang berlebihan
+ * Button Component - Desain pill/kapsul modern selaras Beranda
  */
 export default function Button({
   children,
@@ -19,25 +19,25 @@ export default function Button({
   ...rest
 }) {
   const baseStyles =
-    'inline-flex items-center justify-center font-medium rounded-lg transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B4D8] focus-visible:ring-offset-2 min-h-[44px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none';
+    'inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B4D8] focus-visible:ring-offset-2 min-h-[44px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none';
 
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-xs gap-1.5',
-    md: 'px-4 py-2 text-sm gap-2',
-    lg: 'px-5 py-2.5 text-base gap-2',
+    sm: 'px-4 py-1.5 text-xs gap-1.5',
+    md: 'px-5 py-2 text-sm gap-2',
+    lg: 'px-6 py-3 text-base gap-2.5',
   };
 
   const variantStyles = {
     primary:
-      'bg-[#0077B6] hover:bg-[#03045E] text-white font-semibold',
+      'bg-[#0077B6] hover:bg-[#03045E] text-white font-bold shadow-md hover:shadow-lg',
     secondary:
-      'bg-[#CAF0F8] hover:bg-[#90E0EF] text-[#03045E] font-semibold',
+      'bg-[#CAF0F8] hover:bg-[#90E0EF] text-[#03045E] font-bold border border-[#90E0EF]/60 shadow-xs',
     outline:
-      'border border-slate-300 bg-white text-[#03045E] hover:border-[#0077B6] hover:text-[#0077B6]',
+      'border border-slate-300 bg-white text-[#03045E] hover:border-[#0077B6] hover:text-[#0077B6] shadow-xs',
     navy:
-      'bg-[#03045E] hover:bg-[#0077B6] text-white font-semibold',
+      'bg-[#03045E] hover:bg-[#0077B6] text-white font-bold shadow-md',
     link:
-      'p-0 min-h-0 text-[#0077B6] hover:text-[#03045E] hover:underline font-semibold bg-transparent'
+      'p-0 min-h-0 text-[#0077B6] hover:text-[#03045E] hover:underline font-bold bg-transparent rounded-none'
   };
 
   const combinedClasses = `${baseStyles} ${sizeStyles[size] || sizeStyles.md} ${

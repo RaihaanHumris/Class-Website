@@ -7,7 +7,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-[#03045E] text-white border-t border-white/10 mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           
           {/* Kolom Kiri: Identitas Kelas (5 Kolom) */}
@@ -28,15 +28,15 @@ export default function Footer() {
             <span className="font-bold text-[#90E0EF] uppercase tracking-wider block">
               Menu Halaman
             </span>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[#CAF0F8]">
-              <Link to="/" className="hover:text-white">Beranda</Link>
-              <Link to="/profil" className="hover:text-white">Profil & Wali Kelas</Link>
-              <Link to="/anggota" className="hover:text-white">Daftar 23 Siswa</Link>
-              <Link to="/jadwal" className="hover:text-white">Jadwal Pelajaran</Link>
-              <Link to="/piket" className="hover:text-white">Jadwal Piket</Link>
-              <Link to="/tugas" className="hover:text-white">Daftar Tugas</Link>
-              <Link to="/galeri" className="hover:text-white">Galeri Foto</Link>
-              <Link to="/kontak" className="hover:text-white">Kontak Kelas</Link>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[#CAF0F8]">
+              <Link to="/" className="hover:text-white transition-colors">Beranda</Link>
+              <Link to="/profil" className="hover:text-white transition-colors">Profil & Wali Kelas</Link>
+              <Link to="/anggota" className="hover:text-white transition-colors">Direktori Siswa</Link>
+              <Link to="/jadwal" className="hover:text-white transition-colors">Jadwal Pelajaran</Link>
+              <Link to="/piket" className="hover:text-white transition-colors">Jadwal Piket</Link>
+              <Link to="/tugas" className="hover:text-white transition-colors">Daftar Tugas</Link>
+              <Link to="/galeri" className="hover:text-white transition-colors">Galeri Foto</Link>
+              <Link to="/kontak" className="hover:text-white transition-colors">Kontak Kelas</Link>
             </div>
           </div>
 
@@ -46,7 +46,7 @@ export default function Footer() {
               Informasi
             </span>
             <p>
-              Wali Kelas: <strong className="text-white">{infoKelas.waliKelas.nama}</strong>
+              Wali Kelas: <strong className="text-white font-semibold">{infoKelas.waliKelas.nama}</strong>
             </p>
             <p className="text-white/70 leading-relaxed pt-1">
               {infoKelas.kontak.alamat}
@@ -57,7 +57,7 @@ export default function Footer() {
 
         {/* Baris Copyright */}
         <div className="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/50">
-          <p>© {currentYear} XII PPLG 3 MAKN Ende.</p>
+          <p>© {currentYear} {infoKelas.nama} {infoKelas.sekolah}.</p>
           <p className="font-mono text-[11px] text-[#90E0EF]/80">Code Together, Grow Together</p>
         </div>
       </div>

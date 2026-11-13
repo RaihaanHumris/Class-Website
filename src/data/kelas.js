@@ -8,8 +8,8 @@ export const infoKelas = {
   suaraKelas: "22 orang, satu kelas, satu proyek besar bernama kelulusan.",
   tahunAjaran: "2025/2026",
   
-  // Foto kelas hero: kosongkan ("") jika belum ada foto asli agar hero tidak menampilkan foto stok.
-  fotoHero: "", 
+  // Foto kenangan angkatan XII PPLG 3 bersama Guru Bahasa Inggris
+  fotoHero: "/images/kenangan/foto-kelas-wali-kelas.jpg", 
 
   waliKelas: {
     nama: "Ustadzah Dzakirah, S.Pd.",

@@ -2,39 +2,62 @@ import React from 'react';
 import PiketCard from '../components/features/PiketCard';
 import { jadwalPiket } from '../data/piket';
 import { getHariInfo } from '../utils/helpers';
+import { Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function Piket() {
   const hariInfo = getHariInfo();
 
   return (
-    <div className="space-y-8 pb-16">
+    <div className="w-full bg-slate-50 min-h-screen pb-16">
       
-      {/* Header Banner Penuh Navy */}
-      <section className="bg-[#03045E] text-white py-12 md:py-16 border-b-4 border-[#00B4D8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
-          <span className="text-xs font-bold text-[#00B4D8] uppercase tracking-wider block">
-            Kebersihan & Ketertiban
-          </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold font-heading text-white tracking-tight">
+      {/* 1. Header Banner Gradient Khas Beranda */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#CAF0F8] via-[#90E0EF]/80 to-[#0077B6] text-slate-800 pt-8 sm:pt-12 pb-14 sm:pb-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 space-y-3">
+          
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/85 shadow-xs backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-[#0077B6] animate-pulse" />
+            <span className="text-[11px] sm:text-xs font-bold text-[#03045E] uppercase tracking-wider">
+              Kebersihan & Ketertiban
+            </span>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-heading text-[#03045E] tracking-tight leading-tight">
             Roster Piket Kebersihan Kelas
           </h1>
-          <p className="text-sm sm:text-base text-[#CAF0F8] max-w-2xl leading-relaxed">
+
+          <p className="text-sm sm:text-base text-[#03045E]/85 max-w-2xl leading-relaxed">
             Pembagian giliran piket siswa kelas XII PPLG 3 dari hari Senin sampai Sabtu untuk menjaga kenyamanan ruang belajar madrasah.
           </p>
         </div>
       </section>
 
-      {/* Konten Piket */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      {/* 2. Wave Divider SVG */}
+      <div className="w-full overflow-hidden leading-none bg-slate-50 -mt-px select-none pointer-events-none mb-8 sm:mb-10">
+        <svg
+          className="block w-full h-10 md:h-14 text-[#0077B6] fill-current"
+          preserveAspectRatio="none"
+          viewBox="0 0 1440 96"
+        >
+          <path d="M0,32L48,42.7C96,53,192,75,288,74.7C384,75,480,53,576,42.7C672,32,768,32,864,42.7C960,53,1056,75,1152,69.3C1248,64,1344,32,1392,16L1440,0L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path>
+        </svg>
+      </div>
+
+      {/* 3. Konten Piket */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
         
         {/* Banner Status Hari Ini */}
-        <div className="p-4 rounded-xl bg-[#CAF0F8]/80 border-2 border-[#90E0EF] flex items-center justify-between flex-wrap gap-3">
-          <div className="text-xs sm:text-sm text-[#03045E]">
-            Status Hari Ini: <strong>{hariInfo.nama}</strong> {hariInfo.isWeekend ? '(Libur Akhir Pekan)' : '— Regu Piket Wajib Hadir Lebih Awal'}
+        <div className="p-4 sm:p-5 rounded-[24px] bg-white border border-slate-100 shadow-[0_8px_24px_rgba(3,4,94,0.06)] flex items-center justify-between flex-wrap gap-3">
+          <div className="text-xs sm:text-sm text-[#03045E] flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#0077B6] animate-pulse" />
+            <span>
+              Status Hari Ini: <strong className="font-bold text-[#0077B6]">{hariInfo.nama}</strong>{' '}
+              {hariInfo.isWeekend ? '(Libur Akhir Pekan)' : '— Regu Piket Wajib Hadir Lebih Awal'}
+            </span>
           </div>
           {!hariInfo.isWeekend && (
-            <span className="text-xs font-extrabold text-white bg-[#0077B6] px-3 py-1 rounded-full">
-              Regu Hari Ini Disorot
+            <span className="text-xs font-bold text-white bg-[#0077B6] px-3.5 py-1.5 rounded-full shadow-xs flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Regu Hari Ini Disorot</span>
             </span>
           )}
         </div>
@@ -50,13 +73,22 @@ export default function Piket() {
         </div>
 
         {/* SOP Piket Bersih */}
-        <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-6 space-y-3 text-xs sm:text-sm text-slate-700">
-          <h3 className="font-heading font-extrabold text-base text-[#03045E]">
-            Tanggung Jawab Petugas Piket:
-          </h3>
-          <ul className="list-disc list-inside space-y-1.5 leading-relaxed">
-            <li><strong>Pagi (06.50 WITA):</strong> Menyapu ruang kelas XII PPLG 3, merapikan meja guru, dan memastikan spidol/penghapus siap pakai.</li>
-            <li><strong>Sore (Setelah Bel Pulang):</strong> Mematikan komputer & proyektor, merapikan kabel, mengosongkan tempat sampah ke TPS luar, dan mengunci pintu kelas.</li>
+        <div className="bg-[#CAF0F8]/50 border border-[#90E0EF]/60 rounded-[24px] p-6 sm:p-8 space-y-3.5 shadow-[0_8px_24px_rgba(3,4,94,0.04)] text-xs sm:text-sm text-slate-700">
+          <div className="flex items-center gap-2 text-[#03045E]">
+            <CheckCircle2 className="w-5 h-5 text-[#0077B6]" />
+            <h3 className="font-heading font-extrabold text-base sm:text-lg">
+              Tanggung Jawab Petugas Piket:
+            </h3>
+          </div>
+          <ul className="space-y-2 leading-relaxed text-slate-700 pl-1">
+            <li className="flex items-start gap-2">
+              <span className="text-[#0077B6] font-bold">•</span>
+              <span><strong>Pagi (06.50 WITA):</strong> Menyapu ruang kelas XII PPLG 3, merapikan meja guru, dan memastikan spidol/penghapus siap pakai.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-[#0077B6] font-bold">•</span>
+              <span><strong>Sore (Setelah Bel Pulang):</strong> Mematikan komputer & proyektor, merapikan kabel, mengosongkan tempat sampah ke TPS luar, dan mengunci pintu kelas.</span>
+            </li>
           </ul>
         </div>
 
