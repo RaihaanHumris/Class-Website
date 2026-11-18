@@ -181,8 +181,8 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
     setImgFailed(false);
   }, [effectivePhotoUrl]);
 
-  // Dim cards when another card is focused
-  const dimOpacity = isAnyFocused && !isFocused ? 0.24 : 1;
+  // Dim cards when another card is focused; hide desk copy of focused card so native 1:1 overlay takes over crisply
+  const dimOpacity = isFocused ? 0 : isAnyFocused ? 0.24 : 1;
 
   // Sizing & tier styles
   const isTeacher = member.category === 'homeroom_teacher';
@@ -216,11 +216,12 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
         marginTop: isTeacher ? -177 : isSpecial ? -162 : -146,
         zIndex: isFocused ? 50 : isTeacher ? 20 : isSpecial ? 15 : 10,
         perspective: 1200,
+        pointerEvents: isFocused ? 'none' : 'auto',
       }}
       animate={{
         rotate: member.rotate,
         opacity: dimOpacity,
-        scale: isFocused ? 1.04 : 1,
+        scale: 1,
       }}
       whileHover={
         !isAnyFocused
@@ -290,9 +291,9 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
           </div>
 
           {/* Top Hierarchy Badge & Photo Box */}
-          <div className="relative flex-1 flex flex-col">
+          <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden">
             {/* Corner Badge */}
-            <div className="flex items-center justify-between gap-1.5 mb-2">
+            <div className="shrink-0 flex items-center justify-between gap-1.5 mb-2">
               {isTeacher ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 whitespace-nowrap">
                   <Crown className="w-3 h-3 text-amber-300" />
@@ -322,7 +323,7 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
 
             {/* Portrait Window */}
             <div
-              className={`relative w-full flex-1 overflow-hidden rounded-[2px] ${
+              className={`relative w-full flex-1 min-h-0 overflow-hidden rounded-[2px] ${
                 isTeacher || isSpecial
                   ? 'bg-zinc-800 border border-white/10'
                   : 'bg-zinc-200 border border-stone-300'
@@ -336,12 +337,12 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
                     referrerPolicy="no-referrer"
                     onError={() => setImgFailed(true)}
                     draggable={false}
-                    className={`w-full h-full object-cover object-top ${
+                    className={`absolute inset-0 w-full h-full object-cover object-[50%_20%] ${
                       isPendingOnly ? 'opacity-80' : ''
                     }`}
                   />
                   {isPendingOnly && (
-                    <div className="absolute inset-x-0 bottom-0 bg-zinc-950/85 px-2 py-1 text-[9px] text-amber-300 font-medium text-center">
+                    <div className="absolute inset-x-0 bottom-0 z-10 bg-zinc-950/85 px-2 py-1 text-[9px] text-amber-300 font-medium text-center">
                       Menunggu Apply Admin
                     </div>
                   )}
@@ -395,7 +396,7 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
           </div>
 
           {/* Bottom Polaroid Caption Strip */}
-          <div className="pt-2.5 px-0.5 flex items-end justify-between gap-2">
+          <div className="shrink-0 pt-2.5 px-0.5 flex items-end justify-between gap-2">
             <div className="min-w-0">
               <p
                 className={`font-editorial font-semibold leading-tight truncate ${
@@ -575,6 +576,391 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
   );
 };
 
+interface FocusedPolaroidCardProps {
+  member: ClassMember;
+  approvedPhoto?: ApprovedPhotoEntry;
+  pendingLocal?: PendingLocalEntry;
+  isFlipped: boolean;
+  onToggleFlip: () => void;
+  onOpenUpload: (member: ClassMember) => void;
+}
+
+const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
+  member,
+  approvedPhoto,
+  pendingLocal,
+  isFlipped,
+  onToggleFlip,
+  onOpenUpload,
+}) => {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  const effectivePhotoUrl =
+    approvedPhoto?.imageUrl || member.photoUrl || pendingLocal?.imageUrl || '';
+  const isPendingOnly =
+    !approvedPhoto?.imageUrl && !member.photoUrl && Boolean(pendingLocal?.imageUrl);
+  const showImage = Boolean(effectivePhotoUrl) && !imgFailed;
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [effectivePhotoUrl, member.id]);
+
+  const isTeacher = member.category === 'homeroom_teacher';
+  const isSpecial = member.category === 'special';
+
+  const frontFrameClass = isTeacher
+    ? 'bg-zinc-900 text-stone-100 border-2 border-emerald-400/85 shadow-[0_30px_70px_-12px_rgba(16,185,129,0.34)]'
+    : isSpecial
+    ? 'bg-zinc-900 text-stone-100 border-2 border-amber-400/80 shadow-[0_28px_65px_-12px_rgba(245,158,11,0.3)]'
+    : 'bg-stone-100 text-zinc-900 border border-stone-300 shadow-[0_28px_65px_-12px_rgba(0,0,0,0.8)]';
+
+  const backFrameClass = isTeacher
+    ? 'bg-zinc-900 text-stone-100 border-2 border-emerald-400/85 shadow-[0_30px_70px_-12px_rgba(16,185,129,0.34)]'
+    : isSpecial
+    ? 'bg-zinc-900 text-stone-100 border-2 border-amber-400/80 shadow-[0_28px_65px_-12px_rgba(245,158,11,0.3)]'
+    : 'bg-[#F5F1E8] text-zinc-900 border border-stone-300 shadow-[0_28px_65px_-12px_rgba(0,0,0,0.8)]';
+
+  return (
+    <motion.div
+      key={member.id}
+      initial={{ opacity: 0.5, scale: 0.78, rotate: member.rotate }}
+      animate={{ opacity: 1, scale: 1, rotate: 0 }}
+      exit={{ opacity: 0, scale: 0.8, rotate: member.rotate }}
+      transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+      style={{ perspective: 1400 }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggleFlip();
+      }}
+      className="pointer-events-auto w-[326px] sm:w-[376px] h-[438px] sm:h-[492px] max-h-full select-none cursor-pointer antialiased"
+    >
+      <motion.div
+        animate={{ rotateY: isFlipped ? 180 : 0 }}
+        transition={{ type: 'spring', stiffness: 185, damping: 23 }}
+        style={{
+          transformStyle: 'preserve-3d',
+          width: '100%',
+          height: '100%',
+        }}
+        className="relative"
+      >
+        {/* ================= NATIVE 1:1 FRONT FACE ================= */}
+        <div
+          style={{
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            pointerEvents: isFlipped ? 'none' : 'auto',
+          }}
+          className={`absolute inset-0 rounded-md p-4 pb-5 flex flex-col justify-between ${frontFrameClass}`}
+        >
+          {/* Top 3D Pushpin */}
+          <div
+            aria-hidden="true"
+            className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center pointer-events-none"
+          >
+            <div className="w-5 h-5 rounded-full bg-black/60 blur-[2px] translate-y-1 translate-x-0.5 absolute" />
+            <div
+              className={`relative w-4 h-4 rounded-full border shadow-md flex items-center justify-center ${
+                isTeacher
+                  ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-700 border-emerald-200/80'
+                  : isSpecial
+                  ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 border-amber-100/80'
+                  : 'bg-gradient-to-br from-white via-stone-200 to-stone-500 border-white/90'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-white/85 -translate-x-[1px] -translate-y-[1px]" />
+            </div>
+          </div>
+
+          <div className="relative flex-1 flex flex-col min-h-0">
+            <div className="flex items-center justify-between gap-2 mb-3">
+              {isTeacher ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono font-bold tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/45 whitespace-nowrap">
+                  <Crown className="w-3.5 h-3.5 text-amber-300" />
+                  <span>WALI KELAS</span>
+                </span>
+              ) : isSpecial ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono font-bold tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/45 whitespace-nowrap">
+                  <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                  <span>{member.badgeLabel} MURID SPESIAL</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-mono font-bold bg-zinc-900 text-stone-100 tracking-tight">
+                  {member.badgeLabel}
+                </span>
+              )}
+
+              {isPendingOnly && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-400/40 whitespace-nowrap">
+                  <Clock className="w-3 h-3" />
+                  <span>Pending Apply</span>
+                </span>
+              )}
+            </div>
+
+            <div
+              className={`relative w-full flex-1 min-h-0 overflow-hidden rounded-[3px] ${
+                isTeacher || isSpecial
+                  ? 'bg-zinc-800 border border-white/10'
+                  : 'bg-zinc-200 border border-stone-300'
+              }`}
+            >
+              {showImage ? (
+                <>
+                  <img
+                    src={effectivePhotoUrl}
+                    alt={member.name}
+                    referrerPolicy="no-referrer"
+                    onError={() => setImgFailed(true)}
+                    draggable={false}
+                    className={`absolute inset-0 w-full h-full object-cover object-[50%_20%] ${
+                      isPendingOnly ? 'opacity-85' : ''
+                    }`}
+                  />
+                  {isPendingOnly && (
+                    <div className="absolute inset-x-0 bottom-0 z-10 bg-zinc-950/90 px-3 py-1.5 text-[11px] text-amber-300 font-medium text-center">
+                      Menunggu Persetujuan Admin
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div
+                  className={`w-full h-full flex flex-col items-center justify-center px-5 text-center gap-3 ${
+                    isTeacher
+                      ? 'bg-gradient-to-br from-emerald-950/90 via-zinc-900 to-zinc-950 text-emerald-200'
+                      : isSpecial
+                      ? 'bg-gradient-to-br from-amber-950/75 via-zinc-900 to-zinc-950 text-amber-200'
+                      : 'bg-gradient-to-br from-stone-200 via-stone-300/70 to-stone-200 text-zinc-700'
+                  }`}
+                >
+                  <div
+                    className={`w-20 h-20 rounded-full flex items-center justify-center font-editorial font-bold text-2xl tracking-wide border ${
+                      isTeacher
+                        ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-200'
+                        : isSpecial
+                        ? 'bg-amber-500/15 border-amber-400/40 text-amber-200'
+                        : 'bg-white/85 border-stone-400/50 text-zinc-800'
+                    }`}
+                  >
+                    {getInitials(member.name)}
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-semibold opacity-85">
+                      Foto Polaroid Belum Terpasang
+                    </p>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenUpload(member);
+                      }}
+                      className={`mt-1 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                        isTeacher
+                          ? 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-200 border border-emerald-400/40'
+                          : isSpecial
+                          ? 'bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/40'
+                          : 'bg-zinc-900 hover:bg-zinc-800 text-stone-100'
+                      }`}
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Upload Foto Profil</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="shrink-0 pt-3.5 px-0.5 flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <p
+                className={`font-editorial font-semibold leading-tight truncate ${
+                  isTeacher ? 'text-xl text-white' : isSpecial ? 'text-lg text-amber-50' : 'text-lg text-zinc-900'
+                }`}
+              >
+                {member.name}
+              </p>
+              <p
+                className={`text-xs truncate mt-0.5 ${
+                  isTeacher
+                    ? 'text-emerald-300/95'
+                    : isSpecial
+                    ? 'text-amber-300/95'
+                    : 'text-zinc-600'
+                }`}
+              >
+                {member.role}
+              </p>
+            </div>
+            <span
+              className={`shrink-0 text-[11px] font-mono px-2.5 py-1 rounded ${
+                isTeacher || isSpecial
+                  ? 'bg-white/10 text-stone-200'
+                  : 'bg-zinc-200/90 text-zinc-700'
+              }`}
+            >
+              Klik Balik
+            </span>
+          </div>
+        </div>
+
+        {/* ================= NATIVE 1:1 BACK FACE (CRISP & FULL TEXT) ================= */}
+        <div
+          style={{
+            transform: 'rotateY(180deg)',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            pointerEvents: isFlipped ? 'auto' : 'none',
+          }}
+          className={`absolute inset-0 rounded-md p-5 flex flex-col justify-between overflow-hidden ${backFrameClass}`}
+        >
+          <div className="space-y-3 overflow-y-auto scrollbar-none pr-1">
+            {/* Back Header */}
+            <div className="flex items-start justify-between gap-2 pb-2.5 border-b border-current/15">
+              <div className="min-w-0">
+                <span
+                  className={`inline-block font-mono text-[11px] font-bold uppercase tracking-wider ${
+                    isTeacher
+                      ? 'text-emerald-300'
+                      : isSpecial
+                      ? 'text-amber-300'
+                      : 'text-zinc-500'
+                  }`}
+                >
+                  {isTeacher
+                    ? '👑 WALI KELAS · CENTERPIECE'
+                    : isSpecial
+                    ? `★ ${member.badgeLabel} · MURID SPESIAL`
+                    : `${member.badgeLabel} · XII PPLG 3`}
+                </span>
+                <h4 className="font-editorial font-semibold text-xl leading-snug mt-0.5">
+                  {member.name}
+                </h4>
+                <p
+                  className={`text-xs mt-0.5 ${
+                    isTeacher
+                      ? 'text-emerald-300/90'
+                      : isSpecial
+                      ? 'text-amber-300/90'
+                      : 'text-zinc-600'
+                  }`}
+                >
+                  {member.role}
+                </p>
+              </div>
+              <RotateCw className="w-4 h-4 opacity-60 shrink-0 mt-1" />
+            </div>
+
+            {isTeacher ? (
+              <div className="space-y-3 text-[13px] leading-relaxed">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider font-mono text-emerald-300 flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Pembinaan &amp; Peran</span>
+                  </p>
+                  <p className="text-stone-100 mt-1 font-medium">{member.subject}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-400/25">
+                  <p className="text-[10px] uppercase tracking-wider font-mono text-emerald-300 mb-1">
+                    Pesan &amp; Nasihat
+                  </p>
+                  <p className="italic text-stone-100">“{member.quote}”</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider font-mono text-amber-300 flex items-center gap-1.5">
+                    <Heart className="w-3.5 h-3.5" />
+                    <span>Ucapan Terima Kasih Kelas</span>
+                  </p>
+                  <p className="text-stone-200 mt-1">{member.thanksMessage}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 text-[13px] leading-relaxed">
+                <div
+                  className={`p-3 rounded-lg border ${
+                    isSpecial
+                      ? 'bg-amber-500/10 border-amber-400/30 text-amber-50'
+                      : 'bg-white/85 border-stone-300/90 text-zinc-800'
+                  }`}
+                >
+                  <p className="italic">“{member.quote}”</p>
+                </div>
+
+                <div>
+                  <p
+                    className={`text-[10px] uppercase tracking-wider font-mono flex items-center gap-1.5 ${
+                      isSpecial ? 'text-amber-300' : 'text-zinc-500'
+                    }`}
+                  >
+                    <Target className="w-3.5 h-3.5" />
+                    <span>Cita-cita</span>
+                  </p>
+                  <p
+                    className={`mt-0.5 font-semibold ${
+                      isSpecial ? 'text-stone-100' : 'text-zinc-900'
+                    }`}
+                  >
+                    {member.futureGoal}
+                  </p>
+                </div>
+
+                <div>
+                  <p
+                    className={`text-[10px] uppercase tracking-wider font-mono flex items-center gap-1.5 ${
+                      isSpecial ? 'text-amber-300' : 'text-zinc-500'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Kenangan Favorit</span>
+                  </p>
+                  <p className={`mt-0.5 ${isSpecial ? 'text-stone-200' : 'text-zinc-700'}`}>
+                    {member.favoriteMemory}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="pt-3 mt-2 border-t border-current/15 flex items-center justify-between gap-2 text-xs">
+            {member.instagram ? (
+              <span
+                className={`inline-flex items-center gap-1.5 font-mono truncate ${
+                  isSpecial ? 'text-amber-300' : 'text-zinc-700'
+                }`}
+              >
+                <Instagram className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{member.instagram}</span>
+              </span>
+            ) : (
+              <span className="font-mono text-emerald-300/90 text-[11px]">
+                MAKN Ende · 2023–2026
+              </span>
+            )}
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenUpload(member);
+              }}
+              className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold cursor-pointer transition-colors ${
+                isTeacher
+                  ? 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-200'
+                  : isSpecial
+                  ? 'bg-amber-500/20 hover:bg-amber-500/35 text-amber-200'
+                  : 'bg-zinc-900 hover:bg-zinc-800 text-stone-100'
+              }`}
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>{approvedPhoto ? 'Ganti Foto' : 'Upload Foto'}</span>
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 export default function YearbookDesk() {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const [viewportSize, setViewportSize] = useState({ width: 1200, height: 720 });
@@ -678,7 +1064,7 @@ export default function YearbookDesk() {
   const focusScale = useMemo(() => {
     const availW = viewportSize.width - 48;
     const availH = viewportSize.height - 196;
-    return Math.max(0.82, Math.min(1.48, availW / 290, availH / 368));
+    return Math.max(0.75, Math.min(1.05, availW / 320, availH / 410));
   }, [viewportSize]);
 
   const focusedMember = useMemo(
@@ -1305,6 +1691,23 @@ export default function YearbookDesk() {
               ))}
             </motion.div>
           </motion.div>
+        </div>
+
+        {/* Native 1:1 Crisp Focused Polaroid Stage (Zero CSS scale blur, full readable back) */}
+        <div className="absolute inset-x-0 top-3 bottom-[84px] z-30 flex items-center justify-center pointer-events-none px-4">
+          <AnimatePresence mode="wait">
+            {focusedMember && (
+              <FocusedPolaroidCard
+                key={focusedMember.id}
+                member={focusedMember}
+                approvedPhoto={approvedPhotos[focusedMember.memberKey]}
+                pendingLocal={pendingCache[focusedMember.memberKey]}
+                isFlipped={isFlipped}
+                onToggleFlip={() => setIsFlipped((prev) => !prev)}
+                onOpenUpload={openUploadModal}
+              />
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Overview Mode Helper Controls (Bottom Left & Right) */}
