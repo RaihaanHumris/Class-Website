@@ -14,6 +14,7 @@ import JejakKelas from './pages/JejakKelas';
 import KirimFoto from './pages/KirimFoto';
 import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
+import BackgroundMusicPlayer from './components/common/BackgroundMusicPlayer';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -52,6 +53,7 @@ export default function App() {
           </Routes>
         </main>
         <Footer />
+        <BackgroundMusicPlayer />
       </div>
     </Router>
   );

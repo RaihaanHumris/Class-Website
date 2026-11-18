@@ -308,8 +308,8 @@ export default function Beranda() {
 
           <div className="lg:col-span-4 rounded-2xl overflow-hidden border border-white/15 aspect-[4/3] bg-[#0d1f4f]">
             <img
-              src={infoKelas.fotoHero}
-              alt="Foto bersama keluarga besar XII PPLG 3"
+              src="/images/kenangan/hari-pahlawan.jpg"
+              alt="Foto kenangan Hari Pahlawan keluarga besar XII PPLG 3"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover"
             />

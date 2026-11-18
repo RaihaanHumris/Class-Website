@@ -1710,10 +1710,10 @@ export default function YearbookDesk() {
           </AnimatePresence>
         </div>
 
-        {/* Overview Mode Helper Controls (Bottom Left & Right) */}
+        {/* Overview Mode Helper Controls (Top Left & Bottom Right) */}
         {!focusedMember && (
           <>
-            <div className="absolute bottom-4 left-4 z-20 pointer-events-none hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900/80 backdrop-blur-md border border-white/10 text-xs text-zinc-300">
+            <div className="absolute top-4 left-4 z-20 pointer-events-none hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900/80 backdrop-blur-md border border-white/10 text-xs text-zinc-300">
               <span>Geser meja dengan mouse/sentuhan · Klik Polaroid mana saja untuk zoom fokus</span>
             </div>
 
