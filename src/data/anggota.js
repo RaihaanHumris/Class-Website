@@ -21,7 +21,7 @@ export const daftarAnggota = [
   { id: 15, nama: "Muhammad Rafsyan", peran: "Anggota", foto: "", minat: "Backend Developer", status: "aktif" },
   { id: 16, nama: "Mufidah Abdi Rasti", peran: "Anggota", foto: "", minat: "3D Game Asset & Art", status: "aktif" },
   { id: 17, nama: "Muhammad Raihaan Humris", peran: "Ketua Kelas", foto: "", minat: "Full-Stack & Software Eng.", status: "aktif" },
-  { id: 18, nama: "Nurmasita Ina Tena", peran: "Anggota", foto: "", minat: "Frontend Developer", status: "aktif" },
+  { id: 18, nama: "Nur Masitah Ina Tena", peran: "Anggota", foto: "", minat: "Frontend Developer", status: "aktif" },
   { id: 19, nama: "Putri Sazqiah", peran: "Anggota", foto: "", minat: "UI/UX Research", status: "aktif" },
   { id: 20, nama: "Salsabila", peran: "Anggota", foto: "", minat: "Game Programmer", status: "aktif" },
   { id: 21, nama: "Yunitha Olivia Putri", peran: "Sekretaris", foto: "", minat: "Database & Backend", status: "aktif" },

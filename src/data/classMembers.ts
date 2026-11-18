@@ -309,7 +309,7 @@ const RAW_MEMBERS: BaseMemberInput[] = [
     attendanceNumber: 18,
     badgeLabel: '#18',
     category: 'regular',
-    name: 'Nurmasita Ina Tena',
+    name: 'Nur Masitah Ina Tena',
     nickname: 'Sita',
     role: 'Anggota · Interface Builder',
     minat: 'Frontend Developer',
