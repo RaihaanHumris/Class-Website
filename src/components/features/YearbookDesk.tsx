@@ -632,7 +632,7 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
         e.stopPropagation();
         onToggleFlip();
       }}
-      className="pointer-events-auto w-[326px] sm:w-[376px] h-[438px] sm:h-[492px] max-h-full select-none cursor-pointer antialiased"
+      className="pointer-events-auto w-[min(86vw,320px)] sm:w-[376px] h-[min(58vh,420px)] sm:h-[492px] max-h-full select-none cursor-pointer antialiased"
     >
       <motion.div
         animate={{ rotateY: isFlipped ? 180 : 0 }}
@@ -1052,11 +1052,15 @@ export default function YearbookDesk() {
     refreshMemberPhotos();
   }, [refreshMemberPhotos]);
 
-  // Fit-to-viewport base scale for overview mode
+  // Fit-to-viewport base scale for overview mode (slightly zoomed in on portrait mobile so cards are legible)
   const baseOverviewScale = useMemo(() => {
-    const scaleX = (viewportSize.width - 32) / DESK_WIDTH;
-    const scaleY = (viewportSize.height - 96) / DESK_HEIGHT;
-    return Math.max(0.24, Math.min(0.85, Math.min(scaleX, scaleY)));
+    const isPortraitMobile = viewportSize.width < 640;
+    const scaleX = (viewportSize.width - 24) / DESK_WIDTH;
+    const scaleY = (viewportSize.height - 80) / DESK_HEIGHT;
+    const rawFit = Math.min(scaleX, scaleY);
+    return isPortraitMobile
+      ? Math.max(0.32, Math.min(0.65, rawFit * 1.45))
+      : Math.max(0.24, Math.min(0.85, rawFit));
   }, [viewportSize]);
 
   const overviewScale = Math.min(1.15, Math.max(0.22, baseOverviewScale * manualZoomMultiplier));
@@ -1379,42 +1383,44 @@ export default function YearbookDesk() {
           </div>
 
           {/* Action Shortcuts + Search */}
-          <div className="flex flex-wrap items-center gap-2">
-            {firstRegular && (
-              <button
-                type="button"
-                onClick={() => focusMember(firstRegular)}
-                className="min-h-[38px] px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-white text-zinc-900 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
-              >
-                <span className="font-mono font-bold">#01</span>
-                <span>Mulai Urut Absen (#01)</span>
-              </button>
-            )}
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5 sm:pb-0">
+              {firstRegular && (
+                <button
+                  type="button"
+                  onClick={() => focusMember(firstRegular)}
+                  className="min-h-[38px] px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-white text-zinc-900 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+                >
+                  <span className="font-mono font-bold">#01</span>
+                  <span>Urut Absen (#01)</span>
+                </button>
+              )}
 
-            {firstSpecial && (
-              <button
-                type="button"
-                onClick={() => focusMember(firstSpecial)}
-                className="min-h-[38px] px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/40 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
-              >
-                <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                <span>Murid Spesial (#23–25)</span>
-              </button>
-            )}
+              {firstSpecial && (
+                <button
+                  type="button"
+                  onClick={() => focusMember(firstSpecial)}
+                  className="min-h-[38px] px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/40 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+                >
+                  <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                  <span>Murid Spesial (#23–25)</span>
+                </button>
+              )}
 
-            {homeroomTeacher && (
-              <button
-                type="button"
-                onClick={() => focusMember(homeroomTeacher)}
-                className="min-h-[38px] px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
-              >
-                <Crown className="w-3.5 h-3.5 text-amber-300" />
-                <span>Wali Kelas</span>
-              </button>
-            )}
+              {homeroomTeacher && (
+                <button
+                  type="button"
+                  onClick={() => focusMember(homeroomTeacher)}
+                  className="min-h-[38px] px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+                >
+                  <Crown className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Wali Kelas</span>
+                </button>
+              )}
+            </div>
 
             {/* Quick Search */}
-            <div className="relative flex-1 sm:flex-none sm:w-60">
+            <div className="relative w-full sm:w-60">
               <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
@@ -1430,7 +1436,7 @@ export default function YearbookDesk() {
                   }
                 }}
                 placeholder="Cari nama atau #01..#25..."
-                className="w-full min-h-[38px] pl-8 pr-8 py-1.5 rounded-lg bg-zinc-900 border border-white/15 focus:border-cyan-400 focus:outline-none text-xs text-white placeholder:text-zinc-500"
+                className="w-full min-h-[40px] sm:min-h-[38px] pl-8 pr-8 py-1.5 rounded-lg bg-zinc-900 border border-white/15 focus:border-cyan-400 focus:outline-none text-xs text-white placeholder:text-zinc-500"
               />
               {searchQuery && (
                 <button
@@ -1448,7 +1454,7 @@ export default function YearbookDesk() {
 
               {/* Search Dropdown */}
               {searchOpen && searchQuery.trim().length > 0 && (
-                <div className="absolute right-0 mt-2 w-72 max-h-72 overflow-y-auto rounded-xl bg-zinc-900 border border-white/15 shadow-2xl z-50 divide-y divide-white/5">
+                <div className="absolute left-0 right-0 sm:left-auto sm:right-0 mt-2 sm:w-72 max-h-72 overflow-y-auto rounded-xl bg-zinc-900 border border-white/15 shadow-2xl z-50 divide-y divide-white/5">
                   {searchResults.length === 0 ? (
                     <div className="p-3.5 text-xs text-zinc-400 text-center">
                       Tidak ditemukan profil dengan kata kunci tersebut.
@@ -1504,7 +1510,7 @@ export default function YearbookDesk() {
           }
         }}
         style={{ touchAction: focusedMember ? 'auto' : 'none' }}
-        className={`relative w-full h-[640px] sm:h-[700px] lg:h-[760px] overflow-hidden select-none bg-[#120c08] ${
+        className={`relative w-full h-[540px] sm:h-[700px] lg:h-[760px] overflow-hidden select-none bg-[#120c08] ${
           focusedMember
             ? 'cursor-zoom-out'
             : isDraggingDesk
@@ -1694,7 +1700,7 @@ export default function YearbookDesk() {
         </div>
 
         {/* Native 1:1 Crisp Focused Polaroid Stage (Zero CSS scale blur, full readable back) */}
-        <div className="absolute inset-x-0 top-3 bottom-[84px] z-30 flex items-center justify-center pointer-events-none px-4">
+        <div className="absolute inset-x-0 top-2 bottom-[112px] sm:top-3 sm:bottom-[84px] z-30 flex items-center justify-center pointer-events-none px-3 sm:px-4">
           <AnimatePresence mode="wait">
             {focusedMember && (
               <FocusedPolaroidCard
@@ -1710,14 +1716,15 @@ export default function YearbookDesk() {
           </AnimatePresence>
         </div>
 
-        {/* Overview Mode Helper Controls (Top Left & Bottom Right) */}
+        {/* Overview Mode Helper Controls (Top Left & Top/Bottom Right) */}
         {!focusedMember && (
           <>
-            <div className="absolute top-4 left-4 z-20 pointer-events-none hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900/80 backdrop-blur-md border border-white/10 text-xs text-zinc-300">
-              <span>Geser meja dengan mouse/sentuhan · Klik Polaroid mana saja untuk zoom fokus</span>
+            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 pointer-events-none flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-zinc-900/80 backdrop-blur-md border border-white/10 text-[11px] sm:text-xs text-zinc-300">
+              <span className="sm:hidden">Geser meja · Ketuk Polaroid untuk detail</span>
+              <span className="hidden sm:inline">Geser meja dengan mouse/sentuhan · Klik Polaroid mana saja untuk zoom fokus</span>
             </div>
 
-            <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 p-1.5 rounded-xl bg-zinc-900/85 backdrop-blur-md border border-white/10">
+            <div className="absolute top-3 right-3 sm:top-auto sm:bottom-4 sm:right-4 z-20 flex items-center gap-1 p-1 sm:p-1.5 rounded-xl bg-zinc-900/85 backdrop-blur-md border border-white/10">
               <button
                 type="button"
                 onClick={(e) => {
@@ -1725,7 +1732,7 @@ export default function YearbookDesk() {
                   setManualZoomMultiplier((m) => Math.max(0.65, Number((m - 0.18).toFixed(2))));
                 }}
                 aria-label="Perkecil meja"
-                className="w-9 h-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-zinc-200 cursor-pointer"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-zinc-200 cursor-pointer"
               >
                 <ZoomOut className="w-4 h-4" />
               </button>
@@ -1736,7 +1743,7 @@ export default function YearbookDesk() {
                   resetOverviewView();
                 }}
                 aria-label="Reset tampilan meja"
-                className="px-2.5 h-9 rounded-lg hover:bg-white/10 flex items-center gap-1 text-xs font-mono text-zinc-200 cursor-pointer"
+                className="px-2 sm:px-2.5 h-8 sm:h-9 rounded-lg hover:bg-white/10 flex items-center gap-1 text-[11px] sm:text-xs font-mono text-zinc-200 cursor-pointer"
               >
                 <Maximize2 className="w-3.5 h-3.5" />
                 <span>Reset</span>
@@ -1748,7 +1755,7 @@ export default function YearbookDesk() {
                   setManualZoomMultiplier((m) => Math.min(1.9, Number((m + 0.18).toFixed(2))));
                 }}
                 aria-label="Perbesar meja"
-                className="w-9 h-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-zinc-200 cursor-pointer"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-zinc-200 cursor-pointer"
               >
                 <ZoomIn className="w-4 h-4" />
               </button>
@@ -1765,40 +1772,40 @@ export default function YearbookDesk() {
               exit={{ opacity: 0, y: 24 }}
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
-              className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-24px)] max-w-3xl bg-zinc-900/85 backdrop-blur-md border border-white/10 rounded-2xl p-2.5 sm:px-4 sm:py-2.5 shadow-2xl"
+              className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-20px)] max-w-3xl bg-zinc-900/90 backdrop-blur-md border border-white/10 rounded-2xl p-2 sm:px-4 sm:py-2.5 shadow-2xl"
             >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                {/* Left: Prev & Position */}
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                {/* Row 1 (Mobile) / Left (Desktop): Prev & Position & Next */}
+                <div className="flex items-center justify-between sm:justify-start gap-2">
                   <button
                     type="button"
                     onClick={() => stepSequential(-1)}
-                    className="min-h-[40px] px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
+                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     <span className="hidden sm:inline">Sebelumnya</span>
                   </button>
 
-                  <div className="px-2.5 py-1 rounded-lg bg-black/40 border border-white/10 text-xs font-mono text-stone-200 tabular-nums whitespace-nowrap">
+                  <div className="flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-[11px] sm:text-xs font-mono text-stone-200 tabular-nums truncate">
                     {positionDescription}
                   </div>
 
                   <button
                     type="button"
                     onClick={() => stepSequential(1)}
-                    className="min-h-[40px] px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
+                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
                   >
                     <span className="hidden sm:inline">Berikutnya</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
 
-                {/* Right: Flip, Upload Photo, Back to Desk */}
+                {/* Row 2 (Mobile) / Right (Desktop): Flip, Upload Photo, Back to Desk */}
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <button
                     type="button"
                     onClick={() => setIsFlipped((prev) => !prev)}
-                    className={`min-h-[40px] px-3 py-1.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
+                    className={`flex-1 sm:flex-initial justify-center min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
                       isFlipped
                         ? 'bg-cyan-500 text-zinc-950'
                         : 'bg-white/10 hover:bg-white/20 text-white'
@@ -1811,21 +1818,21 @@ export default function YearbookDesk() {
                   <button
                     type="button"
                     onClick={() => openUploadModal(focusedMember)}
-                    className="min-h-[40px] px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-400/35 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
+                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-400/35 text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">
-                      {approvedPhotos[focusedMember.memberKey] ? 'Ganti Foto' : 'Upload Foto'}
+                    <span>
+                      {approvedPhotos[focusedMember.memberKey] ? 'Ganti' : 'Foto'}
                     </span>
                   </button>
 
                   <button
                     type="button"
                     onClick={exitFocus}
-                    className="min-h-[40px] px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-white text-zinc-900 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
+                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-white text-zinc-900 text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
                   >
                     <LayoutGrid className="w-3.5 h-3.5" />
-                    <span>Kembali ke Meja</span>
+                    <span>Meja</span>
                   </button>
                 </div>
               </div>

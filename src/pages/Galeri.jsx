@@ -40,16 +40,16 @@ export default function Galeri() {
   return (
     <div className="w-full bg-[#FAF8F3] min-h-screen pb-16">
       {/* Header Editorial Galeri Kenangan */}
-      <section className="bg-[#050e29] text-white py-12 sm:py-14 border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-          <div className="space-y-2.5 max-w-2xl">
+      <section className="bg-[#050e29] text-white py-8 sm:py-14 border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+          <div className="space-y-2 max-w-2xl">
             <p className="text-xs font-medium text-[#90E0EF]">
               Buku Tahunan 3D &amp; Arsip Foto · {infoKelas.nama} {infoKelas.sekolah}
             </p>
-            <h1 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-semibold text-white tracking-tight">
+            <h1 className="font-editorial text-2xl sm:text-4xl lg:text-5xl font-semibold text-white tracking-tight">
               Galeri Buku Kenangan 3D
             </h1>
-            <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
+            <p className="text-xs sm:text-base text-slate-300 leading-relaxed">
               Jelajahi seluruh foto kenangan dalam animasi buku album 3D interaktif lengkap dengan halaman polaroid kelas.
             </p>
           </div>
@@ -57,16 +57,16 @@ export default function Galeri() {
           <div className="flex items-center gap-3 shrink-0">
             <Link
               to="/kirim-foto"
-              className="min-h-[44px] px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#03045E] text-xs sm:text-sm font-bold inline-flex items-center gap-1.5 transition-colors whitespace-nowrap"
+              className="w-full sm:w-auto justify-center min-h-[44px] px-4 py-2.5 sm:py-2 rounded-xl sm:rounded-lg bg-amber-500 hover:bg-amber-400 text-[#03045E] text-xs sm:text-sm font-bold inline-flex items-center gap-1.5 transition-colors whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
-              <span>Tambah Foto</span>
+              <span>Tambah Foto Kenangan</span>
             </Link>
           </div>
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 space-y-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-5 sm:pt-8 space-y-6 sm:space-y-8">
         {/* 3D Yearbook Book Animation Stage */}
         <GalleryBook3DStage
           photos={combinedAlbum}

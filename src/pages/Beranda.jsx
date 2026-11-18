@@ -89,40 +89,40 @@ export default function Beranda() {
 
       {/* 2. Full-Width 4-Column Yearbook Summary Strip */}
       <section className="bg-white border-b border-slate-200/80">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 divide-y lg:divide-y-0 lg:divide-x divide-slate-200/80">
-            <div className="pt-2 lg:pt-0 lg:pr-6">
-              <span className="font-editorial text-2xl sm:text-3xl font-semibold text-[#03045E] tabular-nums block">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:divide-x divide-slate-200/80">
+            <div className="p-3.5 sm:p-0 rounded-xl sm:rounded-none bg-[#FAF8F3]/65 sm:bg-transparent border border-slate-200/80 sm:border-0 lg:pr-6">
+              <span className="font-editorial text-xl sm:text-3xl font-semibold text-[#03045E] tabular-nums block">
                 {allMemories.length} Foto
               </span>
-              <span className="text-xs text-slate-500 mt-1 block">
+              <span className="text-[11px] sm:text-xs text-slate-500 mt-1 block leading-snug">
                 Momen terdokumentasi di album kelas
               </span>
             </div>
 
-            <div className="pt-2 lg:pt-0 lg:px-6">
-              <span className="font-editorial text-2xl sm:text-3xl font-semibold text-[#03045E] tabular-nums block">
+            <div className="p-3.5 sm:p-0 rounded-xl sm:rounded-none bg-[#FAF8F3]/65 sm:bg-transparent border border-slate-200/80 sm:border-0 lg:px-6">
+              <span className="font-editorial text-xl sm:text-3xl font-semibold text-[#03045E] tabular-nums block">
                 {siswaAktif.length} Siswa
               </span>
-              <span className="text-xs text-slate-500 mt-1 block">
+              <span className="text-[11px] sm:text-xs text-slate-500 mt-1 block leading-snug">
                 Angkatan aktif kelas XII PPLG 3
               </span>
             </div>
 
-            <div className="pt-4 lg:pt-0 lg:px-6">
-              <span className="font-editorial text-2xl sm:text-3xl font-semibold text-amber-700 tabular-nums block">
+            <div className="p-3.5 sm:p-0 rounded-xl sm:rounded-none bg-[#FAF8F3]/65 sm:bg-transparent border border-slate-200/80 sm:border-0 lg:px-6">
+              <span className="font-editorial text-xl sm:text-3xl font-semibold text-amber-700 tabular-nums block">
                 {sahabatPindah.length} Sahabat
               </span>
-              <span className="text-xs text-slate-500 mt-1 block">
+              <span className="text-[11px] sm:text-xs text-slate-500 mt-1 block leading-snug">
                 Pernah bersama sebelum pindah sekolah
               </span>
             </div>
 
-            <div className="pt-4 lg:pt-0 lg:pl-6">
-              <span className="font-editorial text-2xl sm:text-3xl font-semibold text-[#03045E] tabular-nums block">
+            <div className="p-3.5 sm:p-0 rounded-xl sm:rounded-none bg-[#FAF8F3]/65 sm:bg-transparent border border-slate-200/80 sm:border-0 lg:pl-6">
+              <span className="font-editorial text-xl sm:text-3xl font-semibold text-[#03045E] tabular-nums block">
                 {infoKelas.tahunAjaran}
               </span>
-              <span className="text-xs text-slate-500 mt-1 block">
+              <span className="text-[11px] sm:text-xs text-slate-500 mt-1 block leading-snug">
                 Tiga tahun kebersamaan di {infoKelas.sekolah}
               </span>
             </div>
@@ -222,13 +222,13 @@ export default function Beranda() {
           ))}
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200/70">
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-200/70">
           <p className="text-xs text-slate-500">
             Punya foto momen kelas yang belum masuk album? Ajukan agar Admin menayangkannya.
           </p>
           <Link
             to="/kirim-foto"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#03045E] hover:bg-[#0077B6] text-white text-xs font-semibold transition-colors min-h-[40px]"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-xl sm:rounded-lg bg-[#03045E] hover:bg-[#0077B6] text-white text-xs font-semibold transition-colors min-h-[44px] sm:min-h-[40px]"
           >
             <Camera className="w-4 h-4" />
             <span>Ajukan Tambah Foto</span>
@@ -275,7 +275,7 @@ export default function Beranda() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="p-6 space-y-2 flex-1 flex flex-col">
+              <div className="p-5 sm:p-6 space-y-2 flex-1 flex flex-col">
                 <span className="text-xs font-mono font-medium text-[#0077B6]">
                   {item.fase}
                 </span>
@@ -293,20 +293,20 @@ export default function Beranda() {
 
       {/* 6. Pesan Wali Kelas */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-6">
-        <div className="rounded-3xl bg-[#050e29] text-white p-8 sm:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-8 space-y-4">
-            <Quote className="w-8 h-8 text-amber-400" />
-            <blockquote className="font-editorial text-xl sm:text-2xl text-white leading-relaxed">
+        <div className="rounded-2xl sm:rounded-3xl bg-[#050e29] text-white p-5 sm:p-10 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
+          <div className="lg:col-span-8 space-y-3.5 sm:space-y-4">
+            <Quote className="w-7 h-7 sm:w-8 sm:h-8 text-amber-400" />
+            <blockquote className="font-editorial text-lg sm:text-2xl text-white leading-relaxed">
               “{infoKelas.waliKelas.sambutan}”
             </blockquote>
-            <div className="pt-2 text-xs sm:text-sm text-[#90E0EF]">
+            <div className="pt-1 sm:pt-2 text-xs sm:text-sm text-[#90E0EF]">
               <strong className="text-white font-semibold">{infoKelas.waliKelas.nama}</strong>
               <span className="mx-2" aria-hidden="true">·</span>
               <span>{infoKelas.waliKelas.peran} {infoKelas.sekolah}</span>
             </div>
           </div>
 
-          <div className="lg:col-span-4 rounded-2xl overflow-hidden border border-white/15 aspect-[4/3] bg-[#0d1f4f]">
+          <div className="lg:col-span-4 rounded-2xl overflow-hidden border border-white/15 aspect-[16/10] sm:aspect-[4/3] bg-[#0d1f4f]">
             <img
               src="/images/kenangan/hari-pahlawan.jpg"
               alt="Foto kenangan Hari Pahlawan keluarga besar XII PPLG 3"

@@ -6,8 +6,8 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#050e29] text-white border-t border-white/10 mt-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+    <footer className="bg-[#050e29] text-white border-t border-white/10 mt-10 sm:mt-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-32 lg:py-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           {/* Identitas Album Kenangan */}
           <div className="md:col-span-5 space-y-2.5">

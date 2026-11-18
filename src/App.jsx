@@ -36,7 +36,7 @@ export default function App() {
       <ScrollToTop />
       <div className="min-h-screen flex flex-col bg-[#FAF8F3] text-slate-800 font-sans selection:bg-[#00B4D8]/30 selection:text-[#03045E]">
         <Navbar />
-        <main className="flex-1 pt-16 md:pt-[72px]">
+        <main className="flex-1 lg:pt-[72px]">
           <Routes>
             <Route path="/" element={<Beranda />} />
             <Route path="/galeri" element={<Galeri />} />

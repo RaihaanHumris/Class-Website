@@ -128,7 +128,7 @@ export default function HeroLaptopFolder() {
   return (
     <div className="w-full max-w-[540px] mx-auto lg:ml-auto select-none">
       {/* Bagian Layar Laptop (Screen Lid) */}
-      <div className="relative rounded-t-2xl bg-[#101c3d] p-2 sm:p-2.5 border-2 border-[#334b80] shadow-[0_24px_60px_rgba(0,0,0,0.65)]">
+      <div className="relative rounded-t-2xl bg-[#101c3d] p-1.5 sm:p-2.5 border-2 border-[#334b80] shadow-[0_24px_60px_rgba(0,0,0,0.65)]">
         {/* Titik Kamera Webcam di Bezel Atas */}
         <div className="flex items-center justify-center mb-1.5">
           <span
@@ -142,7 +142,7 @@ export default function HeroLaptopFolder() {
         {/* Layar Desktop & Jendela Folder XII PPLG 3 */}
         <div className="rounded-lg overflow-hidden bg-[#06102b] border border-white/15">
           {/* Top Bar OS Mini */}
-          <div className="px-3 py-1.5 bg-[#03091d] border-b border-white/10 flex items-center justify-between text-[10px] font-mono text-slate-300">
+          <div className="px-2.5 sm:px-3 py-1.5 bg-[#03091d] border-b border-white/10 flex items-center justify-between text-[10px] font-mono text-slate-300">
             <div className="flex items-center gap-1.5">
               <Cpu className="w-3 h-3 text-[#00B4D8]" />
               <span className="font-semibold text-white">PPLG-OS</span>
@@ -151,9 +151,9 @@ export default function HeroLaptopFolder() {
           </div>
 
           {/* Jendela File Explorer yang sedang membuka Folder XII PPLG 3 */}
-          <div className="m-2 sm:m-2.5 rounded-lg bg-[#0b1b45] border border-[#00B4D8]/30 overflow-hidden shadow-inner">
+          <div className="m-1.5 sm:m-2.5 rounded-lg bg-[#0b1b45] border border-[#00B4D8]/30 overflow-hidden shadow-inner">
             {/* Titlebar Jendela Folder */}
-            <div className="px-3 py-2 bg-[#081538] border-b border-white/10 flex items-center justify-between gap-2">
+            <div className="px-2.5 sm:px-3 py-2 bg-[#081538] border-b border-white/10 flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5 shrink-0">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-400/90 inline-block" />
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400/90 inline-block" />
@@ -194,7 +194,7 @@ export default function HeroLaptopFolder() {
               </div>
 
               {/* Grid Isi File Folder XII PPLG 3 */}
-              <div className="col-span-12 sm:col-span-8 p-2.5">
+              <div className="col-span-12 sm:col-span-8 p-2 sm:p-2.5">
                 <div className="grid grid-cols-2 gap-1.5">
                   {FOLDER_FILES.map((file) => {
                     const Icon = file.icon;
@@ -204,23 +204,23 @@ export default function HeroLaptopFolder() {
                         key={file.id}
                         type="button"
                         onClick={() => setSelectedId(file.id)}
-                        className={`text-left p-2 rounded-lg border transition-colors cursor-pointer flex items-start gap-2 min-w-0 ${
+                        className={`text-left p-2 rounded-lg border transition-colors cursor-pointer flex items-center sm:items-start gap-2 min-w-0 min-h-[46px] ${
                           isSelected
                             ? 'bg-[#0077B6]/40 border-[#00B4D8] text-white'
                             : 'bg-[#081436]/80 border-white/10 text-slate-200 hover:bg-[#0f2357] hover:border-white/25'
                         }`}
                       >
                         <div
-                          className={`w-7 h-7 rounded-md border flex items-center justify-center shrink-0 ${file.badgeBg}`}
+                          className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md border flex items-center justify-center shrink-0 ${file.badgeBg}`}
                         >
                           <Icon className={`w-3.5 h-3.5 ${file.iconColor}`} />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-[11px] font-mono font-semibold truncate text-white">
+                          <p className="text-[10.5px] sm:text-[11px] font-mono font-semibold truncate text-white">
                             {file.name}
                           </p>
-                          <p className="text-[10px] text-slate-400 truncate">
-                            {file.kind} · {file.size}
+                          <p className="text-[9.5px] sm:text-[10px] text-slate-400 truncate">
+                            {file.kind}
                           </p>
                         </div>
                       </button>
@@ -231,8 +231,8 @@ export default function HeroLaptopFolder() {
             </div>
 
             {/* Panel Pratinjau Isi File Terpilih tentang PPLG 3 */}
-            <div className="px-3 py-2.5 bg-[#050d26] border-t border-white/10 space-y-1.5">
-              <div className="flex items-center justify-between gap-2">
+            <div className="px-2.5 sm:px-3 py-2.5 bg-[#050d26] border-t border-white/10 space-y-1.5">
+              <div className="flex flex-wrap items-center justify-between gap-1.5">
                 <p className="text-xs font-semibold text-[#90E0EF] truncate">
                   {activeFile.title}
                 </p>
@@ -244,9 +244,9 @@ export default function HeroLaptopFolder() {
                   <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
-              <div className="font-mono text-[10.5px] leading-relaxed text-slate-200 space-y-0.5">
+              <div className="font-mono text-[10px] sm:text-[10.5px] leading-relaxed text-slate-200 space-y-0.5">
                 {activeFile.lines.map((line, i) => (
-                  <p key={i} className="truncate">
+                  <p key={i} className="break-words sm:truncate">
                     {line}
                   </p>
                 ))}
@@ -256,9 +256,9 @@ export default function HeroLaptopFolder() {
         </div>
       </div>
 
-      {/* Bagian Bodi Bawah / Engsel Laptop */}
-      <div className="relative mx-[-10px] sm:mx-[-18px] h-4 sm:h-5 rounded-b-xl bg-gradient-to-b from-[#cbd5e1] via-[#94a3b8] to-[#475569] border-t border-white/50 shadow-xl flex items-start justify-center">
-        <div className="w-16 sm:w-20 h-1.5 rounded-b-md bg-[#334155]/90" />
+      {/* Bagian Bodi Bawah / Engsel Laptop (tanpa negative margin di mobile agar tidak overflow) */}
+      <div className="relative mx-0 sm:mx-[-18px] h-3.5 sm:h-5 rounded-b-xl bg-gradient-to-b from-[#cbd5e1] via-[#94a3b8] to-[#475569] border-t border-white/50 shadow-xl flex items-start justify-center">
+        <div className="w-14 sm:w-20 h-1.5 rounded-b-md bg-[#334155]/90" />
       </div>
       <div className="mx-6 h-2.5 rounded-full bg-black/45 blur-md" aria-hidden="true" />
     </div>

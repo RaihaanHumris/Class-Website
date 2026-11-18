@@ -147,8 +147,8 @@ export default function Lightbox({
         </div>
 
         {/* Caption & Keterangan Foto */}
-        <div className="mt-3 sm:mt-4 text-center px-4 max-w-2xl space-y-1">
-          <div className="flex items-center justify-center gap-2 text-xs text-[#90E0EF]">
+        <div className="mt-3 sm:mt-4 text-center px-3 sm:px-4 max-w-2xl space-y-1.5 w-full">
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-[#90E0EF]">
             <span className="font-semibold text-[#CAF0F8]">
               {currentImage.kategori}
             </span>
@@ -171,15 +171,37 @@ export default function Lightbox({
           </h3>
 
           {currentImage.deskripsi && (
-            <p className="text-xs sm:text-sm text-[#CAF0F8]/85 leading-relaxed max-w-xl mx-auto line-clamp-2 sm:line-clamp-none">
+            <p className="text-xs sm:text-sm text-[#CAF0F8]/85 leading-relaxed max-w-xl mx-auto line-clamp-3 sm:line-clamp-none">
               {currentImage.deskripsi}
             </p>
           )}
 
-          {/* Petunjuk Geser untuk Mobile */}
-          <div className="pt-1.5 flex items-center justify-center gap-1.5 text-[11px] text-[#90E0EF]/60 sm:hidden">
-            <span>⟵ Geser layar ke kiri atau kanan ⟶</span>
-          </div>
+          {/* Kontrol Geser & Tombol Cepat untuk Mobile */}
+          {images.length > 1 && (
+            <div className="pt-2 flex items-center justify-center gap-3 sm:hidden">
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer"
+                aria-label="Foto sebelumnya"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Sebelumnya</span>
+              </button>
+              <span className="text-[11px] text-[#90E0EF]/75 font-mono tabular-nums">
+                {currentIndex + 1} / {images.length}
+              </span>
+              <button
+                type="button"
+                onClick={handleNext}
+                className="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer"
+                aria-label="Foto berikutnya"
+              >
+                <span>Selanjutnya</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Tombol Navigasi Desktop / Tablet */}

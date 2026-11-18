@@ -57,11 +57,11 @@ export default function Anggota() {
             </p>
           </div>
 
-          <div className="inline-flex items-center p-1 rounded-xl bg-white/10 border border-white/15 self-start md:self-auto">
+          <div className="grid grid-cols-2 sm:inline-flex items-center p-1 rounded-xl bg-white/10 border border-white/15 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setViewMode('desk')}
-              className={`min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
+              className={`min-h-[40px] sm:min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
                 viewMode === 'desk'
                   ? 'bg-white text-[#03045E]'
                   : 'text-slate-200 hover:text-white'
@@ -73,7 +73,7 @@ export default function Anggota() {
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className={`min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
+              className={`min-h-[40px] sm:min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
                 viewMode === 'list'
                   ? 'bg-white text-[#03045E]'
                   : 'text-slate-200 hover:text-white'

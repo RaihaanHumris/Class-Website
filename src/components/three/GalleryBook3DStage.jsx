@@ -40,6 +40,14 @@ const CAMERA_PRESETS = {
   },
 };
 
+function getResponsiveDeskPos(width, height) {
+  const aspect = Math.max(0.45, (width || 960) / (height || 580));
+  if (aspect >= 1.15) return CAMERA_PRESETS.desk.pos;
+  // Pull camera back on portrait mobile viewports so the entire open 3D book fits cleanly
+  const scaleFactor = Math.min(1.55, Math.max(1.0, 1.12 / Math.max(0.62, aspect)));
+  return [0.0, 6.1 * scaleFactor, 5.75 * scaleFactor];
+}
+
 export default function GalleryBook3DStage({ photos = [], onSelectPhoto }) {
   const mountRef = useRef(null);
   const onSelectRef = useRef(onSelectPhoto);
@@ -95,7 +103,7 @@ export default function GalleryBook3DStage({ photos = [], onSelectPhoto }) {
     scene.fog = new THREE.FogExp2(0x1a120d, 0.032);
 
     const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-    camera.position.set(...CAMERA_PRESETS.desk.pos);
+    camera.position.set(...getResponsiveDeskPos(width, height));
 
     const renderer = new THREE.WebGLRenderer({
       antialias: !isSoftwareGl,
@@ -517,7 +525,7 @@ export default function GalleryBook3DStage({ photos = [], onSelectPhoto }) {
 
     // Camera transition state
     let camTransitioning = false;
-    _camTargetPos.set(...CAMERA_PRESETS.desk.pos);
+    _camTargetPos.set(...getResponsiveDeskPos(width, height));
     _camTargetLook.set(...CAMERA_PRESETS.desk.target);
 
     // Page flip state
@@ -704,9 +712,14 @@ export default function GalleryBook3DStage({ photos = [], onSelectPhoto }) {
       if (presetKey === 'desk') {
         setZoomedPhoto(null);
         setIsOverhead(false);
+        const w = container.clientWidth || 960;
+        const h = container.clientHeight || 580;
+        _camTargetPos.set(...getResponsiveDeskPos(w, h));
+        _camTargetLook.set(...preset.target);
+      } else {
+        _camTargetPos.set(...preset.pos);
+        _camTargetLook.set(...preset.target);
       }
-      _camTargetPos.set(...preset.pos);
-      _camTargetLook.set(...preset.target);
       if (prefersReducedMotion) {
         camera.position.copy(_camTargetPos);
         controls.target.copy(_camTargetLook);
@@ -965,50 +978,50 @@ export default function GalleryBook3DStage({ photos = [], onSelectPhoto }) {
     : -1;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Mode Switcher Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 sm:p-4 rounded-2xl border border-slate-200">
+        <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setViewMode('book')}
-            className={`min-h-[40px] px-4 py-2 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
+            className={`min-h-[42px] px-3 sm:px-4 py-2 rounded-xl sm:rounded-lg text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
               viewMode === 'book'
                 ? 'bg-[#03045E] text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
-            <BookOpen className="w-4 h-4 text-amber-400" />
-            <span>Album Meja Kayu 3D</span>
+            <BookOpen className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Album 3D</span>
           </button>
           <button
             type="button"
             onClick={() => setViewMode('grid')}
-            className={`min-h-[40px] px-4 py-2 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
+            className={`min-h-[42px] px-3 sm:px-4 py-2 rounded-xl sm:rounded-lg text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0 ${
               viewMode === 'grid'
                 ? 'bg-[#03045E] text-white'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
-            <LayoutGrid className="w-4 h-4" />
-            <span>Grid Album Lengkap</span>
+            <LayoutGrid className="w-4 h-4 shrink-0" />
+            <span>Grid Lengkap</span>
           </button>
         </div>
 
         {viewMode === 'book' && (
-          <div className="flex items-center gap-2.5 text-xs text-slate-600">
-            <span className="font-mono tabular-nums font-semibold text-[#03045E]">
+          <div className="flex items-center justify-between sm:justify-end gap-2 text-[11px] sm:text-xs text-slate-600 px-1 sm:px-0">
+            <span className="font-mono tabular-nums font-semibold text-[#03045E] shrink-0">
               Lembar {currentSpread + 1} / {totalSpreads}
             </span>
-            <span aria-hidden="true">·</span>
-            <span>Klik sisi kanan buku untuk balik halaman · Klik foto untuk zoom</span>
+            <span aria-hidden="true" className="hidden sm:inline">·</span>
+            <span className="truncate">Ketuk buku untuk balik halaman · Ketuk foto untuk zoom</span>
           </div>
         )}
       </div>
 
-      {/* 3D Book Stage — Tanpa Dock Kontrol Bawah, Interaksi Langsung */}
+      {/* 3D Book Stage — Ergonomic Mobile & Desktop Overlays */}
       {viewMode === 'book' ? (
-        <div className="relative w-full h-[560px] sm:h-[640px] rounded-2xl overflow-hidden bg-[#1a120d] border border-amber-900/30 shadow-2xl">
+        <div className="relative w-full h-[460px] sm:h-[640px] rounded-2xl overflow-hidden bg-[#1a120d] border border-amber-900/30 shadow-2xl">
           <div ref={mountRef} className="w-full h-full" />
 
           {contextLost && (
@@ -1017,26 +1030,20 @@ export default function GalleryBook3DStage({ photos = [], onSelectPhoto }) {
             </div>
           )}
 
-          {/* Top Bar Minimal: Info Foto + Tombol Sebelumnya / Selanjutnya Otomatis ke Foto */}
-          <div className="absolute top-3 inset-x-3 z-10 flex flex-wrap items-start justify-between gap-2 pointer-events-none">
-            <div className="flex flex-wrap items-center gap-2 pointer-events-auto">
-              <div className="bg-[#18100b]/94 border border-amber-500/25 rounded-xl px-4 py-2 max-w-[260px] sm:max-w-sm">
-                <p className="text-[11px] font-mono text-amber-300">
+          {/* Top Bar Minimal: Info Foto + Tombol Layar Penuh / Kembali */}
+          <div className="absolute top-2.5 sm:top-3 inset-x-2.5 sm:inset-x-3 z-10 flex items-start justify-between gap-2 pointer-events-none">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pointer-events-auto max-w-full">
+              <div className="bg-[#18100b]/92 backdrop-blur-sm border border-amber-500/25 rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 max-w-[calc(100vw-48px)] sm:max-w-sm">
+                <p className="text-[10px] sm:text-[11px] font-mono text-amber-300 truncate">
                   {zoomedPhoto
-                    ? `Foto ${zoomedPhotoIdx + 1} / ${albumPhotos.length} · Klik lagi foto untuk Layar Penuh`
+                    ? `Foto ${zoomedPhotoIdx + 1} / ${albumPhotos.length} · Ketuk lagi untuk Layar Penuh`
                     : hoveredHint?.type === 'photo'
-                    ? 'Klik foto untuk zoom dari atas'
-                    : !isOverhead && (hoveredHint?.type === 'next' || hoveredHint?.type === 'prev')
-                    ? 'Klik buku untuk lihat tepat dari atas'
-                    : hoveredHint?.type === 'next'
-                    ? 'Klik sisi kanan untuk halaman selanjutnya'
-                    : hoveredHint?.type === 'prev'
-                    ? 'Klik sisi kiri untuk halaman sebelumnya'
+                    ? 'Ketuk foto untuk zoom dari atas'
                     : isOverhead
-                    ? 'Klik kanan/kiri buku: balik halaman · Klik foto: zoom'
-                    : 'Klik buku: lihat dari atas · Klik foto: zoom langsung'}
+                    ? 'Ketuk kanan/kiri: balik · Ketuk foto: zoom'
+                    : 'Ketuk buku: lihat atas · Ketuk foto: zoom'}
                 </p>
-                <p className="text-sm font-semibold text-white truncate mt-0.5">
+                <p className="text-xs sm:text-sm font-semibold text-white truncate mt-0.5">
                   {zoomedPhoto
                     ? zoomedPhoto.judul
                     : hoveredHint?.photo
@@ -1051,49 +1058,49 @@ export default function GalleryBook3DStage({ photos = [], onSelectPhoto }) {
                     <button
                       type="button"
                       onClick={() => onSelectPhoto && onSelectPhoto(zoomedPhoto)}
-                      className="min-h-[38px] px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#18100b] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap shadow-lg"
+                      className="min-h-[36px] sm:min-h-[38px] px-2.5 sm:px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#18100b] text-xs font-bold inline-flex items-center gap-1 cursor-pointer whitespace-nowrap shadow-lg"
                     >
                       <Maximize2 className="w-3.5 h-3.5" />
-                      <span>Layar Penuh</span>
+                      <span>Perbesar</span>
                     </button>
                   )}
                   <button
                     type="button"
                     onClick={() => bookApiRef.current?.resetDesk()}
-                    className="min-h-[38px] px-3 py-1.5 rounded-lg bg-[#18100b]/95 border border-amber-500/30 hover:bg-black text-amber-100 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap shadow-lg"
+                    className="min-h-[36px] sm:min-h-[38px] px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#18100b]/95 border border-amber-500/30 hover:bg-black text-amber-100 text-xs font-semibold inline-flex items-center gap-1 cursor-pointer whitespace-nowrap shadow-lg"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Kembali</span>
+                    <span>Meja</span>
                   </button>
                 </div>
               )}
             </div>
-
-            {/* Tombol Otomatis ke Foto Sebelumnya / Selanjutnya */}
-            {albumPhotos.length > 1 && (
-              <div className="pointer-events-auto flex items-center gap-1.5 bg-[#18100b]/94 border border-amber-500/25 rounded-xl p-1.5 shadow-xl">
-                <button
-                  type="button"
-                  onClick={() => bookApiRef.current?.stepPhoto(-1)}
-                  className="min-h-[36px] px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Sebelumnya</span>
-                </button>
-                <span className="px-2 font-mono text-xs font-semibold text-amber-100 tabular-nums whitespace-nowrap">
-                  {zoomedPhotoIdx !== -1 ? `${zoomedPhotoIdx + 1} / ${albumPhotos.length}` : `${albumPhotos.length} Foto`}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => bookApiRef.current?.stepPhoto(1)}
-                  className="min-h-[36px] px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
-                >
-                  <span>Selanjutnya</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
           </div>
+
+          {/* Tombol Otomatis ke Foto Sebelumnya / Selanjutnya (Bottom Thumb Zone di Mobile, Top Right di Desktop) */}
+          {albumPhotos.length > 1 && (
+            <div className="absolute bottom-2.5 inset-x-2.5 sm:inset-x-auto sm:bottom-auto sm:top-3 sm:right-3 z-10 pointer-events-auto flex items-center justify-between sm:justify-start gap-1.5 bg-[#18100b]/94 backdrop-blur-sm border border-amber-500/25 rounded-xl p-1.5 shadow-xl">
+              <button
+                type="button"
+                onClick={() => bookApiRef.current?.stepPhoto(-1)}
+                className="min-h-[38px] sm:min-h-[36px] px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Sebelumnya</span>
+              </button>
+              <span className="px-2 font-mono text-xs font-semibold text-amber-100 tabular-nums whitespace-nowrap">
+                {zoomedPhotoIdx !== -1 ? `${zoomedPhotoIdx + 1} / ${albumPhotos.length}` : `${albumPhotos.length} Foto`}
+              </span>
+              <button
+                type="button"
+                onClick={() => bookApiRef.current?.stepPhoto(1)}
+                className="min-h-[38px] sm:min-h-[36px] px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer whitespace-nowrap"
+              >
+                <span>Selanjutnya</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         /* Grid Album Lengkap */
