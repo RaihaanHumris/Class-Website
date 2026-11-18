@@ -12,6 +12,8 @@ import {
   Copy,
   AlertCircle,
   MessageSquare,
+  Users,
+  Camera,
 } from 'lucide-react';
 import {
   isSupabaseConfigured,
@@ -23,9 +25,12 @@ import {
   reviewPhotoSubmission,
   deletePhotoSubmission,
   adminPublishPhoto,
+  adminPublishMemberPhoto,
+  MEMBER_PHOTO_CATEGORY,
   fetchMemoryNotes,
   deleteMemoryNote,
 } from '../lib/supabase';
+import { sequentialMemberOrder } from '../data/classMembers';
 
 const SCHEMA_SQL_SNIPPET = `-- Jalankan di Supabase SQL Editor (lihat juga file /supabase/schema.sql)
 create table if not exists public.photo_memories (
@@ -53,7 +58,7 @@ export default function Admin() {
   const [signingIn, setSigningIn] = useState(false);
 
   // Admin data state
-  const [activeTab, setActiveTab] = useState('pending'); // 'pending' | 'all' | 'upload' | 'notes'
+  const [activeTab, setActiveTab] = useState('pending'); // 'pending' | 'students' | 'all' | 'upload' | 'notes'
   const [submissions, setSubmissions] = useState([]);
   const [notes, setNotes] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
@@ -61,6 +66,15 @@ export default function Admin() {
   const [actionErr, setActionErr] = useState('');
   const [adminNotesById, setAdminNotesById] = useState({});
   const [copiedSql, setCopiedSql] = useState(false);
+
+  // Direct student portrait publish state
+  const [selectedMemberKey, setSelectedMemberKey] = useState(
+    sequentialMemberOrder[0]?.memberKey || 'member-01'
+  );
+  const [studentFile, setStudentFile] = useState(null);
+  const [studentUrl, setStudentUrl] = useState('');
+  const [studentNote, setStudentNote] = useState('');
+  const [publishingStudent, setPublishingStudent] = useState(false);
 
   // Direct publish state
   const [pubJudul, setPubJudul] = useState('');
@@ -207,6 +221,40 @@ export default function Admin() {
     }
   };
 
+  const handleDirectStudentPublish = async (e) => {
+    e.preventDefault();
+    const targetMember = sequentialMemberOrder.find(
+      (m) => m.memberKey === selectedMemberKey
+    );
+    if (!targetMember) return;
+    setActionErr('');
+    setActionMsg('');
+    setPublishingStudent(true);
+    try {
+      const created = await adminPublishMemberPhoto({
+        memberKey: targetMember.memberKey,
+        memberName: targetMember.name,
+        badgeLabel: targetMember.badgeLabel,
+        catatan:
+          studentNote.trim() ||
+          `Foto profil Polaroid ${targetMember.name} (${targetMember.badgeLabel})`,
+        file: studentFile,
+        imageUrl: studentUrl,
+      });
+      setSubmissions((prev) => [created, ...prev]);
+      setStudentFile(null);
+      setStudentUrl('');
+      setStudentNote('');
+      setActionMsg(
+        `Foto profil untuk ${targetMember.badgeLabel} ${targetMember.name} langsung terpasang di Meja Kenangan!`
+      );
+    } catch (err) {
+      setActionErr(err.message);
+    } finally {
+      setPublishingStudent(false);
+    }
+  };
+
   const handleCopySql = async () => {
     try {
       await navigator.clipboard.writeText(SCHEMA_SQL_SNIPPET);
@@ -215,9 +263,26 @@ export default function Admin() {
     } catch {}
   };
 
-  const pendingItems = submissions.filter((s) => s.status === 'pending');
+  const eventSubmissions = submissions.filter(
+    (s) => s.kategori !== MEMBER_PHOTO_CATEGORY
+  );
+  const studentSubmissions = submissions.filter(
+    (s) => s.kategori === MEMBER_PHOTO_CATEGORY
+  );
+
+  const pendingItems = eventSubmissions.filter((s) => s.status === 'pending');
+  const pendingStudentItems = studentSubmissions.filter((s) => s.status === 'pending');
   const approvedItems = submissions.filter((s) => s.status === 'approved');
   const rejectedItems = submissions.filter((s) => s.status === 'rejected');
+
+  const approvedStudentByKey = {};
+  studentSubmissions
+    .filter((s) => s.status === 'approved')
+    .forEach((s) => {
+      if (s.tanggal && !approvedStudentByKey[s.tanggal]) {
+        approvedStudentByKey[s.tanggal] = s;
+      }
+    });
 
   return (
     <div className="w-full bg-[#FAF8F3] min-h-screen pb-16">
@@ -367,7 +432,7 @@ export default function Admin() {
               <div className="p-5 rounded-2xl bg-white border border-slate-200/80">
                 <p className="text-xs text-slate-500">Menunggu Persetujuan</p>
                 <p className="font-editorial text-3xl font-semibold text-amber-600 mt-1 tabular-nums">
-                  {pendingItems.length}
+                  {pendingItems.length + pendingStudentItems.length}
                 </p>
               </div>
               <div className="p-5 rounded-2xl bg-white border border-slate-200/80">
@@ -377,9 +442,9 @@ export default function Admin() {
                 </p>
               </div>
               <div className="p-5 rounded-2xl bg-white border border-slate-200/80">
-                <p className="text-xs text-slate-500">Ditolak</p>
-                <p className="font-editorial text-3xl font-semibold text-slate-700 mt-1 tabular-nums">
-                  {rejectedItems.length}
+                <p className="text-xs text-slate-500">Foto Profil Polaroid</p>
+                <p className="font-editorial text-3xl font-semibold text-[#0077B6] mt-1 tabular-nums">
+                  {Object.keys(approvedStudentByKey).length} / 26
                 </p>
               </div>
               <div className="p-5 rounded-2xl bg-white border border-slate-200/80">
@@ -406,9 +471,10 @@ export default function Admin() {
             {/* Tabs Navigasi Admin */}
             <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
               {[
-                { id: 'pending', label: `Antrean Apply (${pendingItems.length})`, icon: Clock },
+                { id: 'pending', label: `Antrean Foto Acara (${pendingItems.length})`, icon: Clock },
+                { id: 'students', label: `Kelola Foto Siswa (${pendingStudentItems.length})`, icon: Users },
                 { id: 'all', label: `Semua Foto DB (${submissions.length})`, icon: CheckCircle2 },
-                { id: 'upload', label: 'Unggah Langsung', icon: Upload },
+                { id: 'upload', label: 'Unggah Foto Acara', icon: Upload },
                 { id: 'notes', label: `Buku Kenangan (${notes.length})`, icon: MessageSquare },
               ].map((t) => {
                 const Icon = t.icon;
@@ -509,6 +575,213 @@ export default function Admin() {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Tab Baru: Kelola Foto Profil Siswa & Wali Kelas */}
+            {activeTab === 'students' && (
+              <div className="space-y-8">
+                {/* Bagian A: Antrean Persetujuan Kiriman Siswa */}
+                <div className="space-y-4">
+                  <div>
+                    <h2 className="font-editorial text-xl font-semibold text-[#03045E]">
+                      Antrean Foto Profil Siswa ({pendingStudentItems.length})
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Foto yang diunggah siswa dari Meja Kenangan membutuhkan persetujuan (apply) Admin sebelum tampil resmi untuk semua anggota kelas.
+                    </p>
+                  </div>
+
+                  {pendingStudentItems.length === 0 ? (
+                    <div className="p-8 rounded-2xl bg-white border border-slate-200 text-center space-y-1">
+                      <p className="font-semibold text-sm text-[#03045E]">
+                        Belum ada pengajuan foto profil baru dari siswa
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Ketika siswa mengunggah foto di kartu Polaroid Meja Kenangan, antreannya akan muncul di sini.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {pendingStudentItems.map((item) => (
+                        <article
+                          key={item.id}
+                          className="bg-white border border-amber-200 rounded-2xl overflow-hidden flex flex-col"
+                        >
+                          <div className="aspect-[4/4] bg-slate-100 overflow-hidden">
+                            <img
+                              src={item.image_url}
+                              alt={item.judul}
+                              referrerPolicy="no-referrer"
+                              className="w-full h-full object-cover object-top"
+                            />
+                          </div>
+                          <div className="p-4 space-y-2.5 flex-1 flex flex-col justify-between">
+                            <div>
+                              <span className="font-mono text-[11px] font-bold text-[#0077B6]">
+                                {item.tanggal} · Pengirim: {item.pengirim_nama}
+                              </span>
+                              <h3 className="font-heading font-bold text-sm text-[#03045E] mt-0.5">
+                                {item.judul}
+                              </h3>
+                              <p className="text-xs text-slate-600 mt-1">{item.deskripsi}</p>
+                            </div>
+                            <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                              <button
+                                type="button"
+                                onClick={() => handleReview(item.id, 'approved')}
+                                className="flex-1 min-h-[38px] px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold inline-flex items-center justify-center gap-1 cursor-pointer"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Apply Foto</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleReview(item.id, 'rejected')}
+                                className="min-h-[38px] px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold inline-flex items-center justify-center gap-1 cursor-pointer"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                                <span>Tolak</span>
+                              </button>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Bagian B: Form Unggah Langsung Foto Siswa oleh Admin */}
+                <form
+                  onSubmit={handleDirectStudentPublish}
+                  className="bg-white border border-slate-200/80 rounded-2xl p-6 space-y-4"
+                >
+                  <div className="flex items-center gap-2">
+                    <Camera className="w-5 h-5 text-[#0077B6]" />
+                    <h2 className="font-editorial text-xl font-semibold text-[#03045E]">
+                      Pasang / Ganti Foto Polaroid Langsung (Admin)
+                    </h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-[#03045E] mb-1.5">
+                        Pilih Anggota / Wali Kelas (26 Profil)
+                      </label>
+                      <select
+                        value={selectedMemberKey}
+                        onChange={(e) => setSelectedMemberKey(e.target.value)}
+                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-300 bg-[#FAF8F3] min-h-[44px]"
+                      >
+                        {sequentialMemberOrder.map((m) => (
+                          <option key={m.memberKey} value={m.memberKey}>
+                            {m.badgeLabel} — {m.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[#03045E] mb-1.5">
+                        Catatan Singkat (opsional)
+                      </label>
+                      <input
+                        type="text"
+                        value={studentNote}
+                        onChange={(e) => setStudentNote(e.target.value)}
+                        placeholder="Mis: Foto resmi yearbook 2026"
+                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-300 bg-[#FAF8F3] min-h-[44px]"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setStudentFile(e.target.files?.[0] || null)}
+                      className="text-xs text-slate-600"
+                    />
+                    <input
+                      type="url"
+                      value={studentUrl}
+                      onChange={(e) => setStudentUrl(e.target.value)}
+                      placeholder="Atau tautan URL foto portrait..."
+                      className="px-3.5 py-2.5 text-sm rounded-lg border border-slate-300 bg-[#FAF8F3] min-h-[44px]"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={publishingStudent}
+                    className="min-h-[42px] px-5 py-2 rounded-lg bg-[#03045E] hover:bg-[#0077B6] disabled:opacity-60 text-white text-xs font-semibold cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>{publishingStudent ? 'Memasang...' : 'Apply & Pasang ke Meja Kenangan'}</span>
+                  </button>
+                </form>
+
+                {/* Bagian C: Status 26 Slot Profil Meja Kenangan */}
+                <div className="space-y-3">
+                  <h3 className="font-heading font-bold text-base text-[#03045E]">
+                    Daftar 26 Slot Profil Meja Kenangan
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    {sequentialMemberOrder.map((m) => {
+                      const activePhoto = approvedStudentByKey[m.memberKey];
+                      return (
+                        <div
+                          key={m.memberKey}
+                          className="bg-white border border-slate-200/80 rounded-xl p-3 flex items-center gap-3"
+                        >
+                          <div className="w-12 h-14 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                            {activePhoto ? (
+                              <img
+                                src={activePhoto.image_url}
+                                alt={m.name}
+                                referrerPolicy="no-referrer"
+                                className="w-full h-full object-cover object-top"
+                              />
+                            ) : (
+                              <Camera className="w-4 h-4 text-slate-400" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-[#03045E]">
+                                {m.badgeLabel}
+                              </span>
+                              <span
+                                className={`text-[10px] font-semibold ${
+                                  activePhoto ? 'text-emerald-700' : 'text-slate-400'
+                                }`}
+                              >
+                                {activePhoto ? 'Terpasang' : 'Kosong'}
+                              </span>
+                            </div>
+                            <p className="text-xs font-bold text-[#03045E] truncate mt-1">
+                              {m.name}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedMemberKey(m.memberKey)}
+                                className="text-[11px] font-semibold text-[#0077B6] hover:underline cursor-pointer"
+                              >
+                                {activePhoto ? 'Ganti' : 'Pasang Foto'}
+                              </button>
+                              {activePhoto && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePhoto(activePhoto.id)}
+                                  className="text-[11px] font-semibold text-rose-600 hover:underline cursor-pointer"
+                                >
+                                  Hapus
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
 

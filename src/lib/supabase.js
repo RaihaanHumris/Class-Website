@@ -68,8 +68,10 @@ async function uploadPhotoFile(file, folder = 'submissions') {
   return data.publicUrl;
 }
 
+export const MEMBER_PHOTO_CATEGORY = 'Foto Profil Siswa';
+
 /**
- * Ambil seluruh foto kenangan yang telah disetujui (approved) oleh Admin
+ * Ambil seluruh foto kenangan acara kelas yang telah disetujui (approved) oleh Admin
  */
 export async function fetchApprovedPhotos() {
   if (!supabase) return [];
@@ -77,6 +79,7 @@ export async function fetchApprovedPhotos() {
     .from('photo_memories')
     .select('*')
     .eq('status', 'approved')
+    .neq('kategori', MEMBER_PHOTO_CATEGORY)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -96,6 +99,135 @@ export async function fetchApprovedPhotos() {
     isFromDatabase: true,
     createdAt: row.created_at,
   }));
+}
+
+/**
+ * Ambil foto profil Polaroid seluruh siswa & wali kelas yang telah disetujui Admin
+ * Mengembalikan map { [memberKey]: { imageUrl, caption, approvedAt, rowId } }
+ */
+export async function fetchApprovedMemberPhotos() {
+  if (!supabase) return {};
+  const { data, error } = await supabase
+    .from('photo_memories')
+    .select('*')
+    .eq('status', 'approved')
+    .eq('kategori', MEMBER_PHOTO_CATEGORY)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw new Error(`Gagal memuat foto profil siswa: ${error.message}`);
+  }
+
+  const map = {};
+  (data || []).forEach((row) => {
+    const key = row.tanggal;
+    if (key && !map[key]) {
+      map[key] = {
+        rowId: row.id,
+        imageUrl: row.image_url,
+        caption: row.deskripsi,
+        approvedAt: row.reviewed_at || row.created_at,
+      };
+    }
+  });
+  return map;
+}
+
+/**
+ * Siswa: Ajukan foto profil Polaroid pribadi (status default: 'pending' menunggu apply Admin)
+ */
+export async function submitMemberPhoto({
+  memberKey,
+  memberName,
+  badgeLabel,
+  pengirimNama,
+  catatan,
+  file,
+  imageUrl,
+}) {
+  const client = ensureClient();
+  let finalImageUrl = (imageUrl || '').trim();
+
+  if (file) {
+    finalImageUrl = await uploadPhotoFile(file, 'submissions');
+  }
+
+  if (!finalImageUrl) {
+    throw new Error('Silakan pilih file foto atau masukkan URL gambar yang valid.');
+  }
+
+  const safeTitle = `Foto ${badgeLabel} · ${memberName}`.slice(0, 140);
+  const safeDescRaw = (catatan || `Pengajuan foto profil Polaroid untuk ${memberName}`).trim();
+  const safeDesc = safeDescRaw.length >= 5 ? safeDescRaw.slice(0, 800) : `${safeDescRaw} (XII PPLG 3)`;
+  const safeSender = (pengirimNama || memberName).trim().slice(0, 80);
+
+  const { data, error } = await client
+    .from('photo_memories')
+    .insert({
+      judul: safeTitle,
+      kategori: MEMBER_PHOTO_CATEGORY,
+      tanggal: memberKey,
+      deskripsi: safeDesc,
+      pengirim_nama: safeSender.length >= 2 ? safeSender : 'Siswa PPLG 3',
+      image_url: finalImageUrl,
+      status: 'pending',
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Gagal mengirim pengajuan foto siswa: ${error.message}`);
+  }
+
+  return data;
+}
+
+/**
+ * Admin: Unggah & langsung pasang (apply) foto profil Polaroid siswa
+ */
+export async function adminPublishMemberPhoto({
+  memberKey,
+  memberName,
+  badgeLabel,
+  catatan,
+  file,
+  imageUrl,
+}) {
+  const client = ensureClient();
+  let finalImageUrl = (imageUrl || '').trim();
+
+  if (file) {
+    finalImageUrl = await uploadPhotoFile(file, 'submissions');
+  }
+
+  if (!finalImageUrl) {
+    throw new Error('Silakan pilih file foto atau masukkan URL gambar yang valid.');
+  }
+
+  const safeTitle = `Foto ${badgeLabel} · ${memberName}`.slice(0, 140);
+  const safeDescRaw = (catatan || `Foto profil Polaroid ${memberName} (XII PPLG 3)`).trim();
+  const safeDesc = safeDescRaw.length >= 5 ? safeDescRaw.slice(0, 800) : `${safeDescRaw} (XII PPLG 3)`;
+
+  const { data, error } = await client
+    .from('photo_memories')
+    .insert({
+      judul: safeTitle,
+      kategori: MEMBER_PHOTO_CATEGORY,
+      tanggal: memberKey,
+      deskripsi: safeDesc,
+      pengirim_nama: 'Admin XII PPLG 3',
+      image_url: finalImageUrl,
+      status: 'approved',
+      reviewed_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Gagal memasang foto siswa: ${error.message}`);
+  }
+
+  return data;
 }
 
 /**
