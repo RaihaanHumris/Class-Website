@@ -195,16 +195,16 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
     : 'w-[226px] h-[292px]';
 
   const frontFrameClass = isTeacher
-    ? 'bg-zinc-900 text-stone-100 border-2 border-emerald-400/80 shadow-[0_24px_55px_-12px_rgba(16,185,129,0.28)]'
+    ? 'bg-[#050e29] text-white border-2 border-[#00B4D8]/80 shadow-[0_24px_55px_-12px_rgba(0,180,216,0.3)]'
     : isSpecial
-    ? 'bg-zinc-900 text-stone-100 border-2 border-amber-400/75 shadow-[0_22px_48px_-12px_rgba(245,158,11,0.25)]'
-    : 'bg-stone-100 text-zinc-900 border border-stone-300/90 shadow-[0_18px_36px_-10px_rgba(0,0,0,0.68)]';
+    ? 'bg-gradient-to-br from-amber-50 via-[#FAF8F3] to-amber-100/80 text-[#03045E] border-2 border-amber-400/90 shadow-[0_22px_48px_-12px_rgba(245,158,11,0.3)]'
+    : 'bg-[#FAF8F3] text-[#03045E] border border-slate-200/90 shadow-[0_18px_36px_-10px_rgba(3,4,94,0.55)]';
 
   const backFrameClass = isTeacher
-    ? 'bg-zinc-900 text-stone-100 border-2 border-emerald-400/80 shadow-[0_24px_55px_-12px_rgba(16,185,129,0.28)]'
+    ? 'bg-[#050e29] text-white border-2 border-[#00B4D8]/80 shadow-[0_24px_55px_-12px_rgba(0,180,216,0.3)]'
     : isSpecial
-    ? 'bg-zinc-900 text-stone-100 border-2 border-amber-400/75 shadow-[0_22px_48px_-12px_rgba(245,158,11,0.25)]'
-    : 'bg-[#F5F1E8] text-zinc-900 border border-stone-300 shadow-[0_18px_36px_-10px_rgba(0,0,0,0.68)]';
+    ? 'bg-gradient-to-br from-amber-50 via-[#FAF8F3] to-amber-100/80 text-[#03045E] border-2 border-amber-400/90 shadow-[0_22px_48px_-12px_rgba(245,158,11,0.3)]'
+    : 'bg-white text-[#03045E] border border-slate-200 shadow-[0_18px_36px_-10px_rgba(3,4,94,0.55)]';
 
   return (
     <motion.div
@@ -280,10 +280,10 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
             <div
               className={`relative w-3.5 h-3.5 rounded-full border shadow-md flex items-center justify-center ${
                 isTeacher
-                  ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-700 border-emerald-200/80'
+                  ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 border-[#90E0EF]'
                   : isSpecial
-                  ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 border-amber-100/80'
-                  : 'bg-gradient-to-br from-white via-stone-200 to-stone-500 border-white/90'
+                  ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 border-amber-100'
+                  : 'bg-gradient-to-br from-white via-[#CAF0F8] to-[#0077B6] border-white'
               }`}
             >
               <span className="w-1 h-1 rounded-full bg-white/80 -translate-x-[1px] -translate-y-[1px]" />
@@ -295,17 +295,17 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
             {/* Corner Badge */}
             <div className="shrink-0 flex items-center justify-between gap-1.5 mb-2">
               {isTeacher ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 whitespace-nowrap">
-                  <Crown className="w-3 h-3 text-amber-300" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider bg-[#00B4D8]/20 text-[#90E0EF] border border-[#00B4D8]/45 whitespace-nowrap">
+                  <Crown className="w-3 h-3 text-amber-400" />
                   <span>WALI KELAS</span>
                 </span>
               ) : isSpecial ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/45 whitespace-nowrap">
-                  <Star className="w-3 h-3 fill-amber-300 text-amber-300" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider bg-amber-500/15 text-amber-900 border border-amber-400/60 whitespace-nowrap">
+                  <Star className="w-3 h-3 fill-amber-500 text-amber-600" />
                   <span>{member.badgeLabel} MURID SPESIAL</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-zinc-900 text-stone-100 tracking-tight">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#03045E] text-white tracking-tight tabular-nums">
                   {member.badgeLabel}
                 </span>
               )}
@@ -313,7 +313,7 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
               {isPendingOnly && (
                 <span
                   title="Menunggu Apply Admin"
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-400/40 whitespace-nowrap"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-500/20 text-amber-700 border border-amber-400/50 whitespace-nowrap"
                 >
                   <Clock className="w-2.5 h-2.5" />
                   <span>Pending</span>
@@ -324,9 +324,11 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
             {/* Portrait Window */}
             <div
               className={`relative w-full flex-1 min-h-0 overflow-hidden rounded-[2px] ${
-                isTeacher || isSpecial
-                  ? 'bg-zinc-800 border border-white/10'
-                  : 'bg-zinc-200 border border-stone-300'
+                isTeacher
+                  ? 'bg-[#0d1f4f] border border-white/15'
+                  : isSpecial
+                  ? 'bg-amber-100/70 border border-amber-300/70'
+                  : 'bg-slate-100 border border-slate-200'
               }`}
             >
               {showImage ? (
@@ -342,7 +344,7 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
                     }`}
                   />
                   {isPendingOnly && (
-                    <div className="absolute inset-x-0 bottom-0 z-10 bg-zinc-950/85 px-2 py-1 text-[9px] text-amber-300 font-medium text-center">
+                    <div className="absolute inset-x-0 bottom-0 z-10 bg-[#050e29]/90 px-2 py-1 text-[9px] text-amber-300 font-medium text-center">
                       Menunggu Apply Admin
                     </div>
                   )}
@@ -351,19 +353,19 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
                 <div
                   className={`w-full h-full flex flex-col items-center justify-center px-3 text-center gap-2 ${
                     isTeacher
-                      ? 'bg-gradient-to-br from-emerald-950/90 via-zinc-900 to-zinc-950 text-emerald-200'
+                      ? 'bg-gradient-to-br from-[#0d1f4f] via-[#071436] to-[#050e29] text-[#90E0EF]'
                       : isSpecial
-                      ? 'bg-gradient-to-br from-amber-950/75 via-zinc-900 to-zinc-950 text-amber-200'
-                      : 'bg-gradient-to-br from-stone-200 via-stone-300/70 to-stone-200 text-zinc-700'
+                      ? 'bg-gradient-to-br from-amber-100/80 via-[#FAF8F3] to-amber-200/60 text-amber-900'
+                      : 'bg-gradient-to-br from-[#CAF0F8]/55 via-[#FAF8F3] to-slate-200/75 text-[#03045E]'
                   }`}
                 >
                   <div
-                    className={`w-14 h-14 rounded-full flex items-center justify-center font-editorial font-bold text-lg tracking-wide border ${
+                    className={`w-14 h-14 rounded-full flex items-center justify-center font-editorial font-bold text-lg tracking-wide border-2 ${
                       isTeacher
-                        ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-200'
+                        ? 'bg-[#0077B6]/30 border-[#90E0EF]/50 text-white'
                         : isSpecial
-                        ? 'bg-amber-500/15 border-amber-400/40 text-amber-200'
-                        : 'bg-white/80 border-stone-400/50 text-zinc-800'
+                        ? 'bg-gradient-to-br from-amber-500 to-amber-700 border-amber-200 text-white'
+                        : 'bg-[#03045E] border-[#90E0EF] text-white'
                     }`}
                   >
                     {getInitials(member.name)}
@@ -380,10 +382,10 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
                       }}
                       className={`mt-1 inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-semibold transition-colors cursor-pointer ${
                         isTeacher
-                          ? 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-200 border border-emerald-400/40'
+                          ? 'bg-[#00B4D8] hover:bg-[#90E0EF] text-[#03045E]'
                           : isSpecial
-                          ? 'bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/40'
-                          : 'bg-zinc-900 hover:bg-zinc-800 text-stone-100'
+                          ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                          : 'bg-[#03045E] hover:bg-[#0077B6] text-white'
                       }`}
                     >
                       <Camera className="w-3 h-3" />
@@ -400,7 +402,7 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
             <div className="min-w-0">
               <p
                 className={`font-editorial font-semibold leading-tight truncate ${
-                  isTeacher ? 'text-[15px] text-white' : isSpecial ? 'text-[14px] text-amber-50' : 'text-[13px] text-zinc-900'
+                  isTeacher ? 'text-[15px] text-white' : isSpecial ? 'text-[14px] text-[#03045E]' : 'text-[13px] text-[#03045E]'
                 }`}
               >
                 {member.name}
@@ -408,10 +410,10 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
               <p
                 className={`text-[10px] truncate mt-0.5 ${
                   isTeacher
-                    ? 'text-emerald-300/90'
+                    ? 'text-[#90E0EF]'
                     : isSpecial
-                    ? 'text-amber-300/90'
-                    : 'text-zinc-600'
+                    ? 'text-amber-800'
+                    : 'text-[#0077B6]'
                 }`}
               >
                 {member.role}
@@ -420,9 +422,11 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
             {isFocused && (
               <span
                 className={`shrink-0 text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                  isTeacher || isSpecial
-                    ? 'bg-white/10 text-stone-300'
-                    : 'bg-zinc-200 text-zinc-700'
+                  isTeacher
+                    ? 'bg-white/10 text-[#90E0EF]'
+                    : isSpecial
+                    ? 'bg-amber-200/70 text-amber-900'
+                    : 'bg-[#03045E]/10 text-[#03045E]'
                 }`}
               >
                 Klik Balik
@@ -448,16 +452,16 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
                 <span
                   className={`inline-block font-mono text-[9px] font-bold uppercase tracking-wider ${
                     isTeacher
-                      ? 'text-emerald-300'
+                      ? 'text-[#90E0EF]'
                       : isSpecial
-                      ? 'text-amber-300'
-                      : 'text-zinc-500'
+                      ? 'text-amber-800'
+                      : 'text-[#0077B6]'
                   }`}
                 >
                   {isTeacher
-                    ? '👑 WALI KELAS · CENTERPIECE'
+                    ? 'WALI KELAS · CENTERPIECE'
                     : isSpecial
-                    ? `★ ${member.badgeLabel} · MURID SPESIAL`
+                    ? `${member.badgeLabel} · MURID SPESIAL`
                     : `${member.badgeLabel} · XII PPLG 3`}
                 </span>
                 <h4 className="font-editorial font-semibold text-sm leading-snug mt-0.5 truncate">
@@ -471,24 +475,24 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
               /* Wali Kelas Back Content */
               <div className="space-y-2 text-[11px] leading-relaxed">
                 <div>
-                  <p className="text-[9px] uppercase tracking-wider font-mono text-emerald-300/90 flex items-center gap-1">
+                  <p className="text-[9px] uppercase tracking-wider font-mono text-[#90E0EF] flex items-center gap-1">
                     <BookOpen className="w-2.5 h-2.5" />
                     <span>Pembinaan &amp; Peran</span>
                   </p>
-                  <p className="text-stone-200 mt-0.5">{member.subject}</p>
+                  <p className="text-slate-200 mt-0.5">{member.subject}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] uppercase tracking-wider font-mono text-emerald-300/90">
+                  <p className="text-[9px] uppercase tracking-wider font-mono text-[#90E0EF]">
                     Pesan &amp; Nasihat
                   </p>
-                  <p className="italic text-stone-100 mt-0.5">“{member.quote}”</p>
+                  <p className="italic text-white mt-0.5">“{member.quote}”</p>
                 </div>
                 <div>
-                  <p className="text-[9px] uppercase tracking-wider font-mono text-amber-300/90 flex items-center gap-1">
+                  <p className="text-[9px] uppercase tracking-wider font-mono text-amber-300 flex items-center gap-1">
                     <Heart className="w-2.5 h-2.5" />
                     <span>Ucapan Terima Kasih Kelas</span>
                   </p>
-                  <p className="text-stone-300 mt-0.5">{member.thanksMessage}</p>
+                  <p className="text-slate-300 mt-0.5">{member.thanksMessage}</p>
                 </div>
               </div>
             ) : (
@@ -497,8 +501,8 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
                 <div
                   className={`p-2 rounded border ${
                     isSpecial
-                      ? 'bg-amber-500/10 border-amber-400/30 text-amber-100'
-                      : 'bg-white/75 border-stone-300/80 text-zinc-800'
+                      ? 'bg-white/85 border-amber-300/80 text-slate-700'
+                      : 'bg-[#FAF8F3] border-slate-200/90 text-slate-700'
                   }`}
                 >
                   <p className="italic">“{member.quote}”</p>
@@ -507,13 +511,13 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
                 <div>
                   <p
                     className={`text-[9px] uppercase tracking-wider font-mono flex items-center gap-1 ${
-                      isSpecial ? 'text-amber-300' : 'text-zinc-500'
+                      isSpecial ? 'text-amber-800' : 'text-[#0077B6]'
                     }`}
                   >
                     <Target className="w-2.5 h-2.5" />
                     <span>Cita-cita</span>
                   </p>
-                  <p className={isSpecial ? 'text-stone-100 font-medium' : 'text-zinc-900 font-medium'}>
+                  <p className="text-[#03045E] font-medium">
                     {member.futureGoal}
                   </p>
                 </div>
@@ -521,13 +525,13 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
                 <div>
                   <p
                     className={`text-[9px] uppercase tracking-wider font-mono flex items-center gap-1 ${
-                      isSpecial ? 'text-amber-300' : 'text-zinc-500'
+                      isSpecial ? 'text-amber-800' : 'text-[#0077B6]'
                     }`}
                   >
                     <Sparkles className="w-2.5 h-2.5" />
                     <span>Kenangan Favorit</span>
                   </p>
-                  <p className={isSpecial ? 'text-stone-300' : 'text-zinc-700'}>
+                  <p className="text-slate-600">
                     {member.favoriteMemory}
                   </p>
                 </div>
@@ -540,14 +544,14 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
             {member.instagram ? (
               <span
                 className={`inline-flex items-center gap-1 font-mono truncate ${
-                  isSpecial ? 'text-amber-300' : 'text-zinc-700'
+                  isSpecial ? 'text-amber-800' : 'text-[#0077B6]'
                 }`}
               >
                 <Instagram className="w-3 h-3 shrink-0" />
                 <span className="truncate">{member.instagram}</span>
               </span>
             ) : (
-              <span className="font-mono text-emerald-300/90 text-[9px]">
+              <span className="font-mono text-[#90E0EF] text-[9px]">
                 MAKN Ende · 2023–2026
               </span>
             )}
@@ -560,10 +564,10 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
               }}
               className={`shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded font-semibold cursor-pointer transition-colors ${
                 isTeacher
-                  ? 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-200'
+                  ? 'bg-[#00B4D8] hover:bg-[#90E0EF] text-[#03045E]'
                   : isSpecial
-                  ? 'bg-amber-500/20 hover:bg-amber-500/35 text-amber-200'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-stone-100'
+                  ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                  : 'bg-[#03045E] hover:bg-[#0077B6] text-white'
               }`}
             >
               <Upload className="w-2.5 h-2.5" />
@@ -609,16 +613,16 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
   const isSpecial = member.category === 'special';
 
   const frontFrameClass = isTeacher
-    ? 'bg-zinc-900 text-stone-100 border-2 border-emerald-400/85 shadow-[0_30px_70px_-12px_rgba(16,185,129,0.34)]'
+    ? 'bg-[#050e29] text-white border-2 border-[#00B4D8]/85 shadow-[0_30px_70px_-12px_rgba(0,180,216,0.34)]'
     : isSpecial
-    ? 'bg-zinc-900 text-stone-100 border-2 border-amber-400/80 shadow-[0_28px_65px_-12px_rgba(245,158,11,0.3)]'
-    : 'bg-stone-100 text-zinc-900 border border-stone-300 shadow-[0_28px_65px_-12px_rgba(0,0,0,0.8)]';
+    ? 'bg-gradient-to-br from-amber-50 via-[#FAF8F3] to-amber-100/85 text-[#03045E] border-2 border-amber-400/90 shadow-[0_28px_65px_-12px_rgba(245,158,11,0.34)]'
+    : 'bg-[#FAF8F3] text-[#03045E] border border-slate-200 shadow-[0_28px_65px_-12px_rgba(3,4,94,0.72)]';
 
   const backFrameClass = isTeacher
-    ? 'bg-zinc-900 text-stone-100 border-2 border-emerald-400/85 shadow-[0_30px_70px_-12px_rgba(16,185,129,0.34)]'
+    ? 'bg-[#050e29] text-white border-2 border-[#00B4D8]/85 shadow-[0_30px_70px_-12px_rgba(0,180,216,0.34)]'
     : isSpecial
-    ? 'bg-zinc-900 text-stone-100 border-2 border-amber-400/80 shadow-[0_28px_65px_-12px_rgba(245,158,11,0.3)]'
-    : 'bg-[#F5F1E8] text-zinc-900 border border-stone-300 shadow-[0_28px_65px_-12px_rgba(0,0,0,0.8)]';
+    ? 'bg-gradient-to-br from-amber-50 via-[#FAF8F3] to-amber-100/85 text-[#03045E] border-2 border-amber-400/90 shadow-[0_28px_65px_-12px_rgba(245,158,11,0.34)]'
+    : 'bg-white text-[#03045E] border border-slate-200 shadow-[0_28px_65px_-12px_rgba(3,4,94,0.72)]';
 
   return (
     <motion.div
@@ -662,10 +666,10 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
             <div
               className={`relative w-4 h-4 rounded-full border shadow-md flex items-center justify-center ${
                 isTeacher
-                  ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-700 border-emerald-200/80'
+                  ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 border-[#90E0EF]'
                   : isSpecial
-                  ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 border-amber-100/80'
-                  : 'bg-gradient-to-br from-white via-stone-200 to-stone-500 border-white/90'
+                  ? 'bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 border-amber-100'
+                  : 'bg-gradient-to-br from-white via-[#CAF0F8] to-[#0077B6] border-white'
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-white/85 -translate-x-[1px] -translate-y-[1px]" />
@@ -675,23 +679,23 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
           <div className="relative flex-1 flex flex-col min-h-0">
             <div className="flex items-center justify-between gap-2 mb-3">
               {isTeacher ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono font-bold tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/45 whitespace-nowrap">
-                  <Crown className="w-3.5 h-3.5 text-amber-300" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono font-bold tracking-wider bg-[#00B4D8]/20 text-[#90E0EF] border border-[#00B4D8]/45 whitespace-nowrap">
+                  <Crown className="w-3.5 h-3.5 text-amber-400" />
                   <span>WALI KELAS</span>
                 </span>
               ) : isSpecial ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono font-bold tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/45 whitespace-nowrap">
-                  <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono font-bold tracking-wider bg-amber-500/15 text-amber-900 border border-amber-400/60 whitespace-nowrap">
+                  <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
                   <span>{member.badgeLabel} MURID SPESIAL</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-mono font-bold bg-zinc-900 text-stone-100 tracking-tight">
+                <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-mono font-bold bg-[#03045E] text-white tracking-tight tabular-nums">
                   {member.badgeLabel}
                 </span>
               )}
 
               {isPendingOnly && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-400/40 whitespace-nowrap">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-700 border border-amber-400/50 whitespace-nowrap">
                   <Clock className="w-3 h-3" />
                   <span>Pending Apply</span>
                 </span>
@@ -700,9 +704,11 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
 
             <div
               className={`relative w-full flex-1 min-h-0 overflow-hidden rounded-[3px] ${
-                isTeacher || isSpecial
-                  ? 'bg-zinc-800 border border-white/10'
-                  : 'bg-zinc-200 border border-stone-300'
+                isTeacher
+                  ? 'bg-[#0d1f4f] border border-white/15'
+                  : isSpecial
+                  ? 'bg-amber-100/70 border border-amber-300/70'
+                  : 'bg-slate-100 border border-slate-200'
               }`}
             >
               {showImage ? (
@@ -718,7 +724,7 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
                     }`}
                   />
                   {isPendingOnly && (
-                    <div className="absolute inset-x-0 bottom-0 z-10 bg-zinc-950/90 px-3 py-1.5 text-[11px] text-amber-300 font-medium text-center">
+                    <div className="absolute inset-x-0 bottom-0 z-10 bg-[#050e29]/90 px-3 py-1.5 text-[11px] text-amber-300 font-medium text-center">
                       Menunggu Persetujuan Admin
                     </div>
                   )}
@@ -727,19 +733,19 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
                 <div
                   className={`w-full h-full flex flex-col items-center justify-center px-5 text-center gap-3 ${
                     isTeacher
-                      ? 'bg-gradient-to-br from-emerald-950/90 via-zinc-900 to-zinc-950 text-emerald-200'
+                      ? 'bg-gradient-to-br from-[#0d1f4f] via-[#071436] to-[#050e29] text-[#90E0EF]'
                       : isSpecial
-                      ? 'bg-gradient-to-br from-amber-950/75 via-zinc-900 to-zinc-950 text-amber-200'
-                      : 'bg-gradient-to-br from-stone-200 via-stone-300/70 to-stone-200 text-zinc-700'
+                      ? 'bg-gradient-to-br from-amber-100/80 via-[#FAF8F3] to-amber-200/60 text-amber-900'
+                      : 'bg-gradient-to-br from-[#CAF0F8]/55 via-[#FAF8F3] to-slate-200/75 text-[#03045E]'
                   }`}
                 >
                   <div
-                    className={`w-20 h-20 rounded-full flex items-center justify-center font-editorial font-bold text-2xl tracking-wide border ${
+                    className={`w-20 h-20 rounded-full flex items-center justify-center font-editorial font-bold text-2xl tracking-wide border-2 ${
                       isTeacher
-                        ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-200'
+                        ? 'bg-[#0077B6]/30 border-[#90E0EF]/50 text-white'
                         : isSpecial
-                        ? 'bg-amber-500/15 border-amber-400/40 text-amber-200'
-                        : 'bg-white/85 border-stone-400/50 text-zinc-800'
+                        ? 'bg-gradient-to-br from-amber-500 to-amber-700 border-amber-200 text-white'
+                        : 'bg-[#03045E] border-[#90E0EF] text-white'
                     }`}
                   >
                     {getInitials(member.name)}
@@ -756,10 +762,10 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
                       }}
                       className={`mt-1 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                         isTeacher
-                          ? 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-200 border border-emerald-400/40'
+                          ? 'bg-[#00B4D8] hover:bg-[#90E0EF] text-[#03045E]'
                           : isSpecial
-                          ? 'bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/40'
-                          : 'bg-zinc-900 hover:bg-zinc-800 text-stone-100'
+                          ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                          : 'bg-[#03045E] hover:bg-[#0077B6] text-white'
                       }`}
                     >
                       <Camera className="w-3.5 h-3.5" />
@@ -775,7 +781,7 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
             <div className="min-w-0">
               <p
                 className={`font-editorial font-semibold leading-tight truncate ${
-                  isTeacher ? 'text-xl text-white' : isSpecial ? 'text-lg text-amber-50' : 'text-lg text-zinc-900'
+                  isTeacher ? 'text-xl text-white' : isSpecial ? 'text-lg text-[#03045E]' : 'text-lg text-[#03045E]'
                 }`}
               >
                 {member.name}
@@ -783,10 +789,10 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
               <p
                 className={`text-xs truncate mt-0.5 ${
                   isTeacher
-                    ? 'text-emerald-300/95'
+                    ? 'text-[#90E0EF]'
                     : isSpecial
-                    ? 'text-amber-300/95'
-                    : 'text-zinc-600'
+                    ? 'text-amber-800'
+                    : 'text-[#0077B6]'
                 }`}
               >
                 {member.role}
@@ -794,9 +800,11 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
             </div>
             <span
               className={`shrink-0 text-[11px] font-mono px-2.5 py-1 rounded ${
-                isTeacher || isSpecial
-                  ? 'bg-white/10 text-stone-200'
-                  : 'bg-zinc-200/90 text-zinc-700'
+                isTeacher
+                  ? 'bg-white/10 text-[#90E0EF]'
+                  : isSpecial
+                  ? 'bg-amber-200/70 text-amber-900'
+                  : 'bg-[#03045E]/10 text-[#03045E]'
               }`}
             >
               Klik Balik
@@ -821,16 +829,16 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
                 <span
                   className={`inline-block font-mono text-[11px] font-bold uppercase tracking-wider ${
                     isTeacher
-                      ? 'text-emerald-300'
+                      ? 'text-[#90E0EF]'
                       : isSpecial
-                      ? 'text-amber-300'
-                      : 'text-zinc-500'
+                      ? 'text-amber-800'
+                      : 'text-[#0077B6]'
                   }`}
                 >
                   {isTeacher
-                    ? '👑 WALI KELAS · CENTERPIECE'
+                    ? 'WALI KELAS · CENTERPIECE'
                     : isSpecial
-                    ? `★ ${member.badgeLabel} · MURID SPESIAL`
+                    ? `${member.badgeLabel} · MURID SPESIAL`
                     : `${member.badgeLabel} · XII PPLG 3`}
                 </span>
                 <h4 className="font-editorial font-semibold text-xl leading-snug mt-0.5">
@@ -839,10 +847,10 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
                 <p
                   className={`text-xs mt-0.5 ${
                     isTeacher
-                      ? 'text-emerald-300/90'
+                      ? 'text-[#90E0EF]'
                       : isSpecial
-                      ? 'text-amber-300/90'
-                      : 'text-zinc-600'
+                      ? 'text-amber-800'
+                      : 'text-[#0077B6]'
                   }`}
                 >
                   {member.role}
@@ -854,24 +862,24 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
             {isTeacher ? (
               <div className="space-y-3 text-[13px] leading-relaxed">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider font-mono text-emerald-300 flex items-center gap-1.5">
+                  <p className="text-[10px] uppercase tracking-wider font-mono text-[#90E0EF] flex items-center gap-1.5">
                     <BookOpen className="w-3.5 h-3.5" />
                     <span>Pembinaan &amp; Peran</span>
                   </p>
-                  <p className="text-stone-100 mt-1 font-medium">{member.subject}</p>
+                  <p className="text-slate-100 mt-1 font-medium">{member.subject}</p>
                 </div>
-                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-400/25">
-                  <p className="text-[10px] uppercase tracking-wider font-mono text-emerald-300 mb-1">
+                <div className="p-3 rounded-lg bg-[#0d1f4f] border border-[#00B4D8]/30">
+                  <p className="text-[10px] uppercase tracking-wider font-mono text-[#90E0EF] mb-1">
                     Pesan &amp; Nasihat
                   </p>
-                  <p className="italic text-stone-100">“{member.quote}”</p>
+                  <p className="italic text-white">“{member.quote}”</p>
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-wider font-mono text-amber-300 flex items-center gap-1.5">
                     <Heart className="w-3.5 h-3.5" />
                     <span>Ucapan Terima Kasih Kelas</span>
                   </p>
-                  <p className="text-stone-200 mt-1">{member.thanksMessage}</p>
+                  <p className="text-slate-200 mt-1">{member.thanksMessage}</p>
                 </div>
               </div>
             ) : (
@@ -879,8 +887,8 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
                 <div
                   className={`p-3 rounded-lg border ${
                     isSpecial
-                      ? 'bg-amber-500/10 border-amber-400/30 text-amber-50'
-                      : 'bg-white/85 border-stone-300/90 text-zinc-800'
+                      ? 'bg-white/90 border-amber-300/80 text-slate-700'
+                      : 'bg-[#FAF8F3] border-slate-200/90 text-slate-700'
                   }`}
                 >
                   <p className="italic">“{member.quote}”</p>
@@ -889,17 +897,13 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
                 <div>
                   <p
                     className={`text-[10px] uppercase tracking-wider font-mono flex items-center gap-1.5 ${
-                      isSpecial ? 'text-amber-300' : 'text-zinc-500'
+                      isSpecial ? 'text-amber-800' : 'text-[#0077B6]'
                     }`}
                   >
                     <Target className="w-3.5 h-3.5" />
                     <span>Cita-cita</span>
                   </p>
-                  <p
-                    className={`mt-0.5 font-semibold ${
-                      isSpecial ? 'text-stone-100' : 'text-zinc-900'
-                    }`}
-                  >
+                  <p className="mt-0.5 font-semibold text-[#03045E]">
                     {member.futureGoal}
                   </p>
                 </div>
@@ -907,13 +911,13 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
                 <div>
                   <p
                     className={`text-[10px] uppercase tracking-wider font-mono flex items-center gap-1.5 ${
-                      isSpecial ? 'text-amber-300' : 'text-zinc-500'
+                      isSpecial ? 'text-amber-800' : 'text-[#0077B6]'
                     }`}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                     <span>Kenangan Favorit</span>
                   </p>
-                  <p className={`mt-0.5 ${isSpecial ? 'text-stone-200' : 'text-zinc-700'}`}>
+                  <p className="mt-0.5 text-slate-600">
                     {member.favoriteMemory}
                   </p>
                 </div>
@@ -925,14 +929,14 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
             {member.instagram ? (
               <span
                 className={`inline-flex items-center gap-1.5 font-mono truncate ${
-                  isSpecial ? 'text-amber-300' : 'text-zinc-700'
+                  isSpecial ? 'text-amber-800' : 'text-[#0077B6]'
                 }`}
               >
                 <Instagram className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{member.instagram}</span>
               </span>
             ) : (
-              <span className="font-mono text-emerald-300/90 text-[11px]">
+              <span className="font-mono text-[#90E0EF] text-[11px]">
                 MAKN Ende · 2023–2026
               </span>
             )}
@@ -945,10 +949,10 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
               }}
               className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold cursor-pointer transition-colors ${
                 isTeacher
-                  ? 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-200'
+                  ? 'bg-[#00B4D8] hover:bg-[#90E0EF] text-[#03045E]'
                   : isSpecial
-                  ? 'bg-amber-500/20 hover:bg-amber-500/35 text-amber-200'
-                  : 'bg-zinc-900 hover:bg-zinc-800 text-stone-100'
+                  ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                  : 'bg-[#03045E] hover:bg-[#0077B6] text-white'
               }`}
             >
               <Upload className="w-3.5 h-3.5" />
@@ -1351,32 +1355,32 @@ export default function YearbookDesk() {
   const positionDescription = useMemo(() => {
     if (!focusedMember) return '';
     if (focusedMember.category === 'homeroom_teacher') {
-      return `26 / 26 · 👑 Wali Kelas`;
+      return `26 / 26 · Wali Kelas`;
     }
     if (focusedMember.category === 'special') {
-      return `${sequentialIndex + 1} / 26 · ★ Murid Spesial ${focusedMember.badgeLabel}`;
+      return `${sequentialIndex + 1} / 26 · Murid Spesial ${focusedMember.badgeLabel}`;
     }
     return `${sequentialIndex + 1} / 26 · Absen ${focusedMember.badgeLabel}`;
   }, [focusedMember, sequentialIndex]);
 
   return (
-    <div className="relative w-full bg-zinc-950 text-stone-100 overflow-hidden border-y border-white/10">
+    <div className="relative w-full rounded-2xl sm:rounded-3xl bg-[#050e29] text-white overflow-hidden border border-slate-200/80 shadow-xl">
       {/* ================= TOP HEADER / SHORTCUTS BAR ================= */}
-      <div className="relative z-30 bg-zinc-950/90 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div className="relative z-30 bg-[#050e29]/95 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3.5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Title & Count */}
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-[11px] uppercase tracking-wider text-emerald-400 font-semibold">
+              <div className="flex items-center gap-2 text-[11px] font-mono">
+                <span className="text-[#90E0EF] font-semibold">
                   Meja Kenangan Digital
                 </span>
-                <span className="text-zinc-600" aria-hidden="true">·</span>
-                <span className="font-mono text-[11px] text-zinc-400 tabular-nums">
+                <span className="text-white/25" aria-hidden="true">·</span>
+                <span className="text-slate-300 tabular-nums">
                   26 Profil ({uploadedPhotoCount} Foto Terpasang)
                 </span>
               </div>
-              <h2 className="font-editorial text-lg sm:text-xl font-semibold text-white">
+              <h2 className="font-editorial text-lg sm:text-xl font-semibold text-white mt-0.5">
                 Polaroid Angkatan XII PPLG 3
               </h2>
             </div>
@@ -1389,7 +1393,7 @@ export default function YearbookDesk() {
                 <button
                   type="button"
                   onClick={() => focusMember(firstRegular)}
-                  className="min-h-[38px] px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-white text-zinc-900 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+                  className="min-h-[38px] px-3 py-1.5 rounded-lg bg-[#FAF8F3] hover:bg-white text-[#03045E] text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
                 >
                   <span className="font-mono font-bold">#01</span>
                   <span>Urut Absen (#01)</span>
@@ -1411,9 +1415,9 @@ export default function YearbookDesk() {
                 <button
                   type="button"
                   onClick={() => focusMember(homeroomTeacher)}
-                  className="min-h-[38px] px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
+                  className="min-h-[38px] px-3 py-1.5 rounded-lg bg-[#00B4D8]/15 hover:bg-[#00B4D8]/25 text-[#90E0EF] border border-[#00B4D8]/40 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap shrink-0"
                 >
-                  <Crown className="w-3.5 h-3.5 text-amber-300" />
+                  <Crown className="w-3.5 h-3.5 text-amber-400" />
                   <span>Wali Kelas</span>
                 </button>
               )}
@@ -1421,7 +1425,7 @@ export default function YearbookDesk() {
 
             {/* Quick Search */}
             <div className="relative w-full sm:w-60">
-              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
@@ -1436,7 +1440,7 @@ export default function YearbookDesk() {
                   }
                 }}
                 placeholder="Cari nama atau #01..#25..."
-                className="w-full min-h-[40px] sm:min-h-[38px] pl-8 pr-8 py-1.5 rounded-lg bg-zinc-900 border border-white/15 focus:border-cyan-400 focus:outline-none text-xs text-white placeholder:text-zinc-500"
+                className="w-full min-h-[40px] sm:min-h-[38px] pl-8 pr-8 py-1.5 rounded-lg bg-[#071436] border border-white/15 focus:border-[#00B4D8] focus:outline-none text-xs text-white placeholder:text-slate-400"
               />
               {searchQuery && (
                 <button
@@ -1446,7 +1450,7 @@ export default function YearbookDesk() {
                     setSearchOpen(false);
                   }}
                   aria-label="Hapus pencarian"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1 cursor-pointer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -1454,9 +1458,9 @@ export default function YearbookDesk() {
 
               {/* Search Dropdown */}
               {searchOpen && searchQuery.trim().length > 0 && (
-                <div className="absolute left-0 right-0 sm:left-auto sm:right-0 mt-2 sm:w-72 max-h-72 overflow-y-auto rounded-xl bg-zinc-900 border border-white/15 shadow-2xl z-50 divide-y divide-white/5">
+                <div className="absolute left-0 right-0 sm:left-auto sm:right-0 mt-2 sm:w-72 max-h-72 overflow-y-auto rounded-xl bg-[#071436] border border-white/15 shadow-2xl z-50 divide-y divide-white/10">
                   {searchResults.length === 0 ? (
-                    <div className="p-3.5 text-xs text-zinc-400 text-center">
+                    <div className="p-3.5 text-xs text-slate-300 text-center">
                       Tidak ditemukan profil dengan kata kunci tersebut.
                     </div>
                   ) : (
@@ -1471,17 +1475,17 @@ export default function YearbookDesk() {
                           <p className="text-xs font-semibold text-white truncate">
                             {m.name}
                           </p>
-                          <p className="text-[10px] text-zinc-400 truncate">
+                          <p className="text-[10px] text-slate-400 truncate">
                             {m.role}
                           </p>
                         </div>
                         <span
-                          className={`shrink-0 font-mono text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                          className={`shrink-0 font-mono text-[10px] px-1.5 py-0.5 rounded font-bold tabular-nums ${
                             m.category === 'homeroom_teacher'
-                              ? 'bg-emerald-500/20 text-emerald-300'
+                              ? 'bg-[#00B4D8]/20 text-[#90E0EF]'
                               : m.category === 'special'
                               ? 'bg-amber-500/20 text-amber-300'
-                              : 'bg-stone-100 text-zinc-900'
+                              : 'bg-[#FAF8F3] text-[#03045E]'
                           }`}
                         >
                           {m.badgeLabel}
@@ -1496,7 +1500,7 @@ export default function YearbookDesk() {
         </div>
       </div>
 
-      {/* ================= WOODEN DESK WORKBENCH STAGE ================= */}
+      {/* ================= MIDNIGHT NAVY MEMORY BOARD STAGE ================= */}
       <div
         ref={stageRef}
         onPointerDown={handlePointerDown}
@@ -1510,7 +1514,7 @@ export default function YearbookDesk() {
           }
         }}
         style={{ touchAction: focusedMember ? 'auto' : 'none' }}
-        className={`relative w-full h-[540px] sm:h-[700px] lg:h-[760px] overflow-hidden select-none bg-[#120c08] ${
+        className={`relative w-full h-[540px] sm:h-[680px] lg:h-[740px] overflow-hidden select-none bg-[#050e29] ${
           focusedMember
             ? 'cursor-zoom-out'
             : isDraggingDesk
@@ -1518,13 +1522,13 @@ export default function YearbookDesk() {
             : 'cursor-grab'
         }`}
       >
-        {/* Ambient Studio Room Shadow Around the Desk */}
+        {/* Ambient Midnight Ocean Studio Glow */}
         <div
           aria-hidden="true"
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'radial-gradient(circle at 50% 45%, rgba(60, 39, 24, 0.38) 0%, rgba(18, 12, 8, 0.72) 60%, rgba(7, 5, 3, 0.96) 100%)',
+              'radial-gradient(circle at 50% 45%, rgba(0, 119, 182, 0.24) 0%, rgba(7, 20, 54, 0.85) 60%, rgba(5, 14, 41, 0.98) 100%)',
           }}
         />
 
@@ -1561,23 +1565,23 @@ export default function YearbookDesk() {
               style={{
                 width: DESK_WIDTH,
                 height: DESK_HEIGHT,
-                backgroundColor: '#241811',
+                backgroundColor: '#071436',
                 backgroundImage: [
-                  'radial-gradient(ellipse at 50% 24%, rgba(255, 224, 178, 0.13) 0%, rgba(36, 24, 17, 0) 62%)',
-                  'repeating-linear-gradient(180deg, rgba(255, 218, 185, 0.03) 0px, rgba(255, 218, 185, 0.03) 2px, transparent 2px, transparent 156px, rgba(0, 0, 0, 0.36) 156px, rgba(0, 0, 0, 0.36) 160px)',
-                  'repeating-linear-gradient(90deg, rgba(255, 210, 165, 0.016) 0px, rgba(255, 210, 165, 0.016) 3px, rgba(0, 0, 0, 0.05) 3px, rgba(0, 0, 0, 0.05) 9px)',
+                  'radial-gradient(ellipse at 50% 24%, rgba(0, 180, 216, 0.16) 0%, rgba(7, 20, 54, 0) 62%)',
+                  'repeating-linear-gradient(180deg, rgba(144, 224, 239, 0.045) 0px, rgba(144, 224, 239, 0.045) 1px, transparent 1px, transparent 140px)',
+                  'repeating-linear-gradient(90deg, rgba(144, 224, 239, 0.045) 0px, rgba(144, 224, 239, 0.045) 1px, transparent 1px, transparent 140px)',
                 ].join(', '),
                 boxShadow:
-                  '0 50px 140px rgba(0,0,0,0.92), inset 0 0 180px rgba(0,0,0,0.68)',
+                  '0 50px 140px rgba(2, 6, 23, 0.88), inset 0 0 180px rgba(3, 4, 94, 0.55)',
               }}
-              className="relative rounded-2xl border-[14px] border-[#180f0a] ring-1 ring-amber-200/10 overflow-hidden"
+              className="relative rounded-2xl border-[12px] border-[#050e29] ring-1 ring-[#90E0EF]/20 overflow-hidden"
             >
-              {/* Brass Desk Corner Accents */}
+              {/* Brass & Sky Corner Accents */}
               <div aria-hidden="true" className="pointer-events-none">
-                <div className="absolute top-3 left-3 w-12 h-12 border-t-2 border-l-2 border-amber-400/25 rounded-tl-lg" />
-                <div className="absolute top-3 right-3 w-12 h-12 border-t-2 border-r-2 border-amber-400/25 rounded-tr-lg" />
-                <div className="absolute bottom-3 left-3 w-12 h-12 border-b-2 border-l-2 border-amber-400/25 rounded-bl-lg" />
-                <div className="absolute bottom-3 right-3 w-12 h-12 border-b-2 border-r-2 border-amber-400/25 rounded-br-lg" />
+                <div className="absolute top-3 left-3 w-12 h-12 border-t-2 border-l-2 border-[#00B4D8]/35 rounded-tl-lg" />
+                <div className="absolute top-3 right-3 w-12 h-12 border-t-2 border-r-2 border-[#00B4D8]/35 rounded-tr-lg" />
+                <div className="absolute bottom-3 left-3 w-12 h-12 border-b-2 border-l-2 border-[#00B4D8]/35 rounded-bl-lg" />
+                <div className="absolute bottom-3 right-3 w-12 h-12 border-b-2 border-r-2 border-[#00B4D8]/35 rounded-br-lg" />
               </div>
 
               {/* Subtle Desk Mat / Engraved Zones */}
@@ -1585,30 +1589,30 @@ export default function YearbookDesk() {
                 aria-hidden="true"
                 className="absolute left-1/2 -translate-x-1/2 top-[28px] text-center pointer-events-none"
               >
-                <span className="font-mono text-xs tracking-[0.28em] uppercase text-amber-200/55">
-                  ★ Centerpiece · Wali Kelas XII PPLG 3 ★
+                <span className="font-mono text-xs tracking-[0.26em] uppercase text-[#90E0EF]/75">
+                  Centerpiece · Wali Kelas XII PPLG 3
                 </span>
               </div>
 
               <div
                 aria-hidden="true"
-                className="absolute left-1/2 -translate-x-1/2 top-[382px] w-[1420px] h-[390px] rounded-3xl border border-amber-400/15 bg-amber-950/15 pointer-events-none flex justify-center pt-3"
+                className="absolute left-1/2 -translate-x-1/2 top-[382px] w-[1420px] h-[390px] rounded-3xl border border-amber-400/25 bg-amber-500/[0.06] pointer-events-none flex justify-center pt-3"
               >
-                <span className="font-mono text-xs tracking-[0.26em] uppercase text-amber-200/55">
-                  ★ Zona Kehormatan · Murid Spesial Tak Terlupakan (#23 – #25) ★
+                <span className="font-mono text-xs tracking-[0.24em] uppercase text-amber-300/80">
+                  Zona Kehormatan · Murid Spesial Tak Terlupakan (#23 – #25)
                 </span>
               </div>
 
               <div
                 aria-hidden="true"
-                className="absolute left-1/2 -translate-x-1/2 top-[798px] w-[2420px] h-[870px] rounded-3xl border border-amber-100/[0.08] bg-black/15 pointer-events-none flex justify-center pt-3"
+                className="absolute left-1/2 -translate-x-1/2 top-[798px] w-[2420px] h-[870px] rounded-3xl border border-[#90E0EF]/15 bg-[#050e29]/35 pointer-events-none flex justify-center pt-3"
               >
-                <span className="font-mono text-xs tracking-[0.26em] uppercase text-stone-300/45">
+                <span className="font-mono text-xs tracking-[0.24em] uppercase text-[#90E0EF]/65">
                   Siswa Reguler XII PPLG 3 (Absen #01 – #22)
                 </span>
               </div>
 
-              {/* White Connecting Cotton Strings Layer (Tali Putih Antar Polaroid) */}
+              {/* White-Sky Connecting Cotton Strings Layer (Tali Putih Antar Polaroid) */}
               <svg
                 width={DESK_WIDTH}
                 height={DESK_HEIGHT}
@@ -1651,27 +1655,27 @@ export default function YearbookDesk() {
                         transition: 'opacity 280ms ease',
                       }}
                     >
-                      {/* Cast Shadow of White String on Wood Surface */}
+                      {/* Cast Shadow of String on Midnight Board */}
                       <path
                         d={edge.shadowD}
                         fill="none"
-                        stroke="rgba(0, 0, 0, 0.58)"
+                        stroke="rgba(2, 6, 23, 0.65)"
                         strokeWidth={strokeWidth + 1.4}
                         strokeLinecap="round"
                       />
-                      {/* Primary White Cotton Cord */}
+                      {/* Primary Mist-White Cotton Cord */}
                       <path
                         d={edge.d}
                         fill="none"
-                        stroke={isConnectedToFocused ? '#FFFFFF' : '#F5F5F4'}
+                        stroke={isConnectedToFocused ? '#FFFFFF' : '#CAF0F8'}
                         strokeWidth={strokeWidth}
                         strokeLinecap="round"
                       />
-                      {/* Subtle Twine Fiber Highlight */}
+                      {/* Subtle Sky Fiber Highlight */}
                       <path
                         d={edge.d}
                         fill="none"
-                        stroke="rgba(255, 255, 255, 0.65)"
+                        stroke="rgba(144, 224, 239, 0.65)"
                         strokeWidth={Math.max(0.8, strokeWidth * 0.4)}
                         strokeDasharray="6 5"
                         strokeLinecap="round"
@@ -1719,12 +1723,12 @@ export default function YearbookDesk() {
         {/* Overview Mode Helper Controls (Top Left & Top/Bottom Right) */}
         {!focusedMember && (
           <>
-            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 pointer-events-none flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-zinc-900/80 backdrop-blur-md border border-white/10 text-[11px] sm:text-xs text-zinc-300">
+            <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 pointer-events-none flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#050e29]/90 backdrop-blur-md border border-white/15 text-[11px] sm:text-xs text-slate-200">
               <span className="sm:hidden">Geser meja · Ketuk Polaroid untuk detail</span>
               <span className="hidden sm:inline">Geser meja dengan mouse/sentuhan · Klik Polaroid mana saja untuk zoom fokus</span>
             </div>
 
-            <div className="absolute top-3 right-3 sm:top-auto sm:bottom-4 sm:right-4 z-20 flex items-center gap-1 p-1 sm:p-1.5 rounded-xl bg-zinc-900/85 backdrop-blur-md border border-white/10">
+            <div className="absolute top-3 right-3 sm:top-auto sm:bottom-4 sm:right-4 z-20 flex items-center gap-1 p-1 sm:p-1.5 rounded-xl bg-[#050e29]/90 backdrop-blur-md border border-white/15">
               <button
                 type="button"
                 onClick={(e) => {
@@ -1732,7 +1736,7 @@ export default function YearbookDesk() {
                   setManualZoomMultiplier((m) => Math.max(0.65, Number((m - 0.18).toFixed(2))));
                 }}
                 aria-label="Perkecil meja"
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-zinc-200 cursor-pointer"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-slate-200 cursor-pointer"
               >
                 <ZoomOut className="w-4 h-4" />
               </button>
@@ -1743,7 +1747,7 @@ export default function YearbookDesk() {
                   resetOverviewView();
                 }}
                 aria-label="Reset tampilan meja"
-                className="px-2 sm:px-2.5 h-8 sm:h-9 rounded-lg hover:bg-white/10 flex items-center gap-1 text-[11px] sm:text-xs font-mono text-zinc-200 cursor-pointer"
+                className="px-2 sm:px-2.5 h-8 sm:h-9 rounded-lg hover:bg-white/10 flex items-center gap-1 text-[11px] sm:text-xs font-mono text-slate-200 cursor-pointer"
               >
                 <Maximize2 className="w-3.5 h-3.5" />
                 <span>Reset</span>
@@ -1755,7 +1759,7 @@ export default function YearbookDesk() {
                   setManualZoomMultiplier((m) => Math.min(1.9, Number((m + 0.18).toFixed(2))));
                 }}
                 aria-label="Perbesar meja"
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-zinc-200 cursor-pointer"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-slate-200 cursor-pointer"
               >
                 <ZoomIn className="w-4 h-4" />
               </button>
@@ -1772,7 +1776,7 @@ export default function YearbookDesk() {
               exit={{ opacity: 0, y: 24 }}
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
-              className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-20px)] max-w-3xl bg-zinc-900/90 backdrop-blur-md border border-white/10 rounded-2xl p-2 sm:px-4 sm:py-2.5 shadow-2xl"
+              className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-20px)] max-w-3xl bg-[#050e29]/92 backdrop-blur-md border border-white/15 rounded-2xl p-2 sm:px-4 sm:py-2.5 shadow-2xl"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 {/* Row 1 (Mobile) / Left (Desktop): Prev & Position & Next */}
@@ -1780,20 +1784,20 @@ export default function YearbookDesk() {
                   <button
                     type="button"
                     onClick={() => stepSequential(-1)}
-                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
+                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-[#0d1f4f] hover:bg-[#0077B6] border border-white/10 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     <span className="hidden sm:inline">Sebelumnya</span>
                   </button>
 
-                  <div className="flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-[11px] sm:text-xs font-mono text-stone-200 tabular-nums truncate">
+                  <div className="flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-lg bg-[#071436] border border-white/10 text-[11px] sm:text-xs font-mono text-[#90E0EF] tabular-nums truncate">
                     {positionDescription}
                   </div>
 
                   <button
                     type="button"
                     onClick={() => stepSequential(1)}
-                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
+                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-[#0d1f4f] hover:bg-[#0077B6] border border-white/10 text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
                   >
                     <span className="hidden sm:inline">Berikutnya</span>
                     <ChevronRight className="w-4 h-4" />
@@ -1807,8 +1811,8 @@ export default function YearbookDesk() {
                     onClick={() => setIsFlipped((prev) => !prev)}
                     className={`flex-1 sm:flex-initial justify-center min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
                       isFlipped
-                        ? 'bg-cyan-500 text-zinc-950'
-                        : 'bg-white/10 hover:bg-white/20 text-white'
+                        ? 'bg-[#00B4D8] text-[#03045E] font-bold'
+                        : 'bg-[#0d1f4f] hover:bg-[#0077B6] border border-white/10 text-white'
                     }`}
                   >
                     <RotateCw className="w-3.5 h-3.5" />
@@ -1818,7 +1822,7 @@ export default function YearbookDesk() {
                   <button
                     type="button"
                     onClick={() => openUploadModal(focusedMember)}
-                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-400/35 text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
+                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-[#0077B6]/35 hover:bg-[#0077B6]/55 text-[#90E0EF] border border-[#00B4D8]/40 text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
                   >
                     <Upload className="w-3.5 h-3.5" />
                     <span>
@@ -1829,7 +1833,7 @@ export default function YearbookDesk() {
                   <button
                     type="button"
                     onClick={exitFocus}
-                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-white text-zinc-900 text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
+                    className="min-h-[38px] sm:min-h-[40px] px-3 py-1.5 rounded-xl bg-[#FAF8F3] hover:bg-white text-[#03045E] text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap"
                   >
                     <LayoutGrid className="w-3.5 h-3.5" />
                     <span>Meja</span>
@@ -1848,7 +1852,7 @@ export default function YearbookDesk() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-[#050e29]/80 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={() => setUploadTarget(null)}
           >
             <motion.div
@@ -1856,11 +1860,11 @@ export default function YearbookDesk() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg rounded-2xl bg-zinc-900 border border-white/15 text-stone-100 shadow-2xl overflow-hidden"
+              className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 text-[#03045E] shadow-2xl overflow-hidden"
             >
-              <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between gap-3">
+              <div className="bg-[#050e29] px-5 py-4 border-b border-white/10 flex items-center justify-between gap-3">
                 <div>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-[#90E0EF]">
                     {uploadTarget.badgeLabel} · Kirim Foto Profil Polaroid
                   </span>
                   <h3 className="font-editorial text-lg font-semibold text-white">
@@ -1870,7 +1874,7 @@ export default function YearbookDesk() {
                 <button
                   type="button"
                   onClick={() => setUploadTarget(null)}
-                  className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 cursor-pointer"
+                  className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer"
                   aria-label="Tutup modal"
                 >
                   <X className="w-4 h-4" />
@@ -1878,13 +1882,13 @@ export default function YearbookDesk() {
               </div>
 
               <form onSubmit={handleSubmitMemberPhoto} className="p-5 space-y-4">
-                <p className="text-xs text-zinc-300 leading-relaxed">
+                <p className="text-xs text-slate-600 leading-relaxed">
                   Unggah foto terbaikmu untuk bingkai Polaroid ini. Foto yang kamu kirim akan masuk ke antrean moderasi dan tampil resmi setelah disetujui (apply) oleh Admin kelas.
                 </p>
 
                 {/* Preview Box if chosen */}
                 {(uploadPreviewUrl || uploadImageUrl.trim()) && (
-                  <div className="w-36 aspect-[4/4.2] mx-auto rounded-lg overflow-hidden border border-white/20 bg-zinc-800">
+                  <div className="w-36 aspect-[4/4.2] mx-auto rounded-lg overflow-hidden border border-slate-200 bg-[#FAF8F3]">
                     <img
                       src={uploadPreviewUrl || uploadImageUrl.trim()}
                       alt="Pratinjau foto"
@@ -1895,19 +1899,19 @@ export default function YearbookDesk() {
                 )}
 
                 <div className="space-y-2">
-                  <label className="block text-xs font-semibold text-stone-200">
+                  <label className="block text-xs font-semibold text-[#03045E]">
                     Pilih File Foto (JPG/PNG/WebP)
                   </label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleFilePick}
-                    className="w-full text-xs text-zinc-300 file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-500/20 file:text-emerald-300 hover:file:bg-emerald-500/30 cursor-pointer"
+                    className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#03045E] file:text-white hover:file:bg-[#0077B6] cursor-pointer"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-stone-200 mb-1">
+                  <label className="block text-xs font-semibold text-[#03045E] mb-1">
                     Atau Tautan URL Foto
                   </label>
                   <input
@@ -1915,13 +1919,13 @@ export default function YearbookDesk() {
                     value={uploadImageUrl}
                     onChange={(e) => setUploadImageUrl(e.target.value)}
                     placeholder="https://..."
-                    className="w-full min-h-[42px] px-3 py-2 rounded-lg bg-zinc-950 border border-white/15 focus:border-emerald-400 focus:outline-none text-xs text-white"
+                    className="w-full min-h-[42px] px-3 py-2 rounded-lg bg-[#FAF8F3] border border-slate-300 focus:bg-white focus:border-[#0077B6] focus:outline-none text-xs text-[#03045E]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-stone-200 mb-1">
+                    <label className="block text-xs font-semibold text-[#03045E] mb-1">
                       Nama Pengirim
                     </label>
                     <input
@@ -1929,11 +1933,11 @@ export default function YearbookDesk() {
                       value={uploadSender}
                       onChange={(e) => setUploadSender(e.target.value)}
                       placeholder="Nama kamu"
-                      className="w-full min-h-[42px] px-3 py-2 rounded-lg bg-zinc-950 border border-white/15 focus:border-emerald-400 focus:outline-none text-xs text-white"
+                      className="w-full min-h-[42px] px-3 py-2 rounded-lg bg-[#FAF8F3] border border-slate-300 focus:bg-white focus:border-[#0077B6] focus:outline-none text-xs text-[#03045E]"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-stone-200 mb-1">
+                    <label className="block text-xs font-semibold text-[#03045E] mb-1">
                       Catatan untuk Admin (opsional)
                     </label>
                     <input
@@ -1941,21 +1945,21 @@ export default function YearbookDesk() {
                       value={uploadNote}
                       onChange={(e) => setUploadNote(e.target.value)}
                       placeholder="Mis: Foto terbaru wisuda/seragam"
-                      className="w-full min-h-[42px] px-3 py-2 rounded-lg bg-zinc-950 border border-white/15 focus:border-emerald-400 focus:outline-none text-xs text-white"
+                      className="w-full min-h-[42px] px-3 py-2 rounded-lg bg-[#FAF8F3] border border-slate-300 focus:bg-white focus:border-[#0077B6] focus:outline-none text-xs text-[#03045E]"
                     />
                   </div>
                 </div>
 
                 {uploadSuccessMsg && (
-                  <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-400/35 text-xs text-emerald-200 flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
                     <span>{uploadSuccessMsg}</span>
                   </div>
                 )}
 
                 {uploadErrorMsg && (
-                  <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-400/35 text-xs text-rose-200 flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
                     <span>{uploadErrorMsg}</span>
                   </div>
                 )}
@@ -1964,14 +1968,14 @@ export default function YearbookDesk() {
                   <button
                     type="button"
                     onClick={() => setUploadTarget(null)}
-                    className="min-h-[42px] px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-xs font-semibold text-zinc-200 cursor-pointer"
+                    className="min-h-[42px] px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer"
                   >
                     Tutup
                   </button>
                   <button
                     type="submit"
                     disabled={submittingUpload}
-                    className="min-h-[42px] px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-zinc-950 text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
+                    className="min-h-[42px] px-5 py-2 rounded-lg bg-[#03045E] hover:bg-[#0077B6] disabled:opacity-60 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
                   >
                     <Upload className="w-3.5 h-3.5" />
                     <span>{submittingUpload ? 'Mengirim...' : 'Kirim ke Antrean Admin'}</span>

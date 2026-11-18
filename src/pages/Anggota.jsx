@@ -1,16 +1,31 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, X, Users, LayoutGrid, List } from 'lucide-react';
 import MemberCard from '../components/features/MemberCard';
 import SpecialAlumniSection from '../components/features/SpecialAlumniSection';
 import YearbookDesk from '../components/features/YearbookDesk';
 import { daftarAnggota, siswaAktif, sahabatPindah } from '../data/anggota';
+import { fetchApprovedMemberPhotos, isSupabaseConfigured } from '../lib/supabase';
 
 export default function Anggota() {
   const [viewMode, setViewMode] = useState('desk'); // 'desk' | 'list'
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('Semua');
+  const [approvedPhotos, setApprovedPhotos] = useState({});
 
   const totalKeluarga = daftarAnggota.length;
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    let mounted = true;
+    fetchApprovedMemberPhotos()
+      .then((map) => {
+        if (mounted) setApprovedPhotos(map);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const filteredAnggota = useMemo(() => {
     return daftarAnggota.filter((siswa) => {
@@ -41,29 +56,29 @@ export default function Anggota() {
   ];
 
   return (
-    <div className={`w-full min-h-screen ${viewMode === 'desk' ? 'bg-zinc-950' : 'bg-[#FAF8F3] pb-16'}`}>
+    <div className="w-full min-h-screen bg-[#FAF8F3] pb-16">
       {/* Header Direktori & Meja Kenangan */}
-      <section className="bg-[#050e29] text-white py-8 sm:py-10 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <section className="bg-[#050e29] text-white py-8 sm:py-12 border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col lg:flex-row lg:items-end justify-between gap-5">
           <div className="space-y-2">
             <p className="text-xs font-medium text-[#90E0EF]">
               Buku Tahunan Digital · XII PPLG 3 MAKN Ende
             </p>
-            <h1 className="font-editorial text-3xl sm:text-4xl font-semibold text-white tracking-tight">
+            <h1 className="font-editorial text-2xl sm:text-4xl lg:text-5xl font-semibold text-white tracking-tight">
               26 Profil Keluarga Besar Kelas
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-base text-slate-300 max-w-2xl leading-relaxed">
               {siswaAktif.length} siswa aktif (#01–#22), {sahabatPindah.length} murid spesial (#23–#25), dan 1 Wali Kelas di atas meja kenangan interaktif.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:inline-flex items-center p-1 rounded-xl bg-white/10 border border-white/15 w-full sm:w-auto">
+          <div className="grid grid-cols-2 sm:inline-flex items-center p-1 rounded-xl bg-[#0d1f4f] border border-white/15 w-full lg:w-auto shrink-0">
             <button
               type="button"
               onClick={() => setViewMode('desk')}
-              className={`min-h-[40px] sm:min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
+              className={`min-h-[40px] sm:min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
                 viewMode === 'desk'
-                  ? 'bg-white text-[#03045E]'
+                  ? 'bg-[#00B4D8] text-[#03045E]'
                   : 'text-slate-200 hover:text-white'
               }`}
             >
@@ -73,9 +88,9 @@ export default function Anggota() {
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className={`min-h-[40px] sm:min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
+              className={`min-h-[40px] sm:min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-bold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
                 viewMode === 'list'
-                  ? 'bg-white text-[#03045E]'
+                  ? 'bg-[#00B4D8] text-[#03045E]'
                   : 'text-slate-200 hover:text-white'
               }`}
             >
@@ -87,7 +102,9 @@ export default function Anggota() {
       </section>
 
       {viewMode === 'desk' ? (
-        <YearbookDesk />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-5 sm:pt-8">
+          <YearbookDesk />
+        </div>
       ) : (
         <>
           {/* Penghormatan Spesial untuk 3 Sahabat yang Pindah Sekolah */}
@@ -150,7 +167,11 @@ export default function Anggota() {
             {filteredAnggota.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredAnggota.map((siswa) => (
-                  <MemberCard key={siswa.id} anggota={siswa} />
+                  <MemberCard
+                    key={siswa.id}
+                    anggota={siswa}
+                    approvedPhoto={approvedPhotos[`member-${String(siswa.id).padStart(2, '0')}`]}
+                  />
                 ))}
               </div>
             ) : (
@@ -169,4 +190,5 @@ export default function Anggota() {
     </div>
   );
 }
+
 
