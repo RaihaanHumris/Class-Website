@@ -161,25 +161,28 @@ export async function submitMemberPhoto({
   const safeDesc = safeDescRaw.length >= 5 ? safeDescRaw.slice(0, 800) : `${safeDescRaw} (XII PPLG 3)`;
   const safeSender = (pengirimNama || memberName).trim().slice(0, 80);
 
-  const { data, error } = await client
+  const payload = {
+    judul: safeTitle,
+    kategori: MEMBER_PHOTO_CATEGORY,
+    tanggal: memberKey,
+    deskripsi: safeDesc,
+    pengirim_nama: safeSender.length >= 2 ? safeSender : 'Siswa PPLG 3',
+    image_url: finalImageUrl,
+    status: 'pending',
+  };
+
+  const { error } = await client
     .from('photo_memories')
-    .insert({
-      judul: safeTitle,
-      kategori: MEMBER_PHOTO_CATEGORY,
-      tanggal: memberKey,
-      deskripsi: safeDesc,
-      pengirim_nama: safeSender.length >= 2 ? safeSender : 'Siswa PPLG 3',
-      image_url: finalImageUrl,
-      status: 'pending',
-    })
-    .select()
-    .single();
+    .insert(payload);
 
   if (error) {
     throw new Error(`Gagal mengirim pengajuan foto siswa: ${error.message}`);
   }
 
-  return data;
+  return {
+    ...payload,
+    created_at: new Date().toISOString(),
+  };
 }
 
 /**
@@ -253,25 +256,28 @@ export async function submitPhotoMemory({
     throw new Error('Silakan pilih file foto atau masukkan URL gambar yang valid.');
   }
 
-  const { data, error } = await client
+  const payload = {
+    judul: judul.trim(),
+    kategori: kategori.trim(),
+    tanggal: tanggal.trim(),
+    deskripsi: deskripsi.trim(),
+    pengirim_nama: pengirimNama.trim(),
+    image_url: finalImageUrl,
+    status: 'pending',
+  };
+
+  const { error } = await client
     .from('photo_memories')
-    .insert({
-      judul: judul.trim(),
-      kategori: kategori.trim(),
-      tanggal: tanggal.trim(),
-      deskripsi: deskripsi.trim(),
-      pengirim_nama: pengirimNama.trim(),
-      image_url: finalImageUrl,
-      status: 'pending',
-    })
-    .select()
-    .single();
+    .insert(payload);
 
   if (error) {
     throw new Error(`Gagal mengirim pengajuan foto: ${error.message}`);
   }
 
-  return data;
+  return {
+    ...payload,
+    created_at: new Date().toISOString(),
+  };
 }
 
 /**
