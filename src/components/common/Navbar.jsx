@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
-import { Menu, X, Camera } from 'lucide-react';
+import { Menu, X, Lock } from 'lucide-react';
 import { infoKelas } from '../../data/kelas';
 
 const navLinks = [
@@ -8,7 +8,6 @@ const navLinks = [
   { name: 'Galeri', to: '/galeri' },
   { name: 'Anggota', to: '/anggota' },
   { name: 'Jejak Kelas', to: '/jejak' },
-  { name: 'Admin', to: '/admin' },
 ];
 
 export default function Navbar() {
@@ -88,11 +87,11 @@ export default function Navbar() {
         {/* Zone 3: 1 Primary CTA + Mobile Hamburger */}
         <div className="flex items-center gap-3 shrink-0">
           <Link
-            to="/kirim-foto"
+            to="/admin"
             className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#03045E] hover:bg-[#0077B6] text-white text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap shrink-0 min-h-[40px]"
           >
-            <Camera className="w-4 h-4" />
-            <span>Kirim Foto</span>
+            <Lock className="w-4 h-4" />
+            <span>Login Admin</span>
           </Link>
 
           <button
@@ -138,12 +137,12 @@ export default function Navbar() {
           ))}
 
           <Link
-            to="/kirim-foto"
+            to="/admin"
             onClick={() => setIsOpen(false)}
             className="mt-3 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-[#03045E] text-base font-bold flex items-center justify-center gap-2"
           >
-            <Camera className="w-4 h-4" />
-            <span>Kirim Foto Kenangan</span>
+            <Lock className="w-4 h-4" />
+            <span>Login Admin</span>
           </Link>
         </div>
 

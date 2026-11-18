@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Camera, BookOpen, LayoutGrid, Plus } from 'lucide-react';
+import { Camera, Plus } from 'lucide-react';
 import Lightbox from '../components/common/Lightbox';
 import GalleryBook3DStage from '../components/three/GalleryBook3DStage';
 import { albumGaleri } from '../data/galeri';
@@ -8,15 +8,12 @@ import { infoKelas } from '../data/kelas';
 import { fetchApprovedPhotos, isSupabaseConfigured } from '../lib/supabase';
 
 export default function Galeri() {
-  const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [dbPhotos, setDbPhotos] = useState([]);
-  const [loadingDb, setLoadingDb] = useState(isSupabaseConfigured);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
-      setLoadingDb(false);
       return;
     }
     let mounted = true;
@@ -24,10 +21,7 @@ export default function Galeri() {
       .then((rows) => {
         if (mounted) setDbPhotos(rows);
       })
-      .catch(() => {})
-      .finally(() => {
-        if (mounted) setLoadingDb(false);
-      });
+      .catch(() => {});
     return () => {
       mounted = false;
     };
@@ -37,17 +31,8 @@ export default function Galeri() {
     return [...dbPhotos, ...albumGaleri];
   }, [dbPhotos]);
 
-  const categories = useMemo(() => {
-    return ['Semua', ...new Set(combinedAlbum.map((item) => item.kategori))];
-  }, [combinedAlbum]);
-
-  const filteredPhotos = useMemo(() => {
-    if (selectedCategory === 'Semua') return combinedAlbum;
-    return combinedAlbum.filter((item) => item.kategori === selectedCategory);
-  }, [selectedCategory, combinedAlbum]);
-
   const handleOpenLightbox = (foto) => {
-    const index = filteredPhotos.findIndex((item) => item.id === foto.id);
+    const index = combinedAlbum.findIndex((item) => item.id === foto.id);
     setActivePhotoIndex(index !== -1 ? index : 0);
     setLightboxOpen(true);
   };
@@ -82,50 +67,23 @@ export default function Galeri() {
       </section>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 space-y-8">
-        {/* Filter Kategori */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {categories.map((cat) => {
-              const isSelected = selectedCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`min-h-[40px] px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
-                    isSelected
-                      ? 'bg-[#03045E] text-white'
-                      : 'bg-white border border-slate-200 text-slate-700 hover:border-[#0077B6]'
-                  }`}
-                >
-                  {cat}
-                </button>
-              );
-            })}
-          </div>
-
-          <span className="text-xs font-mono text-slate-500 tabular-nums">
-            {loadingDb ? 'Memuat arsip...' : `${filteredPhotos.length} Foto Kenangan`}
-          </span>
-        </div>
-
         {/* 3D Yearbook Book Animation Stage */}
         <GalleryBook3DStage
-          photos={filteredPhotos}
+          photos={combinedAlbum}
           onSelectPhoto={handleOpenLightbox}
         />
 
-        {filteredPhotos.length === 0 && (
+        {combinedAlbum.length === 0 && (
           <div className="p-12 rounded-2xl bg-white border border-slate-200 text-center space-y-2">
             <Camera className="w-8 h-8 text-slate-400 mx-auto" />
-            <p className="font-semibold text-sm text-[#03045E]">Belum ada foto pada kategori ini</p>
+            <p className="font-semibold text-sm text-[#03045E]">Belum ada foto kenangan</p>
           </div>
         )}
       </div>
 
       <Lightbox
         isOpen={lightboxOpen}
-        images={filteredPhotos}
+        images={combinedAlbum}
         currentIndex={activePhotoIndex}
         onClose={() => setLightboxOpen(false)}
         onNavigate={(newIndex) => setActivePhotoIndex(newIndex)}
