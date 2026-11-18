@@ -141,22 +141,32 @@ export default function Lightbox({
             src={currentImage.src}
             alt={currentImage.judul || 'Foto dokumentasi kelas'}
             draggable="false"
+            referrerPolicy="no-referrer"
             className="max-h-[68vh] sm:max-h-[74vh] w-auto max-w-full rounded-2xl object-contain shadow-2xl border border-white/15"
           />
         </div>
 
         {/* Caption & Keterangan Foto */}
         <div className="mt-3 sm:mt-4 text-center px-4 max-w-2xl space-y-1">
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-[11px] font-bold text-[#CAF0F8] bg-white/15 px-3 py-0.5 rounded-full">
+          <div className="flex items-center justify-center gap-2 text-xs text-[#90E0EF]">
+            <span className="font-semibold text-[#CAF0F8]">
               {currentImage.kategori}
             </span>
-            <span className="text-xs text-[#90E0EF]/80 font-mono">
+            <span aria-hidden="true">·</span>
+            <span className="font-mono">{currentImage.tanggal}</span>
+            {currentImage.pengirim && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>Oleh {currentImage.pengirim}</span>
+              </>
+            )}
+            <span aria-hidden="true">·</span>
+            <span className="font-mono tabular-nums">
               {currentIndex + 1} / {images.length}
             </span>
           </div>
 
-          <h3 className="text-base sm:text-xl font-bold text-white font-heading leading-snug">
+          <h3 className="text-base sm:text-xl font-bold text-white font-editorial leading-snug">
             {currentImage.judul}
           </h3>
 
