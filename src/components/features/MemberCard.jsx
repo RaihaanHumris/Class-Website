@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Cake, Github, Globe, UserCheck, Pencil, Sparkles, Clock } from 'lucide-react';
 import { getInitials } from '../../utils/helpers';
 import {
@@ -20,6 +20,7 @@ export default function MemberCard({
     panggilan,
     peran,
     foto,
+    fallbackFoto,
     minat,
     status,
     periode,
@@ -33,10 +34,19 @@ export default function MemberCard({
     hasPendingApproval,
   } = anggota;
 
+  const [failedUrls, setFailedUrls] = useState({});
+
   const initials = getInitials(nama);
   const isSpecial = status === 'pindah';
   const isPengurus = !isSpecial && peran && peran !== 'Anggota';
-  const effectivePhoto = approvedPhoto?.imageUrl || foto || '';
+  const candidatePhotos = [
+    foto,
+    approvedPhoto?.imageUrl,
+    fallbackFoto,
+    approvedPhoto?.fallbackImageUrl,
+  ].filter(Boolean);
+  const effectivePhoto =
+    candidatePhotos.find((url) => !failedUrls[url]) || '';
   const birthdayToday = isBirthdayToday(ultah);
   const formattedUltah = formatBirthdayIndonesian(ultah, tahunLahir);
 
@@ -89,6 +99,9 @@ export default function MemberCard({
                 src={effectivePhoto}
                 alt={nama}
                 referrerPolicy="no-referrer"
+                onError={() =>
+                  setFailedUrls((prev) => ({ ...prev, [effectivePhoto]: true }))
+                }
                 className="w-16 h-16 rounded-full object-cover object-[50%_20%] border-2 border-[#D97706] ring-4 ring-amber-100"
               />
             ) : (
@@ -195,6 +208,9 @@ export default function MemberCard({
               src={effectivePhoto}
               alt={nama}
               referrerPolicy="no-referrer"
+              onError={() =>
+                setFailedUrls((prev) => ({ ...prev, [effectivePhoto]: true }))
+              }
               className="w-16 h-16 rounded-full object-cover object-[50%_20%] border-2 border-[#D97706] ring-4 ring-amber-100/80"
             />
           ) : (

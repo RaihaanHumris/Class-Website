@@ -126,13 +126,18 @@ export async function fetchApprovedMemberPhotos() {
   const map = {};
   (data || []).forEach((row) => {
     const key = row.tanggal;
-    if (key && !map[key]) {
-      map[key] = {
-        rowId: row.id,
-        imageUrl: row.image_url,
-        caption: row.deskripsi,
-        approvedAt: row.reviewed_at || row.created_at,
-      };
+    if (key && row.image_url) {
+      if (!map[key]) {
+        map[key] = {
+          rowId: row.id,
+          imageUrl: row.image_url,
+          fallbackImageUrl: row.image_url,
+          caption: row.deskripsi,
+          approvedAt: row.reviewed_at || row.created_at,
+        };
+      } else if (!map[key].fallbackImageUrl) {
+        map[key].fallbackImageUrl = row.image_url;
+      }
     }
   });
 
@@ -161,7 +166,8 @@ export async function fetchApprovedMemberPhotos() {
             map[memberKey] = {
               rowId: existing?.rowId || `prof-${row.id}`,
               imageUrl: fotoUrl,
-              caption: parsed.bio || `Foto profil ${parsed.nama || memberKey}`,
+              fallbackImageUrl: existing?.fallbackImageUrl || existing?.imageUrl || fotoUrl,
+              caption: parsed.bio || existing?.caption || `Foto profil ${parsed.nama || memberKey}`,
               approvedAt: profTime,
             };
           }
@@ -525,7 +531,13 @@ export async function fetchMemberProfilesFromDb() {
         const rawJson = row.peran.slice(PROFILE_SYNC_PREFIX.length);
         const parsed = JSON.parse(rawJson);
         if (parsed && parsed.id) {
-          profileMap[String(parsed.id)] = parsed;
+          const key = String(parsed.id);
+          const prev = profileMap[key] || {};
+          profileMap[key] = {
+            ...prev,
+            ...parsed,
+            foto: parsed.foto || prev.foto || '',
+          };
         }
       } catch {
         // abaikan baris yang gagal di-parse
@@ -554,19 +566,19 @@ export async function fetchMemberProfilesFromDb() {
           profileMap[String(row.member_id)] = {
             ...prev,
             id: Number(row.member_id),
-            nama: row.nama,
-            panggilan: row.panggilan || '',
-            peran: row.peran || 'Anggota',
-            minat: row.minat || '',
+            nama: row.nama || prev.nama,
+            panggilan: row.panggilan || prev.panggilan || '',
+            peran: row.peran || prev.peran || 'Anggota',
+            minat: row.minat || prev.minat || '',
             ultah: rawUltah,
             tahunLahir: inferredYear,
             tahunAngkatan: row.tahun_angkatan || prev.tahunAngkatan || '2024–2027',
-            bio: row.bio || '',
-            github: row.github || '',
-            portfolio: row.portfolio || '',
-            foto: row.foto || '',
-            status: row.status || 'aktif',
-            updatedAt: row.updated_at,
+            bio: row.bio || prev.bio || '',
+            github: row.github || prev.github || '',
+            portfolio: row.portfolio || prev.portfolio || '',
+            foto: row.foto || prev.foto || '',
+            status: row.status || prev.status || 'aktif',
+            updatedAt: row.updated_at || prev.updatedAt,
           };
         }
       });
@@ -593,14 +605,17 @@ export async function fetchMemberProfilesFromDb() {
           const prev = profileMap[key] || { id: numId };
           const photoTime = row.reviewed_at || row.created_at || '';
           const prevTime = prev.updatedAt || '';
-          if (!prev.foto || !prevTime || String(photoTime) >= String(prevTime)) {
-            profileMap[key] = {
-              ...prev,
-              id: numId,
-              foto: row.image_url,
-              updatedAt: photoTime || prev.updatedAt,
-            };
-          }
+          const shouldUsePolaroidAsPrimary =
+            !prev.foto || !prevTime || String(photoTime) >= String(prevTime);
+          profileMap[key] = {
+            ...prev,
+            id: numId,
+            foto: shouldUsePolaroidAsPrimary ? row.image_url : prev.foto,
+            fallbackFoto: row.image_url,
+            updatedAt: shouldUsePolaroidAsPrimary
+              ? photoTime || prev.updatedAt
+              : prev.updatedAt,
+          };
         }
       }
     });

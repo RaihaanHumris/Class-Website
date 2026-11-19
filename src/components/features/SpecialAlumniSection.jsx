@@ -1,14 +1,78 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Heart } from 'lucide-react';
 import { sahabatPindah } from '../../data/anggota';
 import { getInitials } from '../../utils/helpers';
+import {
+  getMergedMembers,
+  syncMembersFromDatabase,
+} from '../../utils/memberStorage';
+import {
+  fetchApprovedMemberPhotos,
+  isSupabaseConfigured,
+} from '../../lib/supabase';
 
 export default function SpecialAlumniSection({
-  members = sahabatPindah,
-  approvedPhotos = {},
+  members,
+  approvedPhotos,
 }) {
-  const displayList =
-    Array.isArray(members) && members.length > 0 ? members : sahabatPindah;
+  const [internalMembers, setInternalMembers] = useState(() =>
+    getMergedMembers().filter((m) => m.status === 'pindah')
+  );
+  const [internalPhotos, setInternalPhotos] = useState({});
+  const [failedImages, setFailedImages] = useState({});
+
+  useEffect(() => {
+    const loadPhotos = () => {
+      if (!isSupabaseConfigured) return;
+      fetchApprovedMemberPhotos()
+        .then((map) => setInternalPhotos(map || {}))
+        .catch(() => {});
+    };
+
+    const syncLocalAndDb = () => {
+      const merged = getMergedMembers().filter((m) => m.status === 'pindah');
+      if (merged.length > 0) {
+        setInternalMembers(merged);
+      }
+      loadPhotos();
+    };
+
+    window.addEventListener('pplg3-members-updated', syncLocalAndDb);
+    syncMembersFromDatabase();
+    loadPhotos();
+
+    return () =>
+      window.removeEventListener('pplg3-members-updated', syncLocalAndDb);
+  }, []);
+
+  const effectiveApprovedPhotos = useMemo(
+    () => ({
+      ...internalPhotos,
+      ...(approvedPhotos || {}),
+    }),
+    [internalPhotos, approvedPhotos]
+  );
+
+  const displayList = useMemo(() => {
+    const baseList =
+      Array.isArray(members) && members.length > 0
+        ? members
+        : internalMembers.length > 0
+        ? internalMembers
+        : sahabatPindah;
+
+    return baseList.map((item) => {
+      const internalMatch = internalMembers.find(
+        (m) => Number(m.id) === Number(item.id)
+      );
+      return {
+        ...item,
+        ...(internalMatch || {}),
+        foto: item.foto || internalMatch?.foto || '',
+        bio: item.bio || internalMatch?.bio || '',
+      };
+    });
+  }, [members, internalMembers]);
 
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-10 sm:py-14">
@@ -31,8 +95,16 @@ export default function SpecialAlumniSection({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {displayList.map((sahabat, idx) => {
             const memberKey = `member-${String(sahabat.id).padStart(2, '0')}`;
-            const unifiedPhoto =
-              sahabat.foto || approvedPhotos?.[memberKey]?.imageUrl || '';
+            const candidatePhotos = [
+              sahabat.foto,
+              effectiveApprovedPhotos?.[memberKey]?.imageUrl,
+              sahabat.fallbackFoto,
+              effectiveApprovedPhotos?.[memberKey]?.fallbackImageUrl,
+            ].filter(Boolean);
+            const activePhoto = candidatePhotos.find(
+              (url) => !failedImages[url]
+            );
+
             return (
               <article
                 key={sahabat.id}
@@ -41,11 +113,17 @@ export default function SpecialAlumniSection({
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-4">
                     <div className="flex items-center gap-3 min-w-0">
-                      {unifiedPhoto ? (
+                      {activePhoto ? (
                         <img
-                          src={unifiedPhoto}
+                          src={activePhoto}
                           alt={sahabat.nama}
                           referrerPolicy="no-referrer"
+                          onError={() =>
+                            setFailedImages((prev) => ({
+                              ...prev,
+                              [activePhoto]: true,
+                            }))
+                          }
                           className="w-12 h-12 rounded-full object-cover object-[50%_20%] border-2 border-amber-500 ring-2 ring-amber-100 shrink-0"
                         />
                       ) : (
