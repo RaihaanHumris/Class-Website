@@ -249,7 +249,7 @@ export default function Beranda({ onOpenBirthdayModal }) {
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0077B6]">
               <Clock className="w-4 h-4" />
-              <span>Kilas Balik 2023–2026</span>
+              <span>Kilas Balik 2024–2027</span>
             </div>
             <h2 className="font-editorial text-2xl sm:text-3xl font-semibold text-[#03045E] mt-1">
               Tiga Babak Perjalanan Kelas

@@ -552,7 +552,7 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({
               </span>
             ) : (
               <span className="font-mono text-[#90E0EF] text-[9px]">
-                MAKN Ende · 2023–2026
+                MAKN Ende · 2024–2027
               </span>
             )}
 
@@ -937,7 +937,7 @@ const FocusedPolaroidCard: React.FC<FocusedPolaroidCardProps> = ({
               </span>
             ) : (
               <span className="font-mono text-[#90E0EF] text-[11px]">
-                MAKN Ende · 2023–2026
+                MAKN Ende · 2024–2027
               </span>
             )}
 

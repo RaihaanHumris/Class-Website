@@ -6,8 +6,8 @@ export const infoKelas = {
   namaLengkapSekolah: "Madrasah Aliyah Kejuruan Negeri Ende",
   tagline: "Code Together, Grow Together, Remember Forever",
   suaraKelas: "22 siswa aktif & 3 sahabat seperjuangan yang selalu menjadi bagian dari satu cerita besar XII PPLG 3.",
-  tahunAjaran: "2023–2026",
-  angkatan: "2025/2026",
+  tahunAjaran: "2024–2027",
+  angkatan: "2026/2027",
 
   // Foto kenangan angkatan XII PPLG 3 bersama Guru Bahasa Inggris
   fotoHero: "/images/kenangan/foto-kelas-wali-kelas.jpg",

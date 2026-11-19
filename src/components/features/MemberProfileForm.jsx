@@ -12,6 +12,7 @@ import {
   Trash2,
   Code2,
   Database,
+  Calendar,
 } from 'lucide-react';
 import { getInitials } from '../../utils/helpers';
 import {
@@ -20,7 +21,7 @@ import {
   setActiveMemberId,
   getActiveMemberId,
   getTodayMMDD,
-  normalizeMMDD,
+  parseBirthdayParts,
   formatBirthdayIndonesian,
 } from '../../utils/memberStorage';
 
@@ -45,6 +46,9 @@ const MINAT_PRESETS = [
   'DevOps & Cloud',
   '3D Game Asset & Art',
 ];
+
+const TAHUN_LAHIR_PRESETS = ['2006', '2007', '2008', '2009', '2010', '2011'];
+const TAHUN_ANGKATAN_PRESETS = ['2024–2027', '2024', '2025', '2026', '2027'];
 
 const BULAN_LIST = [
   { val: '', label: '-- Pilih Bulan --' },
@@ -77,6 +81,8 @@ export default function MemberProfileForm({
   const [panggilan, setPanggilan] = useState('');
   const [peran, setPeran] = useState('Anggota');
   const [minat, setMinat] = useState('');
+  const [tahunAngkatan, setTahunAngkatan] = useState('2024–2027');
+  const [ultahYear, setUltahYear] = useState('');
   const [ultahMonth, setUltahMonth] = useState('');
   const [ultahDay, setUltahDay] = useState('');
   const [ultahRaw, setUltahRaw] = useState('');
@@ -107,6 +113,8 @@ export default function MemberProfileForm({
       setPanggilan('');
       setPeran('Anggota');
       setMinat('');
+      setTahunAngkatan('2024–2027');
+      setUltahYear('');
       setUltahMonth('');
       setUltahDay('');
       setUltahRaw('');
@@ -125,17 +133,14 @@ export default function MemberProfileForm({
       setPanggilan(found.panggilan || '');
       setPeran(found.peran || 'Anggota');
       setMinat(found.minat || '');
-      const normUltah = normalizeMMDD(found.ultah) || '';
-      if (normUltah) {
-        const [m, d] = normUltah.split('-');
-        setUltahMonth(m || '');
-        setUltahDay(d || '');
-        setUltahRaw(normUltah);
-      } else {
-        setUltahMonth('');
-        setUltahDay('');
-        setUltahRaw('');
-      }
+      setTahunAngkatan(found.tahunAngkatan || '2024–2027');
+
+      const parsed = parseBirthdayParts(found.ultah, found.tahunLahir);
+      setUltahYear(parsed.year || found.tahunLahir || '');
+      setUltahMonth(parsed.month || '');
+      setUltahDay(parsed.day || '');
+      setUltahRaw(parsed.full || '');
+
       setBio(found.bio || '');
       setGithub(found.github || '');
       setPortfolio(found.portfolio || '');
@@ -145,12 +150,17 @@ export default function MemberProfileForm({
     }
   }, [selectedId, members, currentActiveId]);
 
-  const handleMonthDayChange = (newMonth, newDay) => {
-    setUltahMonth(newMonth);
-    setUltahDay(newDay);
-    if (newMonth && newDay) {
-      const paddedDay = String(newDay).padStart(2, '0');
-      setUltahRaw(`${newMonth}-${paddedDay}`);
+  const updateDateCombination = (nextYear, nextMonth, nextDay) => {
+    const cleanY = String(nextYear || '').trim();
+    const cleanM = String(nextMonth || '').trim();
+    const cleanD = nextDay ? String(nextDay).padStart(2, '0') : '';
+
+    setUltahYear(cleanY);
+    setUltahMonth(cleanM);
+    setUltahDay(cleanD);
+
+    if (cleanM && cleanD) {
+      setUltahRaw(/^\d{4}$/.test(cleanY) ? `${cleanY}-${cleanM}-${cleanD}` : `${cleanM}-${cleanD}`);
     } else {
       setUltahRaw('');
     }
@@ -158,20 +168,19 @@ export default function MemberProfileForm({
 
   const handleRawUltahChange = (val) => {
     setUltahRaw(val);
-    const norm = normalizeMMDD(val);
-    if (norm) {
-      const [m, d] = norm.split('-');
-      setUltahMonth(m);
-      setUltahDay(d);
+    const parsed = parseBirthdayParts(val, ultahYear);
+    if (parsed.mmdd) {
+      if (parsed.year) setUltahYear(parsed.year);
+      setUltahMonth(parsed.month);
+      setUltahDay(parsed.day);
     }
   };
 
   const handleSetBirthdayToday = () => {
     const today = getTodayMMDD();
     const [m, d] = today.split('-');
-    setUltahMonth(m);
-    setUltahDay(d);
-    setUltahRaw(today);
+    const y = ultahYear && /^\d{4}$/.test(ultahYear) ? ultahYear : '2009';
+    updateDateCombination(y, m, d);
   };
 
   const handleFileUpload = async (e) => {
@@ -192,16 +201,19 @@ export default function MemberProfileForm({
   };
 
   const buildPayloadObject = () => {
-    const normUltah =
-      normalizeMMDD(ultahRaw) ||
-      (ultahMonth && ultahDay ? `${ultahMonth}-${String(ultahDay).padStart(2, '0')}` : '');
+    const parsed = parseBirthdayParts(
+      ultahRaw || (ultahMonth && ultahDay ? `${ultahMonth}-${ultahDay}` : ''),
+      ultahYear
+    );
     return {
       id: selectedId === 'new' ? undefined : Number(selectedId),
       nama: nama.trim(),
       panggilan: panggilan.trim(),
       peran: peran.trim() || 'Anggota',
       minat: minat.trim(),
-      ultah: normUltah,
+      tahunAngkatan: (tahunAngkatan || '2024–2027').trim(),
+      tahunLahir: parsed.year || ultahYear.trim(),
+      ultah: parsed.full,
       bio: bio.trim(),
       github: github.trim(),
       portfolio: portfolio.trim(),
@@ -229,7 +241,7 @@ export default function MemberProfileForm({
         setActiveMemberId(null);
       }
 
-      setSavedNotice(`Profil ${savedMember.nama} berhasil disimpan langsung ke Database Supabase!`);
+      setSavedNotice(`Profil ${savedMember.nama} (beserta data tahun) berhasil disimpan langsung ke Database Supabase!`);
       onSaved?.(savedMember);
     } catch (err) {
       setErrorMsg(err.message || 'Gagal menyimpan profil ke database.');
@@ -330,7 +342,7 @@ export default function MemberProfileForm({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-[#0B1D3A] mb-1.5">
                   Peran di Kelas
@@ -357,7 +369,7 @@ export default function MemberProfileForm({
                   list="minat-presets-list"
                   value={minat}
                   onChange={(e) => setMinat(e.target.value)}
-                  placeholder="Contoh: Frontend, Backend, UI/UX, Game Dev"
+                  placeholder="Frontend, Backend, UI/UX, Game Dev"
                   className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#D8CFC0] bg-[#FAF6EE] focus:bg-white focus:border-[#D97706] focus:outline-none min-h-[44px]"
                 />
                 <datalist id="minat-presets-list">
@@ -366,14 +378,36 @@ export default function MemberProfileForm({
                   ))}
                 </datalist>
               </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#0B1D3A] mb-1.5">
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-[#D97706]" />
+                    <span>Tahun Angkatan</span>
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  list="tahun-angkatan-presets"
+                  value={tahunAngkatan}
+                  onChange={(e) => setTahunAngkatan(e.target.value)}
+                  placeholder="Contoh: 2024–2027"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#D8CFC0] bg-[#FAF6EE] focus:bg-white focus:border-[#D97706] focus:outline-none min-h-[44px]"
+                />
+                <datalist id="tahun-angkatan-presets">
+                  {TAHUN_ANGKATAN_PRESETS.map((t) => (
+                    <option key={t} value={t} />
+                  ))}
+                </datalist>
+              </div>
             </div>
 
-            {/* Tanggal & Bulan Ulang Tahun (MM-DD) */}
+            {/* Tanggal, Bulan & Tahun Ulang Tahun (YYYY-MM-DD) */}
             <div className="p-4 rounded-2xl bg-[#FAF6EE] border border-[#E6DFD3] space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label className="text-xs font-bold text-[#0B1D3A] flex items-center gap-1.5">
                   <Cake className="w-4 h-4 text-[#D97706]" />
-                  <span>Tanggal &amp; Bulan Ulang Tahun (Format MM-DD)</span>
+                  <span>Tanggal, Bulan &amp; Tahun Lahir / Ulang Tahun</span>
                 </label>
                 <button
                   type="button"
@@ -384,30 +418,15 @@ export default function MemberProfileForm({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <span className="block text-[11px] text-slate-500 mb-1">Bulan (MM)</span>
-                  <select
-                    value={ultahMonth}
-                    onChange={(e) => handleMonthDayChange(e.target.value, ultahDay || '01')}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-[#D8CFC0] bg-white focus:border-[#D97706] focus:outline-none min-h-[42px]"
-                  >
-                    {BULAN_LIST.map((b) => (
-                      <option key={b.val} value={b.val}>
-                        {b.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div>
                   <span className="block text-[11px] text-slate-500 mb-1">Tanggal (DD)</span>
                   <select
                     value={ultahDay}
-                    onChange={(e) => handleMonthDayChange(ultahMonth || '01', e.target.value)}
+                    onChange={(e) => updateDateCombination(ultahYear, ultahMonth || '01', e.target.value)}
                     className="w-full px-3 py-2 text-sm rounded-xl border border-[#D8CFC0] bg-white focus:border-[#D97706] focus:outline-none min-h-[42px]"
                   >
-                    <option value="">-- Pilih Tanggal --</option>
+                    <option value="">-- Tanggal --</option>
                     {Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0')).map(
                       (d) => (
                         <option key={d} value={d}>
@@ -419,12 +438,46 @@ export default function MemberProfileForm({
                 </div>
 
                 <div>
-                  <span className="block text-[11px] text-slate-500 mb-1">Kode MM-DD</span>
+                  <span className="block text-[11px] text-slate-500 mb-1">Bulan (MM)</span>
+                  <select
+                    value={ultahMonth}
+                    onChange={(e) => updateDateCombination(ultahYear, e.target.value, ultahDay || '01')}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-[#D8CFC0] bg-white focus:border-[#D97706] focus:outline-none min-h-[42px]"
+                  >
+                    {BULAN_LIST.map((b) => (
+                      <option key={b.val} value={b.val}>
+                        {b.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <span className="block text-[11px] text-slate-500 mb-1">Tahun Lahir (YYYY)</span>
+                  <input
+                    type="number"
+                    min="1990"
+                    max="2027"
+                    list="tahun-lahir-presets"
+                    value={ultahYear}
+                    onChange={(e) => updateDateCombination(e.target.value, ultahMonth, ultahDay)}
+                    placeholder="Contoh: 2009"
+                    className="w-full px-3 py-2 text-sm font-mono rounded-xl border border-[#D8CFC0] bg-white focus:border-[#D97706] focus:outline-none min-h-[42px]"
+                  />
+                  <datalist id="tahun-lahir-presets">
+                    {TAHUN_LAHIR_PRESETS.map((y) => (
+                      <option key={y} value={y} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div>
+                  <span className="block text-[11px] text-slate-500 mb-1">Format YYYY-MM-DD</span>
                   <input
                     type="text"
                     value={ultahRaw}
                     onChange={(e) => handleRawUltahChange(e.target.value)}
-                    placeholder="Contoh: 11-19"
+                    placeholder="2009-11-19"
                     className="w-full px-3 py-2 text-sm font-mono rounded-xl border border-[#D8CFC0] bg-white focus:border-[#D97706] focus:outline-none min-h-[42px]"
                   />
                 </div>
@@ -535,7 +588,9 @@ export default function MemberProfileForm({
                     {peran} {minat ? `· ${minat}` : ''}
                   </p>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    {ultahRaw ? `Ultah: ${formatBirthdayIndonesian(ultahRaw)}` : 'Tanggal ultah belum diisi'}
+                    {ultahRaw
+                      ? `Lahir: ${formatBirthdayIndonesian(ultahRaw, ultahYear)}`
+                      : `Angkatan ${tahunAngkatan || '2024–2027'}`}
                   </p>
                 </div>
 

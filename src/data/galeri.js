@@ -35,7 +35,7 @@ export const albumGaleri = [
     id: 4,
     judul: "Para Buaya",
     kategori: "Kebersamaan",
-    tanggal: "Tahun Ajaran 2025/2026",
+    tanggal: "Angkatan 2024–2027",
     deskripsi: "Potret akrab dan kompak siswa laki-laki XII PPLG 3 saat bersantai bersama di sudut ruang kelas.",
     src: "/images/kenangan/para-buaya.jpg",
     thumb: "/images/kenangan/para-buaya.jpg"
@@ -125,7 +125,7 @@ export const albumGaleri = [
     id: 14,
     judul: "Napak Tilas Kenangan Pesisir Pantai",
     kategori: "Kebersamaan",
-    tanggal: "Tahun Ajaran 2025/2026",
+    tanggal: "Angkatan 2024–2027",
     deskripsi: "Potret monokrom penuh memori di bawah rindangnya pepohonan pesisir pantai bersama seluruh kawan seperjuangan XII PPLG 3.",
     src: "/images/kenangan/pantai-hitam-putih.jpg",
     thumb: "/images/kenangan/pantai-hitam-putih.jpg"

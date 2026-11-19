@@ -19,7 +19,7 @@ export default function StudentWall() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E6DFD3] pb-4">
           <div>
             <p className="text-xs font-semibold text-[#D97706]">
-              Keluarga Besar Angkatan 2023–2026
+              Keluarga Besar Angkatan 2024–2027
             </p>
             <h2 className="font-editorial text-2xl sm:text-3xl font-semibold text-[#0B1D3A] mt-1">
               Dinding {members.length} Nama Kenangan XII PPLG 3

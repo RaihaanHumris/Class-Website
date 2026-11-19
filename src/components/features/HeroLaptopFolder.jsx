@@ -147,7 +147,7 @@ export default function HeroLaptopFolder() {
               <Cpu className="w-3 h-3 text-[#00B4D8]" />
               <span className="font-semibold text-white">PPLG-OS</span>
             </div>
-            <span className="text-[#90E0EF]/80 truncate">MAKN Ende · 2023–2026</span>
+            <span className="text-[#90E0EF]/80 truncate">MAKN Ende · 2024–2027</span>
           </div>
 
           {/* Jendela File Explorer yang sedang membuka Folder XII PPLG 3 */}

@@ -483,7 +483,7 @@ function drawScrapbookPhotoSlot(ctx, {
 
     ctx.fillStyle = '#0f172a';
     ctx.font = `700 ${Math.round(21 * scale)}px "JetBrains Mono", monospace`;
-    ctx.fillText(photo?.tanggal || '2025/2026', px + 6 * scale, py + h + 74 * scale);
+    ctx.fillText(photo?.tanggal || '2024–2027', px + 6 * scale, py + h + 74 * scale);
   }
 
   // 4 sudut foto segitiga kertas cokelat klasik (Referensi 1)
@@ -670,7 +670,7 @@ export function renderAlbumPageSide({
   ctx.textAlign = side === 'left' ? 'left' : 'right';
   const headerX = side === 'left' ? 94 : W - 94;
   ctx.fillText(
-    side === 'left' ? 'ALBUM KENANGAN · XII PPLG 3' : 'MAKN ENDE · 2023–2026',
+    side === 'left' ? 'ALBUM KENANGAN · XII PPLG 3' : 'MAKN ENDE · 2024–2027',
     headerX,
     114
   );
@@ -933,7 +933,7 @@ export function createDeskCorkMemoGroup(samplePhotos, loadedImages, maxAnisotrop
     drawRuledIndexCard(octx, {
       photo: {
         kategori: 'XII PPLG 3',
-        tanggal: '2023–2026',
+        tanggal: '2024–2027',
         judul: 'Catatan Meja Kenangan',
         deskripsi: 'Klik sisi kanan buku untuk balik halaman, atau klik foto untuk zoom.',
       },

@@ -458,13 +458,22 @@ export async function fetchMemberProfilesFromDb() {
     if (!error && Array.isArray(tableRows)) {
       tableRows.forEach((row) => {
         if (row.member_id) {
+          const prev = profileMap[String(row.member_id)] || {};
+          const rawUltah = row.ultah || prev.ultah || '';
+          const inferredYear =
+            row.tahun_lahir ||
+            prev.tahunLahir ||
+            (rawUltah.split('-').length === 3 ? rawUltah.split('-')[0] : '');
           profileMap[String(row.member_id)] = {
+            ...prev,
             id: Number(row.member_id),
             nama: row.nama,
             panggilan: row.panggilan || '',
             peran: row.peran || 'Anggota',
             minat: row.minat || '',
-            ultah: row.ultah || '',
+            ultah: rawUltah,
+            tahunLahir: inferredYear,
+            tahunAngkatan: row.tahun_angkatan || prev.tahunAngkatan || '2024–2027',
             bio: row.bio || '',
             github: row.github || '',
             portfolio: row.portfolio || '',
@@ -503,6 +512,8 @@ export async function saveMemberProfileToDb(profile) {
     peran: (profile.peran || 'Anggota').trim(),
     minat: (profile.minat || '').trim(),
     ultah: (profile.ultah || '').trim(),
+    tahunLahir: (profile.tahunLahir || '').trim(),
+    tahunAngkatan: (profile.tahunAngkatan || '2024–2027').trim(),
     bio: (profile.bio || '').trim(),
     github: (profile.github || '').trim(),
     portfolio: (profile.portfolio || '').trim(),
@@ -532,11 +543,7 @@ export async function saveMemberProfileToDb(profile) {
       { onConflict: 'member_id' }
     );
 
-  if (!tableError) {
-    return normalizedRecord;
-  }
-
-  // 2. Fallback otomatis ke tabel memory_notes jika tabel member_profiles belum dibuat di SQL Editor
+  // Simpan juga ke fallback memory_notes agar field tambahan seperti tahunLahir & tahunAngkatan selalu sinkron 100%
   const safeNama = (normalizedRecord.nama || 'Anggota XII PPLG 3').slice(0, 80);
   const { error: fallbackError } = await client.from('memory_notes').insert({
     nama: safeNama.length >= 2 ? safeNama : 'Anggota PPLG 3',
@@ -544,7 +551,7 @@ export async function saveMemberProfileToDb(profile) {
     pesan: `UPDATE_PROFIL_ANGGOTA_${normalizedRecord.id}`,
   });
 
-  if (fallbackError) {
+  if (tableError && fallbackError) {
     throw new Error(`Gagal menyimpan profil ke database: ${fallbackError.message}`);
   }
 

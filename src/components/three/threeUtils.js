@@ -118,7 +118,7 @@ export function createPolaroidCardTexture(photo, imgEl = null, maxAnisotropy = 4
 
   ctx.fillStyle = '#64748B';
   ctx.font = '500 18px "Plus Jakarta Sans", sans-serif';
-  const meta = `${photo?.kategori || 'Kenangan'}  ·  ${photo?.tanggal || '2025/2026'}`;
+  const meta = `${photo?.kategori || 'Kenangan'}  ·  ${photo?.tanggal || '2024–2027'}`;
   ctx.fillText(meta, pad, pad + imgH + 92);
 
   const texture = new THREE.CanvasTexture(canvas);

@@ -41,38 +41,72 @@ export function getTodayMMDD(dateObj = new Date()) {
   return `${month}-${day}`;
 }
 
-export function normalizeMMDD(input) {
-  if (!input || typeof input !== 'string') return '';
-  const trimmed = input.trim();
-  const parts = trimmed.split('-');
-  if (parts.length === 3) {
-    const m = intInRange(parseInt(parts[1], 10), 1, 12);
-    const d = intInRange(parseInt(parts[2], 10), 1, 31);
-    if (!m || !d) return '';
-    return `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-  }
-  if (parts.length === 2) {
-    const m = intInRange(parseInt(parts[0], 10), 1, 12);
-    const d = intInRange(parseInt(parts[1], 10), 1, 31);
-    if (!m || !d) return '';
-    return `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-  }
-  return '';
-}
-
 function intInRange(val, min, max) {
   if (Number.isNaN(val) || val < min || val > max) return null;
   return val;
 }
 
-export function formatBirthdayIndonesian(mmdd) {
-  const norm = normalizeMMDD(mmdd);
-  if (!norm) return '';
-  const [mStr, dStr] = norm.split('-');
+export function parseBirthdayParts(input, explicitYear = '') {
+  const cleanYear = String(explicitYear || '').trim();
+  const validExplicitYear = /^\d{4}$/.test(cleanYear)
+    ? String(intInRange(parseInt(cleanYear, 10), 1990, 2030) || '')
+    : '';
+
+  if (!input || typeof input !== 'string') {
+    return { year: validExplicitYear, month: '', day: '', mmdd: '', full: '' };
+  }
+
+  const trimmed = input.trim();
+  const parts = trimmed.split('-');
+
+  if (parts.length === 3) {
+    const yRaw = parseInt(parts[0], 10);
+    const y = intInRange(yRaw, 1990, 2030);
+    const m = intInRange(parseInt(parts[1], 10), 1, 12);
+    const d = intInRange(parseInt(parts[2], 10), 1, 31);
+    const yearStr = y ? String(y) : validExplicitYear;
+    if (!m || !d) {
+      return { year: yearStr, month: '', day: '', mmdd: '', full: '' };
+    }
+    const mStr = String(m).padStart(2, '0');
+    const dStr = String(d).padStart(2, '0');
+    const mmdd = `${mStr}-${dStr}`;
+    const full = yearStr ? `${yearStr}-${mmdd}` : mmdd;
+    return { year: yearStr, month: mStr, day: dStr, mmdd, full };
+  }
+
+  if (parts.length === 2) {
+    const m = intInRange(parseInt(parts[0], 10), 1, 12);
+    const d = intInRange(parseInt(parts[1], 10), 1, 31);
+    if (!m || !d) {
+      return { year: validExplicitYear, month: '', day: '', mmdd: '', full: '' };
+    }
+    const mStr = String(m).padStart(2, '0');
+    const dStr = String(d).padStart(2, '0');
+    const mmdd = `${mStr}-${dStr}`;
+    const full = validExplicitYear ? `${validExplicitYear}-${mmdd}` : mmdd;
+    return { year: validExplicitYear, month: mStr, day: dStr, mmdd, full };
+  }
+
+  return { year: validExplicitYear, month: '', day: '', mmdd: '', full: '' };
+}
+
+export function normalizeBirthdayValue(input, explicitYear = '') {
+  return parseBirthdayParts(input, explicitYear).full;
+}
+
+export function normalizeMMDD(input) {
+  return parseBirthdayParts(input).mmdd;
+}
+
+export function formatBirthdayIndonesian(ultah, explicitYear = '') {
+  const { year, mmdd } = parseBirthdayParts(ultah, explicitYear);
+  if (!mmdd) return year ? `Tahun ${year}` : '';
+  const [mStr, dStr] = mmdd.split('-');
   const mIdx = parseInt(mStr, 10) - 1;
   const day = parseInt(dStr, 10);
-  if (mIdx < 0 || mIdx > 11 || Number.isNaN(day)) return norm;
-  return `${day} ${BULAN_INDO[mIdx]}`;
+  if (mIdx < 0 || mIdx > 11 || Number.isNaN(day)) return ultah;
+  return year ? `${day} ${BULAN_INDO[mIdx]} ${year}` : `${day} ${BULAN_INDO[mIdx]}`;
 }
 
 export function isBirthdayToday(mmdd, todayMMDD = getTodayMMDD()) {
@@ -169,6 +203,11 @@ export async function saveMemberProfile(profileData) {
     (m) => Number(m.id) === Number(profileData.id)
   );
 
+  const parsedBday = parseBirthdayParts(profileData.ultah, profileData.tahunLahir);
+  const fullUltah = parsedBday.full || '';
+  const tahunLahirVal = parsedBday.year || (profileData.tahunLahir || '').trim();
+  const tahunAngkatanVal = (profileData.tahunAngkatan || '2024–2027').trim();
+
   let targetRecord = null;
 
   if (existingBase) {
@@ -179,7 +218,9 @@ export async function saveMemberProfile(profileData) {
       peran: (profileData.peran || existingBase.peran || 'Anggota').trim(),
       minat: (profileData.minat || '').trim(),
       foto: profileData.foto !== undefined ? profileData.foto : existingBase.foto,
-      ultah: normalizeMMDD(profileData.ultah) || '',
+      ultah: fullUltah,
+      tahunLahir: tahunLahirVal,
+      tahunAngkatan: tahunAngkatanVal,
       bio: (profileData.bio || '').trim(),
       github: (profileData.github || '').trim(),
       portfolio: (profileData.portfolio || '').trim(),
@@ -199,7 +240,9 @@ export async function saveMemberProfile(profileData) {
         peran: (profileData.peran || prev.peran || 'Anggota').trim(),
         minat: (profileData.minat || '').trim(),
         foto: profileData.foto !== undefined ? profileData.foto : prev.foto,
-        ultah: normalizeMMDD(profileData.ultah) || '',
+        ultah: fullUltah,
+        tahunLahir: tahunLahirVal,
+        tahunAngkatan: tahunAngkatanVal,
         bio: (profileData.bio || '').trim(),
         github: (profileData.github || '').trim(),
         portfolio: (profileData.portfolio || '').trim(),
@@ -217,7 +260,9 @@ export async function saveMemberProfile(profileData) {
         minat: (profileData.minat || '').trim(),
         foto: profileData.foto || '',
         status: profileData.status || 'aktif',
-        ultah: normalizeMMDD(profileData.ultah) || '',
+        ultah: fullUltah,
+        tahunLahir: tahunLahirVal,
+        tahunAngkatan: tahunAngkatanVal,
         bio: (profileData.bio || '').trim(),
         github: (profileData.github || '').trim(),
         portfolio: (profileData.portfolio || '').trim(),

@@ -25,6 +25,8 @@ export default function MemberCard({
     periode,
     catatanKenangan,
     ultah,
+    tahunLahir,
+    tahunAngkatan,
     bio,
     github,
     portfolio,
@@ -35,10 +37,10 @@ export default function MemberCard({
   const isPengurus = !isSpecial && peran && peran !== 'Anggota';
   const effectivePhoto = approvedPhoto?.imageUrl || foto || '';
   const birthdayToday = isBirthdayToday(ultah);
-  const formattedUltah = formatBirthdayIndonesian(ultah);
+  const formattedUltah = formatBirthdayIndonesian(ultah, tahunLahir);
 
   const isProfileFilled = Boolean(
-    panggilan || minat || ultah || bio || github || portfolio || effectivePhoto
+    panggilan || minat || ultah || tahunLahir || bio || github || portfolio || effectivePhoto
   );
 
   if (isSpecial) {
@@ -195,7 +197,7 @@ export default function MemberCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
             <span className={isPengurus ? 'font-bold text-[#D97706]' : 'font-medium text-slate-500'}>
               {peran || 'Anggota'}
             </span>
@@ -205,20 +207,26 @@ export default function MemberCard({
                 <span className="text-slate-600 font-medium">"{panggilan}"</span>
               </>
             )}
+            {tahunAngkatan && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span className="font-mono text-[11px] text-slate-500">{tahunAngkatan}</span>
+              </>
+            )}
           </div>
 
           <h3 className="font-editorial font-semibold text-lg text-[#0B1D3A] leading-snug truncate mt-0.5">
             {nama}
           </h3>
 
-          {(minat || formattedUltah) && (
+          {(minat || formattedUltah || tahunLahir) && (
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500 mt-1">
               {minat && <span className="font-medium text-[#0B1D3A]/80">{minat}</span>}
-              {minat && formattedUltah && <span aria-hidden="true">·</span>}
-              {formattedUltah && (
+              {minat && (formattedUltah || tahunLahir) && <span aria-hidden="true">·</span>}
+              {(formattedUltah || tahunLahir) && (
                 <span className={`inline-flex items-center gap-1 ${birthdayToday ? 'text-[#D97706] font-bold' : 'text-slate-500'}`}>
                   <Cake className="w-3 h-3" />
-                  <span>{formattedUltah}</span>
+                  <span>{formattedUltah || `Tahun ${tahunLahir}`}</span>
                 </span>
               )}
             </div>
