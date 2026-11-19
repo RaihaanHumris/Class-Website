@@ -183,9 +183,20 @@ export default function Admin() {
       setSubmissions((prev) =>
         prev.map((row) => (row.id === id ? updated : row))
       );
+      if (status === 'approved' && updated?.kategori === MEMBER_PHOTO_CATEGORY) {
+        await syncMembersFromDatabase();
+        const refreshedProfiles = await fetchMemberProfilesFromDb();
+        setApprovedProfiles(
+          Object.values(refreshedProfiles || {}).sort(
+            (a, b) => Number(a.id) - Number(b.id)
+          )
+        );
+      }
       setActionMsg(
         status === 'approved'
-          ? 'Foto telah disetujui (apply) dan langsung tayang di Galeri Kenangan!'
+          ? updated?.kategori === MEMBER_PHOTO_CATEGORY
+            ? 'Foto profil siswa telah disetujui (apply) dan otomatis konsisten tayang di Meja Polaroid maupun Direktori Daftar!'
+            : 'Foto telah disetujui (apply) dan langsung tayang di Galeri Kenangan!'
           : 'Pengajuan foto ditandai sebagai ditolak.'
       );
     } catch (err) {
@@ -260,8 +271,10 @@ export default function Admin() {
         return [...filtered, approved].sort((a, b) => Number(a.id) - Number(b.id));
       });
       await syncMembersFromDatabase();
+      const updatedPhotos = await fetchAllPhotosForAdmin();
+      setSubmissions(updatedPhotos);
       setActionMsg(
-        `Profil anggota #${String(approved.id).padStart(2, '0')} ${approved.nama} telah dikonfirmasi (Apply) dan langsung tayang di Direktori Anggota!`
+        `Profil anggota #${String(approved.id).padStart(2, '0')} ${approved.nama} telah dikonfirmasi (Apply) dan otomatis konsisten tayang di Direktori Anggota maupun Meja Polaroid!`
       );
     } catch (err) {
       setActionErr(err.message || 'Gagal menyetujui pengajuan profil anggota.');
@@ -314,8 +327,15 @@ export default function Admin() {
       setStudentFile(null);
       setStudentUrl('');
       setStudentNote('');
+      await syncMembersFromDatabase();
+      const refreshedProfiles = await fetchMemberProfilesFromDb();
+      setApprovedProfiles(
+        Object.values(refreshedProfiles || {}).sort(
+          (a, b) => Number(a.id) - Number(b.id)
+        )
+      );
       setActionMsg(
-        `Foto profil untuk ${targetMember.badgeLabel} ${targetMember.name} langsung terpasang di Meja Kenangan!`
+        `Foto profil untuk ${targetMember.badgeLabel} ${targetMember.name} langsung terpasang secara konsisten di Meja Polaroid & Direktori Anggota!`
       );
     } catch (err) {
       setActionErr(err.message);
@@ -352,6 +372,22 @@ export default function Admin() {
         approvedStudentByKey[s.tanggal] = s;
       }
     });
+
+  // Gabungkan dengan foto profil dari Direktori Daftar yang sudah disetujui agar 1 foto konsisten di seluruh tempat
+  approvedProfiles.forEach((prof) => {
+    const numId = Number(prof.id);
+    if (numId >= 1 && numId <= 25 && prof.foto) {
+      const key = `member-${String(numId).padStart(2, '0')}`;
+      if (!approvedStudentByKey[key]) {
+        approvedStudentByKey[key] = {
+          id: `prof-${numId}`,
+          image_url: prof.foto,
+          tanggal: key,
+          fromDirectory: true,
+        };
+      }
+    }
+  });
 
   return (
     <div className="w-full bg-[#FAF8F3] min-h-screen pb-16">

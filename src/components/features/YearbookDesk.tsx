@@ -35,6 +35,10 @@ import {
   fetchApprovedMemberPhotos,
   submitMemberPhoto,
 } from '../../lib/supabase';
+import {
+  getMergedMembers,
+  syncMembersFromDatabase,
+} from '../../utils/memberStorage';
 
 const PENDING_CACHE_KEY = 'pplg3_pending_member_photos_v1';
 
@@ -969,10 +973,13 @@ export default function YearbookDesk() {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const [viewportSize, setViewportSize] = useState({ width: 1200, height: 720 });
 
-  // Approved photos from Supabase + local pending fallback feedback
+  // Approved photos from Supabase + local pending fallback feedback + Direktori Daftar members
   const [approvedPhotos, setApprovedPhotos] = useState<Record<string, ApprovedPhotoEntry>>({});
   const [pendingCache, setPendingCache] = useState<Record<string, PendingLocalEntry>>(() =>
     readPendingCache()
+  );
+  const [directoryMembers, setDirectoryMembers] = useState<any[]>(() =>
+    getMergedMembers()
   );
 
   // Desk Navigation State
@@ -1056,6 +1063,73 @@ export default function YearbookDesk() {
     refreshMemberPhotos();
   }, [refreshMemberPhotos]);
 
+  // Sinkronisasi otomatis dengan Direktori Daftar agar foto dari Direktori Daftar otomatis terpasang di Meja Polaroid
+  useEffect(() => {
+    const syncDir = () => {
+      setDirectoryMembers(getMergedMembers());
+    };
+    window.addEventListener('pplg3-members-updated', syncDir);
+    syncMembersFromDatabase().then((merged) => {
+      setDirectoryMembers(merged);
+    });
+    return () => window.removeEventListener('pplg3-members-updated', syncDir);
+  }, []);
+
+  const directoryById = useMemo(() => {
+    const map: Record<number, any> = {};
+    (directoryMembers || []).forEach((dm: any) => {
+      if (dm && dm.id) {
+        map[Number(dm.id)] = dm;
+      }
+    });
+    return map;
+  }, [directoryMembers]);
+
+  const deskMembers = useMemo<ClassMember[]>(() => {
+    return classMembers.map((m) => {
+      const dirM = m.attendanceNumber ? directoryById[m.attendanceNumber] : null;
+      if (!dirM) return m;
+      const dirFoto = String(dirM.foto || '').trim();
+      const dirRole =
+        dirM.peran && dirM.minat
+          ? `${dirM.peran} · ${dirM.minat}`
+          : dirM.minat || dirM.peran || m.role;
+      return {
+        ...m,
+        name: dirM.nama || m.name,
+        nickname: dirM.panggilan || m.nickname,
+        role: dirRole,
+        minat: dirM.minat || m.minat,
+        quote: dirM.bio || m.quote,
+        photoUrl: m.photoUrl || dirFoto,
+      };
+    });
+  }, [directoryById]);
+
+  const deskSequentialOrder = useMemo<ClassMember[]>(() => {
+    const byId: Record<number, ClassMember> = {};
+    deskMembers.forEach((m) => {
+      byId[m.id] = m;
+    });
+    return sequentialMemberOrder.map((m) => byId[m.id] || m);
+  }, [deskMembers]);
+
+  const directoryPendingByKey = useMemo<Record<string, PendingLocalEntry>>(() => {
+    const map: Record<string, PendingLocalEntry> = {};
+    deskMembers.forEach((m) => {
+      const dirM = m.attendanceNumber ? directoryById[m.attendanceNumber] : null;
+      const pendingFoto = String(dirM?.pendingProfile?.foto || '').trim();
+      if (pendingFoto) {
+        map[m.memberKey] = {
+          imageUrl: pendingFoto,
+          pengirim: dirM?.pendingProfile?.nama || m.name,
+          submittedAt: dirM?.pendingProfile?.submittedAt || '',
+        };
+      }
+    });
+    return map;
+  }, [deskMembers, directoryById]);
+
   // Fit-to-viewport base scale for overview mode (slightly zoomed in on portrait mobile so cards are legible)
   const baseOverviewScale = useMemo(() => {
     const isPortraitMobile = viewportSize.width < 640;
@@ -1076,17 +1150,17 @@ export default function YearbookDesk() {
   }, [viewportSize]);
 
   const focusedMember = useMemo(
-    () => classMembers.find((m) => m.id === focusedMemberId) || null,
-    [focusedMemberId]
+    () => deskMembers.find((m) => m.id === focusedMemberId) || null,
+    [deskMembers, focusedMemberId]
   );
 
   const memberByKey = useMemo(() => {
     const map: Record<string, ClassMember> = {};
-    classMembers.forEach((m) => {
+    deskMembers.forEach((m) => {
       map[m.memberKey] = m;
     });
     return map;
-  }, []);
+  }, [deskMembers]);
 
   const renderedStrings = useMemo(() => {
     return STRING_EDGES.map((edge, idx) => {
@@ -1121,8 +1195,8 @@ export default function YearbookDesk() {
 
   const sequentialIndex = useMemo(() => {
     if (!focusedMember) return -1;
-    return sequentialMemberOrder.findIndex((m) => m.id === focusedMember.id);
-  }, [focusedMember]);
+    return deskSequentialOrder.findIndex((m) => m.id === focusedMember.id);
+  }, [focusedMember, deskSequentialOrder]);
 
   // Camera target values
   const cameraScale = focusedMember ? focusScale : overviewScale;
@@ -1151,18 +1225,18 @@ export default function YearbookDesk() {
 
   const stepSequential = useCallback(
     (delta: number) => {
-      if (sequentialMemberOrder.length === 0) return;
+      if (deskSequentialOrder.length === 0) return;
       const currentIdx = sequentialIndex >= 0 ? sequentialIndex : 0;
       const nextIdx =
-        (currentIdx + delta + sequentialMemberOrder.length) %
-        sequentialMemberOrder.length;
-      const nextMember = sequentialMemberOrder[nextIdx];
+        (currentIdx + delta + deskSequentialOrder.length) %
+        deskSequentialOrder.length;
+      const nextMember = deskSequentialOrder[nextIdx];
       if (nextMember) {
         setFocusedMemberId(nextMember.id);
         setIsFlipped(false);
       }
     },
-    [sequentialIndex]
+    [sequentialIndex, deskSequentialOrder]
   );
 
   // Keyboard Navigation
@@ -1253,7 +1327,7 @@ export default function YearbookDesk() {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [];
     const normalizedNum = q.replace(/^#0*/, '');
-    return sequentialMemberOrder.filter((m) => {
+    return deskSequentialOrder.filter((m) => {
       const nameMatch = m.name.toLowerCase().includes(q) || m.nickname.toLowerCase().includes(q);
       const roleMatch = m.role.toLowerCase().includes(q) || m.minat.toLowerCase().includes(q);
       const badgeMatch = m.badgeLabel.toLowerCase().includes(q);
@@ -1263,7 +1337,7 @@ export default function YearbookDesk() {
         String(m.attendanceNumber) === normalizedNum;
       return nameMatch || roleMatch || badgeMatch || numMatch;
     });
-  }, [searchQuery]);
+  }, [searchQuery, deskSequentialOrder]);
 
   // Photo Upload Modal Handlers
   const openUploadModal = useCallback((member: ClassMember) => {
@@ -1340,14 +1414,14 @@ export default function YearbookDesk() {
   };
 
   const uploadedPhotoCount = useMemo(() => {
-    return classMembers.filter(
+    return deskMembers.filter(
       (m) => Boolean(approvedPhotos[m.memberKey]?.imageUrl || m.photoUrl)
     ).length;
-  }, [approvedPhotos]);
+  }, [deskMembers, approvedPhotos]);
 
-  const firstRegular = sequentialMemberOrder.find((m) => m.attendanceNumber === 1);
-  const firstSpecial = sequentialMemberOrder.find((m) => m.category === 'special');
-  const homeroomTeacher = sequentialMemberOrder.find(
+  const firstRegular = deskSequentialOrder.find((m) => m.attendanceNumber === 1);
+  const firstSpecial = deskSequentialOrder.find((m) => m.category === 'special');
+  const homeroomTeacher = deskSequentialOrder.find(
     (m) => m.category === 'homeroom_teacher'
   );
 
@@ -1686,12 +1760,15 @@ export default function YearbookDesk() {
               </svg>
 
               {/* Render All 26 Polaroid Cards */}
-              {classMembers.map((member) => (
+              {deskMembers.map((member) => (
                 <PolaroidCard
                   key={member.id}
                   member={member}
                   approvedPhoto={approvedPhotos[member.memberKey]}
-                  pendingLocal={pendingCache[member.memberKey]}
+                  pendingLocal={
+                    pendingCache[member.memberKey] ||
+                    directoryPendingByKey[member.memberKey]
+                  }
                   isFocused={focusedMemberId === member.id}
                   isAnyFocused={focusedMemberId !== null}
                   isFlipped={focusedMemberId === member.id && isFlipped}
@@ -1711,7 +1788,10 @@ export default function YearbookDesk() {
                 key={focusedMember.id}
                 member={focusedMember}
                 approvedPhoto={approvedPhotos[focusedMember.memberKey]}
-                pendingLocal={pendingCache[focusedMember.memberKey]}
+                pendingLocal={
+                  pendingCache[focusedMember.memberKey] ||
+                  directoryPendingByKey[focusedMember.memberKey]
+                }
                 isFlipped={isFlipped}
                 onToggleFlip={() => setIsFlipped((prev) => !prev)}
                 onOpenUpload={openUploadModal}

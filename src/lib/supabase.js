@@ -135,6 +135,45 @@ export async function fetchApprovedMemberPhotos() {
       };
     }
   });
+
+  // Gabungkan dua arah dengan foto profil yang disetujui di Direktori Daftar agar 100% konsisten satu foto
+  try {
+    const { data: noteRows } = await supabase
+      .from('memory_notes')
+      .select('*')
+      .like('peran', `${PROFILE_SYNC_PREFIX}%`)
+      .order('created_at', { ascending: true });
+
+    (noteRows || []).forEach((row) => {
+      try {
+        const parsed = JSON.parse(row.peran.slice(PROFILE_SYNC_PREFIX.length));
+        const numId = Number(parsed?.id);
+        const fotoUrl = String(parsed?.foto || '').trim();
+        if (numId >= 1 && numId <= 25 && fotoUrl) {
+          const memberKey = `member-${String(numId).padStart(2, '0')}`;
+          const existing = map[memberKey];
+          const profTime = parsed.updatedAt || row.created_at || '';
+          if (
+            !existing ||
+            !existing.approvedAt ||
+            String(profTime) >= String(existing.approvedAt)
+          ) {
+            map[memberKey] = {
+              rowId: existing?.rowId || `prof-${row.id}`,
+              imageUrl: fotoUrl,
+              caption: parsed.bio || `Foto profil ${parsed.nama || memberKey}`,
+              approvedAt: profTime,
+            };
+          }
+        }
+      } catch {
+        // abaikan
+      }
+    });
+  } catch {
+    // abaikan
+  }
+
   return map;
 }
 
@@ -233,6 +272,26 @@ export async function adminPublishMemberPhoto({
 
   if (error) {
     throw new Error(`Gagal memasang foto siswa: ${error.message}`);
+  }
+
+  // Sinkronkan otomatis ke Direktori Daftar jika member-01..member-25
+  const match = String(memberKey || '').match(/^member-(\d+)$/);
+  if (match) {
+    const memberId = Number(match[1]);
+    if (memberId >= 1 && memberId <= 25) {
+      try {
+        const existingProfiles = await fetchMemberProfilesFromDb();
+        const prev = existingProfiles[String(memberId)] || {};
+        await saveMemberProfileToDb({
+          ...prev,
+          id: memberId,
+          nama: prev.nama || memberName,
+          foto: finalImageUrl,
+        });
+      } catch {
+        // abaikan jika gagal sinkron
+      }
+    }
   }
 
   return data;
@@ -367,6 +426,33 @@ export async function reviewPhotoSubmission(id, status, adminNote = '') {
     throw new Error(`Gagal memperbarui status pengajuan: ${error.message}`);
   }
 
+  // Jika yang disetujui adalah Foto Profil Siswa (member-01..member-25), sinkronkan otomatis ke Direktori Daftar
+  if (
+    status === 'approved' &&
+    data &&
+    data.kategori === MEMBER_PHOTO_CATEGORY &&
+    data.image_url
+  ) {
+    const match = String(data.tanggal || '').match(/^member-(\d+)$/);
+    if (match) {
+      const memberId = Number(match[1]);
+      if (memberId >= 1 && memberId <= 25) {
+        try {
+          const existingProfiles = await fetchMemberProfilesFromDb();
+          const prev = existingProfiles[String(memberId)] || {};
+          await saveMemberProfileToDb({
+            ...prev,
+            id: memberId,
+            nama: prev.nama || data.pengirim_nama || `Anggota #${String(memberId).padStart(2, '0')}`,
+            foto: data.image_url,
+          });
+        } catch {
+          // abaikan
+        }
+      }
+    }
+  }
+
   return data;
 }
 
@@ -487,6 +573,39 @@ export async function fetchMemberProfilesFromDb() {
     }
   } catch {
     // tabel member_profiles belum ada, gunakan hasil dari fallback store
+  }
+
+  // 3. Sinkronkan dua arah dari photo_memories (Meja Polaroid) agar 1 foto konsisten untuk Direktori Daftar & Meja Polaroid
+  try {
+    const { data: polaroidRows } = await supabase
+      .from('photo_memories')
+      .select('*')
+      .eq('status', 'approved')
+      .eq('kategori', MEMBER_PHOTO_CATEGORY)
+      .order('created_at', { ascending: true });
+
+    (polaroidRows || []).forEach((row) => {
+      const match = String(row.tanggal || '').match(/^member-(\d+)$/);
+      if (match && row.image_url) {
+        const numId = Number(match[1]);
+        if (numId >= 1 && numId <= 25) {
+          const key = String(numId);
+          const prev = profileMap[key] || { id: numId };
+          const photoTime = row.reviewed_at || row.created_at || '';
+          const prevTime = prev.updatedAt || '';
+          if (!prev.foto || !prevTime || String(photoTime) >= String(prevTime)) {
+            profileMap[key] = {
+              ...prev,
+              id: numId,
+              foto: row.image_url,
+              updatedAt: photoTime || prev.updatedAt,
+            };
+          }
+        }
+      }
+    });
+  } catch {
+    // abaikan
   }
 
   return profileMap;
@@ -672,7 +791,34 @@ export async function approvePendingMemberProfileInDb(pendingProfile) {
     approvalStatus: 'approved',
   });
 
-  // 2. Hapus seluruh baris antrean pending untuk anggota tersebut di memory_notes
+  // 2. Jika profil yang disetujui memiliki foto (member 1..25), sinkronkan otomatis ke tabel photo_memories (Meja Polaroid) agar 1 foto konsisten di semua tempat
+  const numId = Number(approvedRecord.id);
+  if (approvedRecord.foto && numId >= 1 && numId <= 25) {
+    const memberKey = `member-${String(numId).padStart(2, '0')}`;
+    const badgeLabel = `#${String(numId).padStart(2, '0')}`;
+    const safeTitle = `Foto ${badgeLabel} · ${approvedRecord.nama}`.slice(0, 140);
+    const safeDesc = (
+      approvedRecord.bio ||
+      `Foto profil ${approvedRecord.nama} (${badgeLabel} · XII PPLG 3)`
+    ).slice(0, 800);
+    try {
+      await client.from('photo_memories').insert({
+        judul: safeTitle,
+        kategori: MEMBER_PHOTO_CATEGORY,
+        tanggal: memberKey,
+        deskripsi:
+          safeDesc.length >= 5 ? safeDesc : `${safeDesc} — XII PPLG 3 MAKN Ende`,
+        pengirim_nama: (approvedRecord.nama || 'Siswa XII PPLG 3').slice(0, 80),
+        image_url: approvedRecord.foto,
+        status: 'approved',
+        reviewed_at: new Date().toISOString(),
+      });
+    } catch {
+      // abaikan jika gagal insert ke photo_memories
+    }
+  }
+
+  // 3. Hapus seluruh baris antrean pending untuk anggota tersebut di memory_notes
   const rowIdsToDelete = Array.isArray(pendingProfile.noteRowIds) && pendingProfile.noteRowIds.length > 0
     ? pendingProfile.noteRowIds
     : pendingProfile.noteRowId

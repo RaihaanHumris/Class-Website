@@ -39,43 +39,52 @@ export default function Anggota({ onOpenBirthdayModal }) {
   const formRef = useRef(null);
 
   useEffect(() => {
+    const loadApprovedPhotos = () => {
+      if (!isSupabaseConfigured) return;
+      fetchApprovedMemberPhotos()
+        .then((map) => setApprovedPhotos(map))
+        .catch(() => {});
+    };
+
     const sync = () => {
       setMembers(getMergedMembers());
       setActiveId(getActiveMemberId());
+      loadApprovedPhotos();
     };
+
     window.addEventListener('pplg3-members-updated', sync);
     syncMembersFromDatabase();
+    loadApprovedPhotos();
     return () => window.removeEventListener('pplg3-members-updated', sync);
   }, []);
 
-  useEffect(() => {
-    if (!isSupabaseConfigured) return;
-    let mounted = true;
-    fetchApprovedMemberPhotos()
-      .then((map) => {
-        if (mounted) setApprovedPhotos(map);
-      })
-      .catch(() => {});
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  // Konsistensi 1 foto untuk seluruh tampilan profil (Direktori Daftar, Form Profil, Penghormatan Khusus, & Meja Polaroid)
+  const unifiedMembers = useMemo(() => {
+    return members.map((m) => {
+      const memberKey = `member-${String(m.id).padStart(2, '0')}`;
+      const polaroidFoto = approvedPhotos[memberKey]?.imageUrl || '';
+      return {
+        ...m,
+        foto: m.foto || polaroidFoto || '',
+      };
+    });
+  }, [members, approvedPhotos]);
 
   const siswaAktifList = useMemo(
-    () => members.filter((m) => m.status === 'aktif'),
-    [members]
+    () => unifiedMembers.filter((m) => m.status === 'aktif'),
+    [unifiedMembers]
   );
   const sahabatPindahList = useMemo(
-    () => members.filter((m) => m.status === 'pindah'),
-    [members]
+    () => unifiedMembers.filter((m) => m.status === 'pindah'),
+    [unifiedMembers]
   );
   const pengurusList = useMemo(
-    () => members.filter((m) => m.status === 'aktif' && m.peran && m.peran !== 'Anggota'),
-    [members]
+    () => unifiedMembers.filter((m) => m.status === 'aktif' && m.peran && m.peran !== 'Anggota'),
+    [unifiedMembers]
   );
 
   const filteredAnggota = useMemo(() => {
-    return members.filter((siswa) => {
+    return unifiedMembers.filter((siswa) => {
       const q = searchTerm.toLowerCase();
       const matchSearch =
         siswa.nama.toLowerCase().includes(q) ||
@@ -95,10 +104,10 @@ export default function Anggota({ onOpenBirthdayModal }) {
       }
       return matchSearch;
     });
-  }, [members, searchTerm, roleFilter]);
+  }, [unifiedMembers, searchTerm, roleFilter]);
 
   const filterTabs = [
-    { key: 'Semua', label: `Semua (${members.length})` },
+    { key: 'Semua', label: `Semua (${unifiedMembers.length})` },
     { key: 'Siswa Aktif', label: `Siswa Aktif (${siswaAktifList.length})` },
     { key: 'Pengurus', label: `Pengurus (${pengurusList.length})` },
     { key: 'Sahabat Pindah', label: `Sahabat Pindah (${sahabatPindahList.length})` },
@@ -127,7 +136,7 @@ export default function Anggota({ onOpenBirthdayModal }) {
 
   const handleCopyAllJson = async () => {
     try {
-      await navigator.clipboard.writeText(JSON.stringify(members, null, 2));
+      await navigator.clipboard.writeText(JSON.stringify(unifiedMembers, null, 2));
       setCopiedAllJson(true);
       setTimeout(() => setCopiedAllJson(false), 3000);
     } catch {
@@ -136,8 +145,8 @@ export default function Anggota({ onOpenBirthdayModal }) {
   };
 
   const activeUserObj = useMemo(
-    () => members.find((m) => Number(m.id) === Number(activeMemberId)),
-    [members, activeMemberId]
+    () => unifiedMembers.find((m) => Number(m.id) === Number(activeMemberId)),
+    [unifiedMembers, activeMemberId]
   );
 
   return (
@@ -198,7 +207,10 @@ export default function Anggota({ onOpenBirthdayModal }) {
       ) : (
         <>
           {/* Penghormatan Spesial untuk 3 Sahabat yang Pindah Sekolah */}
-          <SpecialAlumniSection />
+          <SpecialAlumniSection
+            members={sahabatPindahList}
+            approvedPhotos={approvedPhotos}
+          />
 
           {/* Area Direktori Daftar + Tombol Tambah / Lengkapi Profil */}
           <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
@@ -266,7 +278,7 @@ export default function Anggota({ onOpenBirthdayModal }) {
             {/* Form Input / Lengkapi Profil Anggota */}
             {showProfileForm && (
               <MemberProfileForm
-                members={members}
+                members={unifiedMembers}
                 initialMember={editingMember}
                 onClose={() => {
                   setShowProfileForm(false);
