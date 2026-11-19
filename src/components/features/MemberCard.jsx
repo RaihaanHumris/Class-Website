@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cake, Github, Globe, UserCheck, Pencil, Sparkles } from 'lucide-react';
+import { Cake, Github, Globe, UserCheck, Pencil, Sparkles, Clock } from 'lucide-react';
 import { getInitials } from '../../utils/helpers';
 import {
   formatBirthdayIndonesian,
@@ -30,6 +30,7 @@ export default function MemberCard({
     bio,
     github,
     portfolio,
+    hasPendingApproval,
   } = anggota;
 
   const initials = getInitials(nama);
@@ -52,18 +53,26 @@ export default function MemberCard({
             : 'bg-[#FFFDF9] border border-amber-300/80 shadow-xs hover:border-[#D97706]'
         }`}
       >
-        {(birthdayToday || isActiveUser) && (
+        {(birthdayToday || isActiveUser || hasPendingApproval) && (
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            {birthdayToday && (
-              <button
-                type="button"
-                onClick={() => onCelebrateBirthday?.(anggota)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-[#D97706] to-[#EA580C] text-white text-[11px] font-bold shadow-xs cursor-pointer"
-              >
-                <Cake className="w-3.5 h-3.5" />
-                <span>Ulang Tahun Hari Ini!</span>
-              </button>
-            )}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {birthdayToday && (
+                <button
+                  type="button"
+                  onClick={() => onCelebrateBirthday?.(anggota)}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-[#D97706] to-[#EA580C] text-white text-[11px] font-bold shadow-xs cursor-pointer"
+                >
+                  <Cake className="w-3.5 h-3.5" />
+                  <span>Ulang Tahun Hari Ini!</span>
+                </button>
+              )}
+              {hasPendingApproval && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 border border-amber-300 text-[#B45309] text-[11px] font-bold">
+                  <Clock className="w-3 h-3" />
+                  <span>Menunggu Konfirmasi Admin</span>
+                </span>
+              )}
+            </div>
             {isActiveUser && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#0B1D3A] text-amber-300 text-[11px] font-semibold">
                 <UserCheck className="w-3 h-3" />
@@ -148,20 +157,26 @@ export default function MemberCard({
           : 'bg-[#FFFDF9] border border-[#E6DFD3] shadow-xs hover:border-[#D97706]/60'
       }`}
     >
-      {(birthdayToday || isActiveUser) && (
+      {(birthdayToday || isActiveUser || hasPendingApproval) && (
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          {birthdayToday ? (
-            <button
-              type="button"
-              onClick={() => onCelebrateBirthday?.(anggota)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-[#D97706] to-[#EA580C] text-white text-[11px] font-bold shadow-xs cursor-pointer"
-            >
-              <Cake className="w-3.5 h-3.5" />
-              <span>Ulang Tahun Hari Ini!</span>
-            </button>
-          ) : (
-            <span />
-          )}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {birthdayToday && (
+              <button
+                type="button"
+                onClick={() => onCelebrateBirthday?.(anggota)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-[#D97706] to-[#EA580C] text-white text-[11px] font-bold shadow-xs cursor-pointer"
+              >
+                <Cake className="w-3.5 h-3.5" />
+                <span>Ulang Tahun Hari Ini!</span>
+              </button>
+            )}
+            {hasPendingApproval && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 border border-amber-300 text-[#B45309] text-[11px] font-bold">
+                <Clock className="w-3 h-3" />
+                <span>Menunggu Konfirmasi Admin</span>
+              </span>
+            )}
+          </div>
 
           {isActiveUser && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#0B1D3A] text-amber-300 text-[11px] font-semibold">
@@ -234,14 +249,18 @@ export default function MemberCard({
         </div>
       </div>
 
-      {/* Bio / Kutipan Singkat atau Status Belum Diisi */}
+      {/* Bio / Kutipan Singkat atau Status Belum Diisi / Menunggu Konfirmasi */}
       {bio ? (
         <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4 line-clamp-3">
           “{bio}”
         </p>
+      ) : hasPendingApproval ? (
+        <div className="mb-4 p-3 rounded-xl bg-amber-50/80 border border-amber-300/80 text-xs text-amber-900 leading-relaxed">
+          Pengajuan profil sudah dikirim dan sedang <strong className="text-[#B45309]">menunggu konfirmasi (Apply) dari Admin</strong> sebelum tampil resmi.
+        </div>
       ) : !isProfileFilled ? (
         <div className="mb-4 p-3 rounded-xl bg-[#FAF6EE] border border-dashed border-[#D8CFC0] text-xs text-slate-500 leading-relaxed">
-          Data profil belum diisi. Ketuk <strong className="text-[#0B1D3A]">Isi Profil</strong> di bawah untuk melengkapi data ke database.
+          Data profil belum diisi. Ketuk <strong className="text-[#0B1D3A]">Isi Profil</strong> di bawah untuk mengajukan data ke Admin.
         </div>
       ) : null}
 

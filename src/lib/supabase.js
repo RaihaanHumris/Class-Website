@@ -386,6 +386,7 @@ export async function deletePhotoSubmission(id) {
 }
 
 const PROFILE_SYNC_PREFIX = '__MEMBER_PROFILE_V1__:';
+const PROFILE_PENDING_PREFIX = '__MEMBER_PROFILE_PENDING_V1__:';
 const PROJECT_SYNC_PREFIX = '__STUDENT_PROJECT_V1__:';
 
 /**
@@ -559,6 +560,156 @@ export async function saveMemberProfileToDb(profile) {
 }
 
 /**
+ * Siswa: Kirim pengajuan edit/isi profil anggota ke database (status: 'pending' menunggu konfirmasi Admin)
+ */
+export async function submitPendingMemberProfileToDb(profile) {
+  const client = ensureClient();
+
+  let finalFoto = profile.foto || '';
+  if (finalFoto.startsWith('data:image')) {
+    finalFoto = await uploadDataUrlToStorage(
+      finalFoto,
+      `pending-avatar-member-${profile.id || 'new'}`
+    );
+  }
+
+  const pendingRecord = {
+    id: Number(profile.id),
+    nama: (profile.nama || '').trim(),
+    panggilan: (profile.panggilan || '').trim(),
+    peran: (profile.peran || 'Anggota').trim(),
+    minat: (profile.minat || '').trim(),
+    ultah: (profile.ultah || '').trim(),
+    tahunLahir: (profile.tahunLahir || '').trim(),
+    tahunAngkatan: (profile.tahunAngkatan || '2024–2027').trim(),
+    bio: (profile.bio || '').trim(),
+    github: (profile.github || '').trim(),
+    portfolio: (profile.portfolio || '').trim(),
+    foto: finalFoto,
+    status: profile.status || 'aktif',
+    approvalStatus: 'pending',
+    submittedAt: new Date().toISOString(),
+  };
+
+  const safeNama = (pendingRecord.nama || 'Anggota XII PPLG 3').slice(0, 80);
+  const { data, error } = await client
+    .from('memory_notes')
+    .insert({
+      nama: safeNama.length >= 2 ? safeNama : 'Anggota PPLG 3',
+      peran: `${PROFILE_PENDING_PREFIX}${JSON.stringify(pendingRecord)}`,
+      pesan: `PENGAJUAN_PROFIL_ANGGOTA_${pendingRecord.id}`,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Gagal mengirim pengajuan profil ke database: ${error.message}`);
+  }
+
+  return {
+    ...pendingRecord,
+    noteRowId: data?.id,
+  };
+}
+
+/**
+ * Ambil seluruh pengajuan edit profil anggota yang masih berstatus 'pending' (menunggu konfirmasi Admin)
+ * Mengembalikan { list: [...], byMemberId: { [id]: pendingObj } }
+ */
+export async function fetchPendingMemberProfilesFromDb() {
+  if (!supabase) return { list: [], byMemberId: {} };
+  const byMemberId = {};
+
+  try {
+    const { data: noteRows, error } = await supabase
+      .from('memory_notes')
+      .select('*')
+      .like('peran', `${PROFILE_PENDING_PREFIX}%`)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      return { list: [], byMemberId: {} };
+    }
+
+    (noteRows || []).forEach((row) => {
+      try {
+        const rawJson = row.peran.slice(PROFILE_PENDING_PREFIX.length);
+        const parsed = JSON.parse(rawJson);
+        if (parsed && parsed.id) {
+          const key = String(parsed.id);
+          const prevRowIds = byMemberId[key]?.noteRowIds || [];
+          byMemberId[key] = {
+            ...parsed,
+            noteRowId: row.id,
+            noteRowIds: [...prevRowIds, row.id],
+            submittedAt: parsed.submittedAt || row.created_at,
+          };
+        }
+      } catch {
+        // abaikan baris yang gagal di-parse
+      }
+    });
+  } catch {
+    // abaikan jika gagal
+  }
+
+  const list = Object.values(byMemberId).sort((a, b) =>
+    String(b.submittedAt || '').localeCompare(String(a.submittedAt || ''))
+  );
+
+  return { list, byMemberId };
+}
+
+/**
+ * Admin: Setujui (Konfirmasi & Terbitkan) pengajuan edit profil anggota
+ */
+export async function approvePendingMemberProfileInDb(pendingProfile) {
+  const client = ensureClient();
+
+  // 1. Simpan profil resmi ke database (status: approved)
+  const approvedRecord = await saveMemberProfileToDb({
+    ...pendingProfile,
+    approvalStatus: 'approved',
+  });
+
+  // 2. Hapus seluruh baris antrean pending untuk anggota tersebut di memory_notes
+  const rowIdsToDelete = Array.isArray(pendingProfile.noteRowIds) && pendingProfile.noteRowIds.length > 0
+    ? pendingProfile.noteRowIds
+    : pendingProfile.noteRowId
+    ? [pendingProfile.noteRowId]
+    : [];
+
+  if (rowIdsToDelete.length > 0) {
+    await client.from('memory_notes').delete().in('id', rowIdsToDelete);
+  }
+
+  return approvedRecord;
+}
+
+/**
+ * Admin: Tolak & hapus pengajuan edit profil anggota dari antrean
+ */
+export async function rejectPendingMemberProfileInDb(pendingProfile) {
+  const client = ensureClient();
+  const rowIdsToDelete = Array.isArray(pendingProfile.noteRowIds) && pendingProfile.noteRowIds.length > 0
+    ? pendingProfile.noteRowIds
+    : pendingProfile.noteRowId
+    ? [pendingProfile.noteRowId]
+    : [];
+
+  if (rowIdsToDelete.length > 0) {
+    const { error } = await client
+      .from('memory_notes')
+      .delete()
+      .in('id', rowIdsToDelete);
+    if (error) {
+      throw new Error(`Gagal menolak pengajuan profil: ${error.message}`);
+    }
+  }
+  return true;
+}
+
+/**
  * Ambil seluruh proyek siswa dari database Supabase
  */
 export async function fetchStudentProjectsFromDb() {
@@ -713,6 +864,7 @@ export async function fetchMemoryNotes() {
   return (data || []).filter(
     (row) =>
       !String(row.peran || '').startsWith(PROFILE_SYNC_PREFIX) &&
+      !String(row.peran || '').startsWith(PROFILE_PENDING_PREFIX) &&
       !String(row.peran || '').startsWith(PROJECT_SYNC_PREFIX)
   );
 }

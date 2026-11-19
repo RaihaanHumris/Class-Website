@@ -13,6 +13,7 @@ import {
   Code2,
   Database,
   Calendar,
+  Clock,
 } from 'lucide-react';
 import { getInitials } from '../../utils/helpers';
 import {
@@ -129,23 +130,30 @@ export default function MemberProfileForm({
 
     const found = members.find((m) => String(m.id) === String(selectedId));
     if (found) {
-      setNama(found.nama || '');
-      setPanggilan(found.panggilan || '');
-      setPeran(found.peran || 'Anggota');
-      setMinat(found.minat || '');
-      setTahunAngkatan(found.tahunAngkatan || '2024–2027');
+      const source = found.pendingProfile || found;
+      setNama(source.nama || found.nama || '');
+      setPanggilan(source.panggilan || '');
+      setPeran(source.peran || 'Anggota');
+      setMinat(source.minat || '');
+      setTahunAngkatan(source.tahunAngkatan || '2024–2027');
 
-      const parsed = parseBirthdayParts(found.ultah, found.tahunLahir);
-      setUltahYear(parsed.year || found.tahunLahir || '');
+      const parsed = parseBirthdayParts(source.ultah, source.tahunLahir);
+      setUltahYear(parsed.year || source.tahunLahir || '');
       setUltahMonth(parsed.month || '');
       setUltahDay(parsed.day || '');
       setUltahRaw(parsed.full || '');
 
-      setBio(found.bio || '');
-      setGithub(found.github || '');
-      setPortfolio(found.portfolio || '');
-      setFotoData(found.foto || '');
-      setPhotoInfo(found.foto ? 'Foto profil tersimpan' : '');
+      setBio(source.bio || '');
+      setGithub(source.github || '');
+      setPortfolio(source.portfolio || '');
+      setFotoData(source.foto || '');
+      setPhotoInfo(
+        found.pendingProfile && source.foto
+          ? 'Foto profil menunggu konfirmasi Admin'
+          : source.foto
+          ? 'Foto profil tersimpan'
+          : ''
+      );
       setIsMe(Number(currentActiveId) === Number(found.id));
     }
   }, [selectedId, members, currentActiveId]);
@@ -241,10 +249,12 @@ export default function MemberProfileForm({
         setActiveMemberId(null);
       }
 
-      setSavedNotice(`Profil ${savedMember.nama} (beserta data tahun) berhasil disimpan langsung ke Database Supabase!`);
+      setSavedNotice(
+        `Pengajuan perubahan profil ${savedMember.nama} berhasil dikirim ke database dan sedang menunggu konfirmasi (Apply) dari Admin!`
+      );
       onSaved?.(savedMember);
     } catch (err) {
-      setErrorMsg(err.message || 'Gagal menyimpan profil ke database.');
+      setErrorMsg(err.message || 'Gagal mengirim pengajuan profil ke database.');
     } finally {
       setSavingDb(false);
     }
@@ -270,8 +280,8 @@ export default function MemberProfileForm({
       <div className="bg-[#0B1D3A] text-white px-5 sm:px-7 py-5 flex items-center justify-between gap-4 border-b border-white/10">
         <div>
           <span className="text-xs font-semibold text-amber-300 inline-flex items-center gap-1.5">
-            <Database className="w-3.5 h-3.5" />
-            <span>Tersimpan Langsung ke Database Supabase &amp; Perangkat</span>
+            <Clock className="w-3.5 h-3.5" />
+            <span>Dikirim ke Database &amp; Menunggu Konfirmasi Admin Sebelum Tayang</span>
           </span>
           <h2 className="font-editorial text-xl sm:text-2xl font-semibold text-white mt-0.5">
             Tambah / Lengkapi Profil Anggota XII PPLG 3
@@ -304,10 +314,20 @@ export default function MemberProfileForm({
             {members.map((m) => (
               <option key={m.id} value={String(m.id)}>
                 #{String(m.id).padStart(2, '0')} — {m.nama} ({m.peran || 'Anggota'})
+                {m.hasPendingApproval ? ' · [Menunggu Konfirmasi Admin]' : ''}
               </option>
             ))}
             <option value="new">+ Tambah Anggota Baru</option>
           </select>
+
+          {members.find((m) => String(m.id) === String(selectedId))?.hasPendingApproval && (
+            <div className="mt-2 p-3 rounded-xl bg-amber-50 border border-amber-300/80 text-xs text-amber-900 flex items-start gap-2">
+              <Clock className="w-4 h-4 text-[#D97706] shrink-0 mt-0.5" />
+              <span>
+                <strong>Menunggu Konfirmasi Admin:</strong> Profil anggota ini memiliki pengajuan perubahan yang sedang dalam antrean Admin. Data di bawah menampilkan draf pengajuan terakhir Anda.
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -688,7 +708,11 @@ export default function MemberProfileForm({
               className="min-h-[44px] px-5 py-2.5 rounded-xl bg-[#0B1D3A] hover:bg-[#142d59] disabled:opacity-60 text-white text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition-colors cursor-pointer shadow-xs"
             >
               <Database className="w-4 h-4 text-amber-400" />
-              <span>{savingDb ? 'Menyimpan ke Database...' : 'Simpan Profil ke Database'}</span>
+              <span>
+                {savingDb
+                  ? 'Mengirim Pengajuan ke Admin...'
+                  : 'Kirim Pengajuan Profil ke Admin'}
+              </span>
             </button>
 
             <button

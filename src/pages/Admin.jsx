@@ -14,6 +14,10 @@ import {
   MessageSquare,
   Users,
   Camera,
+  UserCheck,
+  Cake,
+  Github,
+  Globe,
 } from 'lucide-react';
 import {
   isSupabaseConfigured,
@@ -29,8 +33,17 @@ import {
   MEMBER_PHOTO_CATEGORY,
   fetchMemoryNotes,
   deleteMemoryNote,
+  fetchPendingMemberProfilesFromDb,
+  fetchMemberProfilesFromDb,
+  approvePendingMemberProfileInDb,
+  rejectPendingMemberProfileInDb,
 } from '../lib/supabase';
 import { sequentialMemberOrder } from '../data/classMembers';
+import { getInitials } from '../utils/helpers';
+import {
+  formatBirthdayIndonesian,
+  syncMembersFromDatabase,
+} from '../utils/memberStorage';
 
 const SCHEMA_SQL_SNIPPET = `-- Jalankan di Supabase SQL Editor (lihat juga file /supabase/schema.sql)
 create table if not exists public.photo_memories (
@@ -58,9 +71,12 @@ export default function Admin() {
   const [signingIn, setSigningIn] = useState(false);
 
   // Admin data state
-  const [activeTab, setActiveTab] = useState('pending'); // 'pending' | 'students' | 'all' | 'upload' | 'notes'
+  const [activeTab, setActiveTab] = useState('profiles'); // 'profiles' | 'pending' | 'students' | 'all' | 'upload' | 'notes'
   const [submissions, setSubmissions] = useState([]);
   const [notes, setNotes] = useState([]);
+  const [pendingProfiles, setPendingProfiles] = useState([]);
+  const [approvedProfiles, setApprovedProfiles] = useState([]);
+  const [processingProfileId, setProcessingProfileId] = useState(null);
   const [loadingData, setLoadingData] = useState(false);
   const [actionMsg, setActionMsg] = useState('');
   const [actionErr, setActionErr] = useState('');
@@ -106,12 +122,21 @@ export default function Admin() {
     setLoadingData(true);
     setActionErr('');
     try {
-      const [photoRows, noteRows] = await Promise.all([
-        fetchAllPhotosForAdmin(),
-        fetchMemoryNotes(),
-      ]);
+      const [photoRows, noteRows, pendingProfileRes, approvedProfileMap] =
+        await Promise.all([
+          fetchAllPhotosForAdmin(),
+          fetchMemoryNotes(),
+          fetchPendingMemberProfilesFromDb(),
+          fetchMemberProfilesFromDb(),
+        ]);
       setSubmissions(photoRows);
       setNotes(noteRows);
+      setPendingProfiles(pendingProfileRes?.list || []);
+      setApprovedProfiles(
+        Object.values(approvedProfileMap || {}).sort(
+          (a, b) => Number(a.id) - Number(b.id)
+        )
+      );
     } catch (err) {
       setActionErr(err.message);
     } finally {
@@ -218,6 +243,50 @@ export default function Admin() {
       setActionMsg('Pesan buku kenangan dihapus.');
     } catch (err) {
       setActionErr(err.message);
+    }
+  };
+
+  const handleApproveMemberProfile = async (pendingItem) => {
+    setActionErr('');
+    setActionMsg('');
+    setProcessingProfileId(pendingItem.id);
+    try {
+      const approved = await approvePendingMemberProfileInDb(pendingItem);
+      setPendingProfiles((prev) =>
+        prev.filter((p) => Number(p.id) !== Number(pendingItem.id))
+      );
+      setApprovedProfiles((prev) => {
+        const filtered = prev.filter((p) => Number(p.id) !== Number(approved.id));
+        return [...filtered, approved].sort((a, b) => Number(a.id) - Number(b.id));
+      });
+      await syncMembersFromDatabase();
+      setActionMsg(
+        `Profil anggota #${String(approved.id).padStart(2, '0')} ${approved.nama} telah dikonfirmasi (Apply) dan langsung tayang di Direktori Anggota!`
+      );
+    } catch (err) {
+      setActionErr(err.message || 'Gagal menyetujui pengajuan profil anggota.');
+    } finally {
+      setProcessingProfileId(null);
+    }
+  };
+
+  const handleRejectMemberProfile = async (pendingItem) => {
+    setActionErr('');
+    setActionMsg('');
+    setProcessingProfileId(pendingItem.id);
+    try {
+      await rejectPendingMemberProfileInDb(pendingItem);
+      setPendingProfiles((prev) =>
+        prev.filter((p) => Number(p.id) !== Number(pendingItem.id))
+      );
+      await syncMembersFromDatabase();
+      setActionMsg(
+        `Pengajuan perubahan profil #${String(pendingItem.id).padStart(2, '0')} ${pendingItem.nama} telah ditolak.`
+      );
+    } catch (err) {
+      setActionErr(err.message || 'Gagal menolak pengajuan profil anggota.');
+    } finally {
+      setProcessingProfileId(null);
     }
   };
 
@@ -432,13 +501,13 @@ export default function Admin() {
               <div className="p-5 rounded-2xl bg-white border border-slate-200/80">
                 <p className="text-xs text-slate-500">Menunggu Persetujuan</p>
                 <p className="font-editorial text-3xl font-semibold text-amber-600 mt-1 tabular-nums">
-                  {pendingItems.length + pendingStudentItems.length}
+                  {pendingProfiles.length + pendingItems.length + pendingStudentItems.length}
                 </p>
               </div>
               <div className="p-5 rounded-2xl bg-white border border-slate-200/80">
-                <p className="text-xs text-slate-500">Disetujui &amp; Tayang</p>
+                <p className="text-xs text-slate-500">Profil Anggota Disetujui</p>
                 <p className="font-editorial text-3xl font-semibold text-emerald-700 mt-1 tabular-nums">
-                  {approvedItems.length}
+                  {approvedProfiles.length} / 25
                 </p>
               </div>
               <div className="p-5 rounded-2xl bg-white border border-slate-200/80">
@@ -471,6 +540,7 @@ export default function Admin() {
             {/* Tabs Navigasi Admin */}
             <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
               {[
+                { id: 'profiles', label: `Konfirmasi Profil Anggota (${pendingProfiles.length})`, icon: UserCheck },
                 { id: 'pending', label: `Antrean Foto Acara (${pendingItems.length})`, icon: Clock },
                 { id: 'students', label: `Kelola Foto Siswa (${pendingStudentItems.length})`, icon: Users },
                 { id: 'all', label: `Semua Foto DB (${submissions.length})`, icon: CheckCircle2 },
@@ -495,6 +565,224 @@ export default function Admin() {
                 );
               })}
             </div>
+
+            {/* Tab 0: Konfirmasi Edit / Isi Profil Anggota (Direktori Daftar) */}
+            {activeTab === 'profiles' && (
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <div>
+                    <h2 className="font-editorial text-xl font-semibold text-[#03045E]">
+                      Antrean Konfirmasi Profil Anggota ({pendingProfiles.length})
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Setiap anggota yang mengisi atau mengubah profil mereka di halaman Direktori Anggota harus dikonfirmasi (Apply) oleh Admin sebelum tampil resmi.
+                    </p>
+                  </div>
+
+                  {loadingData ? (
+                    <p className="text-sm text-slate-500 py-8 text-center">
+                      Memuat antrean pengajuan profil anggota...
+                    </p>
+                  ) : pendingProfiles.length === 0 ? (
+                    <div className="p-10 rounded-2xl bg-white border border-slate-200 text-center space-y-1.5">
+                      <p className="font-semibold text-sm text-[#03045E]">
+                        Belum ada pengajuan edit profil anggota yang menunggu konfirmasi
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Ketika anggota mengisi atau mengedit profil di Direktori Daftar (/anggota), pengajuannya akan muncul di sini.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {pendingProfiles.map((item) => {
+                        const formattedBday = formatBirthdayIndonesian(
+                          item.ultah,
+                          item.tahunLahir
+                        );
+                        const isBusy =
+                          Number(processingProfileId) === Number(item.id);
+                        return (
+                          <article
+                            key={`pending-prof-${item.id}`}
+                            className="bg-white border-2 border-amber-200 rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-xs"
+                          >
+                            <div className="space-y-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-center gap-3.5">
+                                  {item.foto ? (
+                                    <img
+                                      src={item.foto}
+                                      alt={item.nama}
+                                      referrerPolicy="no-referrer"
+                                      className="w-14 h-14 rounded-full object-cover border-2 border-[#D97706] shrink-0"
+                                    />
+                                  ) : (
+                                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#D97706] to-[#EA580C] text-white font-editorial font-bold text-lg flex items-center justify-center shrink-0">
+                                      {getInitials(item.nama)}
+                                    </div>
+                                  )}
+                                  <div>
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-[#B45309] font-mono text-[11px] font-bold">
+                                      #{String(item.id).padStart(2, '0')} · Menunggu Konfirmasi
+                                    </span>
+                                    <h3 className="font-editorial font-semibold text-lg text-[#03045E] mt-0.5">
+                                      {item.nama}
+                                    </h3>
+                                    <p className="text-xs text-slate-500">
+                                      {item.peran || 'Anggota'}
+                                      {item.panggilan ? ` · "${item.panggilan}"` : ''}
+                                      {item.tahunAngkatan ? ` · Angkatan ${item.tahunAngkatan}` : ''}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3.5 rounded-xl bg-[#FAF8F3] border border-slate-200/80 text-xs">
+                                <div>
+                                  <span className="text-slate-400 block text-[11px]">
+                                    Minat / Spesialisasi PPLG
+                                  </span>
+                                  <span className="font-semibold text-[#03045E]">
+                                    {item.minat || '—'}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-slate-400 block text-[11px]">
+                                    Tanggal &amp; Tahun Lahir
+                                  </span>
+                                  <span className="font-semibold text-[#03045E] inline-flex items-center gap-1">
+                                    <Cake className="w-3.5 h-3.5 text-[#D97706]" />
+                                    <span>{formattedBday || '—'}</span>
+                                  </span>
+                                </div>
+                                {item.github && (
+                                  <div className="sm:col-span-2 truncate">
+                                    <span className="text-slate-400 block text-[11px]">
+                                      GitHub
+                                    </span>
+                                    <a
+                                      href={item.github}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-mono text-[#0077B6] hover:underline inline-flex items-center gap-1"
+                                    >
+                                      <Github className="w-3 h-3" />
+                                      <span>{item.github}</span>
+                                    </a>
+                                  </div>
+                                )}
+                                {item.portfolio && (
+                                  <div className="sm:col-span-2 truncate">
+                                    <span className="text-slate-400 block text-[11px]">
+                                      Portofolio / Sosmed
+                                    </span>
+                                    <a
+                                      href={item.portfolio}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-mono text-[#0077B6] hover:underline inline-flex items-center gap-1"
+                                    >
+                                      <Globe className="w-3 h-3" />
+                                      <span>{item.portfolio}</span>
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+
+                              {item.bio && (
+                                <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-200/70 text-xs text-slate-700 italic">
+                                  “{item.bio}”
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2.5 pt-3 border-t border-slate-100">
+                              <button
+                                type="button"
+                                disabled={isBusy}
+                                onClick={() => handleApproveMemberProfile(item)}
+                                className="flex-1 min-h-[40px] px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                              >
+                                <Check className="w-4 h-4" />
+                                <span>
+                                  {isBusy
+                                    ? 'Memproses...'
+                                    : 'Setujui & Terbitkan Profil'}
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                disabled={isBusy}
+                                onClick={() => handleRejectMemberProfile(item)}
+                                className="min-h-[40px] px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 disabled:opacity-60 text-rose-700 border border-rose-200 text-xs font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                                <span>Tolak</span>
+                              </button>
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Daftar Profil Anggota yang Sudah Disetujui */}
+                <div className="space-y-3 pt-4 border-t border-slate-200">
+                  <h3 className="font-heading font-bold text-base text-[#03045E]">
+                    Profil Anggota yang Sudah Dikonfirmasi &amp; Tayang ({approvedProfiles.length})
+                  </h3>
+                  {approvedProfiles.length === 0 ? (
+                    <p className="text-xs text-slate-500">
+                      Belum ada profil anggota yang dikonfirmasi di database.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                      {approvedProfiles.map((prof) => (
+                        <div
+                          key={`approved-prof-${prof.id}`}
+                          className="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center gap-3"
+                        >
+                          {prof.foto ? (
+                            <img
+                              src={prof.foto}
+                              alt={prof.nama}
+                              referrerPolicy="no-referrer"
+                              className="w-11 h-11 rounded-full object-cover border border-emerald-500 shrink-0"
+                            />
+                          ) : (
+                            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#D97706] to-[#EA580C] text-white font-editorial font-bold text-sm flex items-center justify-center shrink-0">
+                              {getInitials(prof.nama)}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">
+                                #{String(prof.id).padStart(2, '0')} · Tayang
+                              </span>
+                              {prof.tahunAngkatan && (
+                                <span className="font-mono text-[10px] text-slate-400">
+                                  {prof.tahunAngkatan}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs font-bold text-[#03045E] truncate mt-0.5">
+                              {prof.nama}
+                            </p>
+                            <p className="text-[11px] text-slate-500 truncate">
+                              {prof.minat || prof.peran || 'Anggota'}
+                              {prof.ultah
+                                ? ` · ${formatBirthdayIndonesian(prof.ultah, prof.tahunLahir)}`
+                                : ''}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Tab 1: Antrean Pending */}
             {activeTab === 'pending' && (

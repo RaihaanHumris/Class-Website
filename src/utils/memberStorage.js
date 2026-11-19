@@ -3,12 +3,14 @@ import { daftarProjects } from '../data/projects';
 import {
   isSupabaseConfigured,
   fetchMemberProfilesFromDb,
-  saveMemberProfileToDb,
+  submitPendingMemberProfileToDb,
+  fetchPendingMemberProfilesFromDb,
   fetchStudentProjectsFromDb,
   saveStudentProjectToDb,
 } from '../lib/supabase';
 
 const MEMBER_OVERRIDES_KEY = 'pplg3_member_overrides_v2';
+const PENDING_MEMBER_SUBMISSIONS_KEY = 'pplg3_pending_member_submissions_v2';
 const CUSTOM_MEMBERS_KEY = 'pplg3_custom_members_v2';
 const ACTIVE_MEMBER_ID_KEY = 'pplg3_active_member_id_v2';
 const CUSTOM_PROJECTS_KEY = 'pplg3_custom_projects_v2';
@@ -124,6 +126,15 @@ export function readMemberOverrides() {
   }
 }
 
+export function readPendingMemberSubmissions() {
+  try {
+    const raw = localStorage.getItem(PENDING_MEMBER_SUBMISSIONS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
 export function readCustomMembers() {
   try {
     const raw = localStorage.getItem(CUSTOM_MEMBERS_KEY);
@@ -135,56 +146,78 @@ export function readCustomMembers() {
 
 export function getMergedMembers() {
   const overrides = readMemberOverrides();
+  const pendingMap = readPendingMemberSubmissions();
   const customList = readCustomMembers();
 
   const mergedBase = daftarAnggota.map((member) => {
-    const override = overrides[String(member.id)];
-    if (!override) return member;
+    const key = String(member.id);
+    const override = overrides[key];
+    const pendingProfile = pendingMap[key] || null;
+    const baseWithApproved = override
+      ? {
+          ...member,
+          ...override,
+          id: member.id,
+          isApprovedProfile: true,
+        }
+      : member;
+
     return {
-      ...member,
-      ...override,
-      id: member.id,
-      isUpdatedLocal: true,
+      ...baseWithApproved,
+      hasPendingApproval: Boolean(pendingProfile),
+      pendingProfile,
     };
   });
 
-  return [...mergedBase, ...customList];
+  const mergedCustom = customList.map((member) => {
+    const key = String(member.id);
+    const pendingProfile = pendingMap[key] || null;
+    return {
+      ...member,
+      hasPendingApproval: Boolean(pendingProfile),
+      pendingProfile,
+    };
+  });
+
+  return [...mergedBase, ...mergedCustom];
 }
 
 /**
- * Sinkronisasi data profil anggota dari database Supabase ke state lokal
+ * Sinkronisasi data profil anggota (yang sudah disetujui Admin & yang masih menunggu konfirmasi) dari database Supabase
  */
 export async function syncMembersFromDatabase() {
   if (!isSupabaseConfigured) return getMergedMembers();
   try {
-    const dbMap = await fetchMemberProfilesFromDb();
-    if (!dbMap || Object.keys(dbMap).length === 0) {
-      return getMergedMembers();
-    }
+    const [dbMap, pendingRes] = await Promise.all([
+      fetchMemberProfilesFromDb(),
+      fetchPendingMemberProfilesFromDb(),
+    ]);
 
-    const overrides = readMemberOverrides();
-    const customList = readCustomMembers();
+    const overrides = {};
+    const customList = [];
     const baseIds = new Set(daftarAnggota.map((m) => Number(m.id)));
 
-    Object.values(dbMap).forEach((dbProfile) => {
+    Object.values(dbMap || {}).forEach((dbProfile) => {
       const numId = Number(dbProfile.id);
       if (baseIds.has(numId)) {
         overrides[String(numId)] = {
-          ...(overrides[String(numId)] || {}),
           ...dbProfile,
+          isApprovedProfile: true,
         };
       } else {
-        const idx = customList.findIndex((c) => Number(c.id) === numId);
-        if (idx !== -1) {
-          customList[idx] = { ...customList[idx], ...dbProfile };
-        } else {
-          customList.push({ ...dbProfile, isCustomLocal: true });
-        }
+        customList.push({
+          ...dbProfile,
+          isCustomLocal: true,
+          isApprovedProfile: true,
+        });
       }
     });
 
+    const pendingByMemberId = pendingRes?.byMemberId || {};
+
     localStorage.setItem(MEMBER_OVERRIDES_KEY, JSON.stringify(overrides));
     localStorage.setItem(CUSTOM_MEMBERS_KEY, JSON.stringify(customList));
+    localStorage.setItem(PENDING_MEMBER_SUBMISSIONS_KEY, JSON.stringify(pendingByMemberId));
     notifyMembersUpdated();
     return getMergedMembers();
   } catch {
@@ -193,11 +226,10 @@ export async function syncMembersFromDatabase() {
 }
 
 /**
- * Simpan profil anggota ke database Supabase sekaligus cache localStorage
+ * Kirim pengajuan edit/isi profil anggota ke database untuk menunggu konfirmasi Admin
  */
 export async function saveMemberProfile(profileData) {
-  const overrides = readMemberOverrides();
-  const customList = readCustomMembers();
+  const pendingMap = readPendingMemberSubmissions();
 
   const existingBase = daftarAnggota.find(
     (m) => Number(m.id) === Number(profileData.id)
@@ -208,91 +240,48 @@ export async function saveMemberProfile(profileData) {
   const tahunLahirVal = parsedBday.year || (profileData.tahunLahir || '').trim();
   const tahunAngkatanVal = (profileData.tahunAngkatan || '2024–2027').trim();
 
-  let targetRecord = null;
+  const allCurrent = getMergedMembers();
+  const maxId = allCurrent.reduce((acc, item) => Math.max(acc, Number(item.id) || 0), 25);
+  const targetId = existingBase
+    ? existingBase.id
+    : profileData.id
+    ? Number(profileData.id)
+    : maxId + 1;
 
-  if (existingBase) {
-    targetRecord = {
-      ...existingBase,
-      nama: (profileData.nama || existingBase.nama).trim(),
-      panggilan: (profileData.panggilan || '').trim(),
-      peran: (profileData.peran || existingBase.peran || 'Anggota').trim(),
-      minat: (profileData.minat || '').trim(),
-      foto: profileData.foto !== undefined ? profileData.foto : existingBase.foto,
-      ultah: fullUltah,
-      tahunLahir: tahunLahirVal,
-      tahunAngkatan: tahunAngkatanVal,
-      bio: (profileData.bio || '').trim(),
-      github: (profileData.github || '').trim(),
-      portfolio: (profileData.portfolio || '').trim(),
-      status: existingBase.status || 'aktif',
-      updatedAt: new Date().toISOString(),
-    };
-  } else {
-    const existingCustomIdx = customList.findIndex(
-      (m) => Number(m.id) === Number(profileData.id)
-    );
-    if (existingCustomIdx !== -1) {
-      const prev = customList[existingCustomIdx];
-      targetRecord = {
-        ...prev,
-        nama: (profileData.nama || prev.nama).trim(),
-        panggilan: (profileData.panggilan || '').trim(),
-        peran: (profileData.peran || prev.peran || 'Anggota').trim(),
-        minat: (profileData.minat || '').trim(),
-        foto: profileData.foto !== undefined ? profileData.foto : prev.foto,
-        ultah: fullUltah,
-        tahunLahir: tahunLahirVal,
-        tahunAngkatan: tahunAngkatanVal,
-        bio: (profileData.bio || '').trim(),
-        github: (profileData.github || '').trim(),
-        portfolio: (profileData.portfolio || '').trim(),
-        status: prev.status || 'aktif',
-        updatedAt: new Date().toISOString(),
-      };
-    } else {
-      const allCurrent = getMergedMembers();
-      const maxId = allCurrent.reduce((acc, item) => Math.max(acc, Number(item.id) || 0), 25);
-      targetRecord = {
-        id: maxId + 1,
-        nama: (profileData.nama || 'Anggota Baru').trim(),
-        panggilan: (profileData.panggilan || '').trim(),
-        peran: (profileData.peran || 'Anggota').trim(),
-        minat: (profileData.minat || '').trim(),
-        foto: profileData.foto || '',
-        status: profileData.status || 'aktif',
-        ultah: fullUltah,
-        tahunLahir: tahunLahirVal,
-        tahunAngkatan: tahunAngkatanVal,
-        bio: (profileData.bio || '').trim(),
-        github: (profileData.github || '').trim(),
-        portfolio: (profileData.portfolio || '').trim(),
-        isCustomLocal: true,
-        updatedAt: new Date().toISOString(),
-      };
-    }
-  }
+  let targetRecord = {
+    id: targetId,
+    nama: (profileData.nama || existingBase?.nama || 'Anggota Baru').trim(),
+    panggilan: (profileData.panggilan || '').trim(),
+    peran: (profileData.peran || existingBase?.peran || 'Anggota').trim(),
+    minat: (profileData.minat || '').trim(),
+    foto:
+      profileData.foto !== undefined
+        ? profileData.foto
+        : existingBase?.foto || '',
+    ultah: fullUltah,
+    tahunLahir: tahunLahirVal,
+    tahunAngkatan: tahunAngkatanVal,
+    bio: (profileData.bio || '').trim(),
+    github: (profileData.github || '').trim(),
+    portfolio: (profileData.portfolio || '').trim(),
+    status: existingBase?.status || profileData.status || 'aktif',
+    approvalStatus: 'pending',
+    isPendingApproval: true,
+    submittedAt: new Date().toISOString(),
+  };
 
-  // Simpan langsung ke database Supabase jika terkonfigurasi
   if (isSupabaseConfigured) {
-    const dbSaved = await saveMemberProfileToDb(targetRecord);
+    const dbPending = await submitPendingMemberProfileToDb(targetRecord);
     targetRecord = {
       ...targetRecord,
-      ...dbSaved,
+      ...dbPending,
+      approvalStatus: 'pending',
+      isPendingApproval: true,
     };
   }
 
-  if (existingBase) {
-    overrides[String(existingBase.id)] = targetRecord;
-    localStorage.setItem(MEMBER_OVERRIDES_KEY, JSON.stringify(overrides));
-  } else {
-    const idx = customList.findIndex((c) => Number(c.id) === Number(targetRecord.id));
-    if (idx !== -1) {
-      customList[idx] = targetRecord;
-    } else {
-      customList.push(targetRecord);
-    }
-    localStorage.setItem(CUSTOM_MEMBERS_KEY, JSON.stringify(customList));
-  }
+  pendingMap[String(targetRecord.id)] = targetRecord;
+  localStorage.setItem(PENDING_MEMBER_SUBMISSIONS_KEY, JSON.stringify(pendingMap));
 
   notifyMembersUpdated();
   return targetRecord;
