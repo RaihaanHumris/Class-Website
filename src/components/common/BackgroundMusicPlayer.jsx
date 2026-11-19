@@ -521,7 +521,7 @@ export default function BackgroundMusicPlayer() {
       )}
 
       {/* Compact Floating Music Controller — Responsive for Mobile (above bottom nav) & Desktop */}
-      <div className="fixed bottom-[68px] left-3 right-3 sm:right-auto lg:bottom-4 lg:left-4 z-40 pointer-events-none flex items-center justify-start">
+      <div className="fixed bottom-[74px] left-3 right-3 sm:right-auto lg:bottom-4 lg:left-4 z-40 pointer-events-none flex items-center justify-start">
         {minimized ? (
           <button
             type="button"

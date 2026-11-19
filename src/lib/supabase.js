@@ -385,8 +385,312 @@ export async function deletePhotoSubmission(id) {
   }
 }
 
+const PROFILE_SYNC_PREFIX = '__MEMBER_PROFILE_V1__:';
+const PROJECT_SYNC_PREFIX = '__STUDENT_PROJECT_V1__:';
+
 /**
- * Buku Kenangan: Ambil catatan/pesan angkatan
+ * Konversi base64 dataURL (hasil kompresi canvas 400x400) ke Blob & unggah ke Supabase Storage
+ */
+export async function uploadDataUrlToStorage(dataUrl, prefix = 'profile') {
+  if (!supabase || !dataUrl || !dataUrl.startsWith('data:image')) {
+    return dataUrl;
+  }
+  try {
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const filePath = `submissions/${prefix}-${Date.now()}.jpg`;
+    const { error: uploadError } = await supabase.storage
+      .from('kenangan-photos')
+      .upload(filePath, blob, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: blob.type || 'image/jpeg',
+      });
+    if (uploadError) {
+      return dataUrl;
+    }
+    const { data } = supabase.storage
+      .from('kenangan-photos')
+      .getPublicUrl(filePath);
+    return data?.publicUrl || dataUrl;
+  } catch {
+    return dataUrl;
+  }
+}
+
+/**
+ * Ambil seluruh profil anggota yang telah diisi/diubah di database Supabase
+ */
+export async function fetchMemberProfilesFromDb() {
+  if (!supabase) return {};
+  const profileMap = {};
+
+  // 1. Baca dari memory_notes fallback store (diurutkan dari terlama ke terbaru agar yang terbaru menimpa)
+  try {
+    const { data: noteRows } = await supabase
+      .from('memory_notes')
+      .select('*')
+      .like('peran', `${PROFILE_SYNC_PREFIX}%`)
+      .order('created_at', { ascending: true });
+
+    (noteRows || []).forEach((row) => {
+      try {
+        const rawJson = row.peran.slice(PROFILE_SYNC_PREFIX.length);
+        const parsed = JSON.parse(rawJson);
+        if (parsed && parsed.id) {
+          profileMap[String(parsed.id)] = parsed;
+        }
+      } catch {
+        // abaikan baris yang gagal di-parse
+      }
+    });
+  } catch {
+    // abaikan jika gagal
+  }
+
+  // 2. Baca dari tabel member_profiles jika sudah dibuat di Supabase
+  try {
+    const { data: tableRows, error } = await supabase
+      .from('member_profiles')
+      .select('*')
+      .order('updated_at', { ascending: true });
+
+    if (!error && Array.isArray(tableRows)) {
+      tableRows.forEach((row) => {
+        if (row.member_id) {
+          profileMap[String(row.member_id)] = {
+            id: Number(row.member_id),
+            nama: row.nama,
+            panggilan: row.panggilan || '',
+            peran: row.peran || 'Anggota',
+            minat: row.minat || '',
+            ultah: row.ultah || '',
+            bio: row.bio || '',
+            github: row.github || '',
+            portfolio: row.portfolio || '',
+            foto: row.foto || '',
+            status: row.status || 'aktif',
+            updatedAt: row.updated_at,
+          };
+        }
+      });
+    }
+  } catch {
+    // tabel member_profiles belum ada, gunakan hasil dari fallback store
+  }
+
+  return profileMap;
+}
+
+/**
+ * Simpan/perbarui profil anggota langsung ke database Supabase
+ */
+export async function saveMemberProfileToDb(profile) {
+  const client = ensureClient();
+
+  let finalFoto = profile.foto || '';
+  if (finalFoto.startsWith('data:image')) {
+    finalFoto = await uploadDataUrlToStorage(
+      finalFoto,
+      `avatar-member-${profile.id || 'new'}`
+    );
+  }
+
+  const normalizedRecord = {
+    id: Number(profile.id),
+    nama: (profile.nama || '').trim(),
+    panggilan: (profile.panggilan || '').trim(),
+    peran: (profile.peran || 'Anggota').trim(),
+    minat: (profile.minat || '').trim(),
+    ultah: (profile.ultah || '').trim(),
+    bio: (profile.bio || '').trim(),
+    github: (profile.github || '').trim(),
+    portfolio: (profile.portfolio || '').trim(),
+    foto: finalFoto,
+    status: profile.status || 'aktif',
+    updatedAt: new Date().toISOString(),
+  };
+
+  // 1. Coba upsert ke tabel member_profiles
+  const { error: tableError } = await client
+    .from('member_profiles')
+    .upsert(
+      {
+        member_id: normalizedRecord.id,
+        nama: normalizedRecord.nama,
+        panggilan: normalizedRecord.panggilan,
+        peran: normalizedRecord.peran,
+        minat: normalizedRecord.minat,
+        ultah: normalizedRecord.ultah,
+        bio: normalizedRecord.bio,
+        github: normalizedRecord.github,
+        portfolio: normalizedRecord.portfolio,
+        foto: normalizedRecord.foto,
+        status: normalizedRecord.status,
+        updated_at: normalizedRecord.updatedAt,
+      },
+      { onConflict: 'member_id' }
+    );
+
+  if (!tableError) {
+    return normalizedRecord;
+  }
+
+  // 2. Fallback otomatis ke tabel memory_notes jika tabel member_profiles belum dibuat di SQL Editor
+  const safeNama = (normalizedRecord.nama || 'Anggota XII PPLG 3').slice(0, 80);
+  const { error: fallbackError } = await client.from('memory_notes').insert({
+    nama: safeNama.length >= 2 ? safeNama : 'Anggota PPLG 3',
+    peran: `${PROFILE_SYNC_PREFIX}${JSON.stringify(normalizedRecord)}`,
+    pesan: `UPDATE_PROFIL_ANGGOTA_${normalizedRecord.id}`,
+  });
+
+  if (fallbackError) {
+    throw new Error(`Gagal menyimpan profil ke database: ${fallbackError.message}`);
+  }
+
+  return normalizedRecord;
+}
+
+/**
+ * Ambil seluruh proyek siswa dari database Supabase
+ */
+export async function fetchStudentProjectsFromDb() {
+  if (!supabase) return [];
+  const projectsById = new Map();
+
+  // 1. Baca dari memory_notes fallback store
+  try {
+    const { data: noteRows } = await supabase
+      .from('memory_notes')
+      .select('*')
+      .like('peran', `${PROJECT_SYNC_PREFIX}%`)
+      .order('created_at', { ascending: false });
+
+    (noteRows || []).forEach((row) => {
+      try {
+        const rawJson = row.peran.slice(PROJECT_SYNC_PREFIX.length);
+        const parsed = JSON.parse(rawJson);
+        if (parsed && parsed.id && !projectsById.has(String(parsed.id))) {
+          projectsById.set(String(parsed.id), {
+            ...parsed,
+            dbNoteRowId: row.id,
+          });
+        }
+      } catch {
+        // abaikan
+      }
+    });
+  } catch {
+    // abaikan
+  }
+
+  // 2. Baca dari tabel student_projects jika sudah dibuat
+  try {
+    const { data: tableRows, error } = await supabase
+      .from('student_projects')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && Array.isArray(tableRows)) {
+      tableRows.forEach((row) => {
+        const item = {
+          id: String(row.id),
+          judul: row.judul,
+          deskripsi: row.deskripsi,
+          kategori: row.kategori || 'Web App',
+          teknologi: Array.isArray(row.teknologi) ? row.teknologi : [],
+          memberIds: Array.isArray(row.member_ids)
+            ? row.member_ids.map((n) => Number(n))
+            : [],
+          githubUrl: row.github_url || '',
+          demoUrl: row.demo_url || '',
+          statusRepo: row.status_repo || 'Public Repo · Active',
+          tahun: row.tahun || '2026',
+          createdAt: row.created_at,
+        };
+        projectsById.set(item.id, item);
+      });
+    }
+  } catch {
+    // gunakan fallback
+  }
+
+  return Array.from(projectsById.values());
+}
+
+/**
+ * Simpan proyek siswa baru langsung ke database Supabase
+ */
+export async function saveStudentProjectToDb(projectInput) {
+  const client = ensureClient();
+
+  const teknologiArr = Array.isArray(projectInput.teknologi)
+    ? projectInput.teknologi
+    : String(projectInput.teknologi || '')
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+  const memberIdsArr = Array.isArray(projectInput.memberIds)
+    ? projectInput.memberIds.map((id) => Number(id)).filter(Boolean)
+    : [];
+
+  const record = {
+    id: projectInput.id || `proj-${Date.now()}`,
+    judul: (projectInput.judul || '').trim(),
+    deskripsi: (projectInput.deskripsi || '').trim(),
+    kategori: (projectInput.kategori || 'Web App').trim(),
+    teknologi: teknologiArr,
+    memberIds: memberIdsArr,
+    githubUrl: (projectInput.githubUrl || 'https://github.com').trim(),
+    demoUrl: (projectInput.demoUrl || '').trim(),
+    statusRepo: (projectInput.statusRepo || 'Public Repo · Active').trim(),
+    tahun: (projectInput.tahun || String(new Date().getFullYear())).trim(),
+    createdAt: new Date().toISOString(),
+  };
+
+  // 1. Coba insert ke tabel student_projects
+  const { data: insertedRow, error: tableError } = await client
+    .from('student_projects')
+    .insert({
+      judul: record.judul,
+      deskripsi: record.deskripsi,
+      kategori: record.kategori,
+      teknologi: record.teknologi,
+      member_ids: record.memberIds,
+      github_url: record.githubUrl,
+      demo_url: record.demoUrl,
+      status_repo: record.statusRepo,
+      tahun: record.tahun,
+    })
+    .select()
+    .single();
+
+  if (!tableError && insertedRow) {
+    return {
+      ...record,
+      id: String(insertedRow.id),
+      createdAt: insertedRow.created_at,
+    };
+  }
+
+  // 2. Fallback otomatis ke tabel memory_notes jika tabel student_projects belum dibuat
+  const safeNama = (record.judul || 'Project XII PPLG 3').slice(0, 80);
+  const { error: fallbackError } = await client.from('memory_notes').insert({
+    nama: safeNama.length >= 2 ? safeNama : 'Project PPLG 3',
+    peran: `${PROJECT_SYNC_PREFIX}${JSON.stringify(record)}`,
+    pesan: `TAMBAH_PROJECT_${record.id}`,
+  });
+
+  if (fallbackError) {
+    throw new Error(`Gagal menyimpan proyek ke database: ${fallbackError.message}`);
+  }
+
+  return record;
+}
+
+/**
+ * Buku Kenangan: Ambil catatan/pesan angkatan (mengecualikan baris sinkronisasi profil & project)
  */
 export async function fetchMemoryNotes() {
   if (!supabase) return [];
@@ -399,7 +703,11 @@ export async function fetchMemoryNotes() {
     throw new Error(`Gagal memuat buku kenangan: ${error.message}`);
   }
 
-  return data || [];
+  return (data || []).filter(
+    (row) =>
+      !String(row.peran || '').startsWith(PROFILE_SYNC_PREFIX) &&
+      !String(row.peran || '').startsWith(PROJECT_SYNC_PREFIX)
+  );
 }
 
 /**

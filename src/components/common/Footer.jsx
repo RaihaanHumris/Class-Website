@@ -6,7 +6,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#050e29] text-white border-t border-white/10 mt-10 sm:mt-16">
+    <footer className="bg-[#0B1D3A] text-white border-t border-white/10 mt-10 sm:mt-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-32 lg:py-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           {/* Identitas Album Kenangan */}
@@ -14,7 +14,7 @@ export default function Footer() {
             <h3 className="font-editorial font-semibold text-xl text-white">
               {infoKelas.nama} · {infoKelas.sekolah}
             </h3>
-            <p className="text-xs text-[#90E0EF]">
+            <p className="text-xs text-amber-300">
               {infoKelas.jurusan} · Angkatan {infoKelas.tahunAjaran}
             </p>
             <p className="text-xs text-slate-300 leading-relaxed max-w-sm pt-1">
@@ -24,7 +24,7 @@ export default function Footer() {
 
           {/* Tautan Halaman */}
           <div className="md:col-span-4 space-y-2.5 text-xs">
-            <span className="font-semibold text-[#90E0EF] block">
+            <span className="font-semibold text-amber-300 block">
               Jelajahi Kenangan
             </span>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-slate-300">
@@ -32,6 +32,7 @@ export default function Footer() {
               <Link to="/galeri" className="hover:text-white transition-colors">Galeri &amp; Panggung 3D</Link>
               <Link to="/anggota" className="hover:text-white transition-colors">Anggota &amp; Sahabat</Link>
               <Link to="/jejak" className="hover:text-white transition-colors">Jejak Kelas</Link>
+              <Link to="/projects" className="hover:text-white transition-colors">Projects Siswa</Link>
               <Link to="/kirim-foto" className="hover:text-white transition-colors">Kirim Foto Baru</Link>
               <Link to="/admin" className="hover:text-white transition-colors">Login Admin</Link>
             </div>

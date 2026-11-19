@@ -85,15 +85,23 @@ export default function KirimFoto() {
 
   return (
     <div className="w-full bg-[#FAF8F3] min-h-screen pb-16">
-      <section className="bg-[#050e29] text-white py-12 border-b border-white/10">
+      <section className="bg-[#050e29] text-white py-10 sm:py-12 border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-3">
-          <Link
-            to="/galeri"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#90E0EF] hover:text-white"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Galeri</span>
-          </Link>
+          <div className="flex items-center justify-between gap-4">
+            <Link
+              to="/galeri"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#90E0EF] hover:text-white"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Kembali ke Galeri</span>
+            </Link>
+            <Link
+              to="/admin"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300"
+            >
+              <span>Panel Admin →</span>
+            </Link>
+          </div>
           <h1 className="font-editorial text-3xl sm:text-4xl font-semibold text-white">
             Kirim Foto Kenangan Baru
           </h1>

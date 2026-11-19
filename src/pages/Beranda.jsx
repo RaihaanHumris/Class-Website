@@ -13,12 +13,13 @@ import StudentWall from '../components/features/StudentWall';
 import SpecialAlumniSection from '../components/features/SpecialAlumniSection';
 import MemoryGuestbook from '../components/features/MemoryGuestbook';
 import Lightbox from '../components/common/Lightbox';
+import { BirthdayBanner } from '../components/features/BirthdayCelebration';
 import { infoKelas } from '../data/kelas';
 import { daftarAnggota, siswaAktif, sahabatPindah } from '../data/anggota';
 import { albumGaleri } from '../data/galeri';
 import { fetchApprovedPhotos, isSupabaseConfigured } from '../lib/supabase';
 
-export default function Beranda() {
+export default function Beranda({ onOpenBirthdayModal }) {
   const [dbPhotos, setDbPhotos] = useState([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
@@ -83,12 +84,12 @@ export default function Beranda() {
   const stopDragging = () => setIsMouseDown(false);
 
   return (
-    <div className="w-full bg-[#FAF8F3] min-h-screen">
+    <div className="w-full bg-[#FAF6EE] min-h-screen">
       {/* 1. Hero 3D Memory Constellation */}
       <Hero />
 
       {/* 2. Full-Width 4-Column Yearbook Summary Strip */}
-      <section className="bg-white border-b border-slate-200/80">
+      <section className="bg-[#FFFDF9] border-b border-[#E6DFD3]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:divide-x divide-slate-200/80">
             <div className="p-3.5 sm:p-0 rounded-xl sm:rounded-none bg-[#FAF8F3]/65 sm:bg-transparent border border-slate-200/80 sm:border-0 lg:pr-6">
@@ -129,6 +130,9 @@ export default function Beranda() {
           </div>
         </div>
       </section>
+
+      {/* Banner Ulang Tahun Otomatis jika ada anggota yang berulang tahun hari ini */}
+      <BirthdayBanner onOpenPersonalModal={onOpenBirthdayModal} />
 
       {/* 3. Sorotan Album Kenangan Carousel */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-12 sm:py-16">

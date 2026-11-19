@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-navy: #03045E;
+  --color-navy: #0B1D3A;
   --color-midnight: #071436;
   --color-ocean: #0077B6;
   --color-cyan: #00B4D8;
   --color-sky: #90E0EF;
   --color-mist: #CAF0F8;
-  --color-paper: #FAF8F3;
+  --color-paper: #FAF6EE;
   --color-amber: #D97706;
   --font-serif: "Fraunces", Georgia, serif;
   --font-heading: "Plus Jakarta Sans", system-ui, sans-serif;
@@ -19,7 +19,7 @@
   html {
     scroll-behavior: smooth;
     font-family: var(--font-sans);
-    background-color: #FAF8F3;
+    background-color: #FAF6EE;
   }
 
   h1, h2, h3, h4, h5, h6 {

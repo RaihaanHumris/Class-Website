@@ -27,19 +27,50 @@ create table if not exists public.memory_notes (
   created_at timestamptz not null default now()
 );
 
--- 3. Aktifkan Row Level Security (RLS)
+-- 3. Tabel Direktori Profil Anggota Kelas XII PPLG 3
+create table if not exists public.member_profiles (
+  member_id integer primary key,
+  nama text not null,
+  panggilan text not null default '',
+  peran text not null default 'Anggota',
+  minat text not null default '',
+  ultah text not null default '',
+  bio text not null default '',
+  github text not null default '',
+  portfolio text not null default '',
+  foto text not null default '',
+  status text not null default 'aktif',
+  updated_at timestamptz not null default now()
+);
+
+-- 4. Tabel Karya & Projects Siswa XII PPLG 3
+create table if not exists public.student_projects (
+  id uuid primary key default gen_random_uuid(),
+  judul text not null,
+  deskripsi text not null,
+  kategori text not null default 'Web App',
+  teknologi text[] not null default '{}',
+  member_ids integer[] not null default '{}',
+  github_url text not null default '',
+  demo_url text not null default '',
+  status_repo text not null default 'Public Repo · Active',
+  tahun text not null default '2026',
+  created_at timestamptz not null default now()
+);
+
+-- 5. Aktifkan Row Level Security (RLS)
 alter table public.photo_memories enable row level security;
 alter table public.memory_notes enable row level security;
+alter table public.member_profiles enable row level security;
+alter table public.student_projects enable row level security;
 
--- 4. Kebijakan RLS untuk photo_memories
--- Siapa saja dapat melihat foto yang sudah disetujui (approved) oleh Admin
+-- 6. Kebijakan RLS untuk photo_memories
 drop policy if exists "Public can view approved photos" on public.photo_memories;
 create policy "Public can view approved photos"
   on public.photo_memories
   for select
   using (status = 'approved');
 
--- Admin yang login (authenticated) dapat melihat seluruh pengajuan (pending/approved/rejected)
 drop policy if exists "Admin can view all photo submissions" on public.photo_memories;
 create policy "Admin can view all photo submissions"
   on public.photo_memories
@@ -47,14 +78,12 @@ create policy "Admin can view all photo submissions"
   to authenticated
   using (true);
 
--- Siswa/pengunjung dapat mengajukan foto baru, tetapi status wajib 'pending'
 drop policy if exists "Anyone can submit pending photo" on public.photo_memories;
 create policy "Anyone can submit pending photo"
   on public.photo_memories
   for insert
   with check (status = 'pending');
 
--- Admin yang login dapat menyetujui (apply), menolak, mengedit, atau mengunggah langsung
 drop policy if exists "Admin can insert approved photo" on public.photo_memories;
 create policy "Admin can insert approved photo"
   on public.photo_memories
@@ -77,7 +106,7 @@ create policy "Admin can delete photo submissions"
   to authenticated
   using (true);
 
--- 5. Kebijakan RLS untuk memory_notes
+-- 7. Kebijakan RLS untuk memory_notes
 drop policy if exists "Public can read memory notes" on public.memory_notes;
 create policy "Public can read memory notes"
   on public.memory_notes
@@ -97,19 +126,64 @@ create policy "Admin can delete memory notes"
   to authenticated
   using (true);
 
--- 6. Bucket Supabase Storage untuk Upload File Foto Langsung
+-- 8. Kebijakan RLS untuk member_profiles (Direktori Anggota langsung tersimpan di DB)
+drop policy if exists "Public can read member profiles" on public.member_profiles;
+create policy "Public can read member profiles"
+  on public.member_profiles
+  for select
+  using (true);
+
+drop policy if exists "Anyone can insert member profiles" on public.member_profiles;
+create policy "Anyone can insert member profiles"
+  on public.member_profiles
+  for insert
+  with check (true);
+
+drop policy if exists "Anyone can update member profiles" on public.member_profiles;
+create policy "Anyone can update member profiles"
+  on public.member_profiles
+  for update
+  using (true)
+  with check (true);
+
+-- 9. Kebijakan RLS untuk student_projects (Projects Siswa langsung tersimpan di DB)
+drop policy if exists "Public can read student projects" on public.student_projects;
+create policy "Public can read student projects"
+  on public.student_projects
+  for select
+  using (true);
+
+drop policy if exists "Anyone can insert student projects" on public.student_projects;
+create policy "Anyone can insert student projects"
+  on public.student_projects
+  for insert
+  with check (true);
+
+drop policy if exists "Anyone can update student projects" on public.student_projects;
+create policy "Anyone can update student projects"
+  on public.student_projects
+  for update
+  using (true)
+  with check (true);
+
+drop policy if exists "Admin can delete student projects" on public.student_projects;
+create policy "Admin can delete student projects"
+  on public.student_projects
+  for delete
+  to authenticated
+  using (true);
+
+-- 10. Bucket Supabase Storage untuk Upload File Foto Langsung
 insert into storage.buckets (id, name, public)
 values ('kenangan-photos', 'kenangan-photos', true)
 on conflict (id) do nothing;
 
--- Kebijakan Storage: Publik dapat membaca file foto
 drop policy if exists "Public read kenangan photos" on storage.objects;
 create policy "Public read kenangan photos"
   on storage.objects
   for select
   using (bucket_id = 'kenangan-photos');
 
--- Kebijakan Storage: Siapa saja dapat mengunggah ke folder submissions/
 drop policy if exists "Public upload to submissions folder" on storage.objects;
 create policy "Public upload to submissions folder"
   on storage.objects
@@ -119,7 +193,6 @@ create policy "Public upload to submissions folder"
     and (storage.foldername(name))[1] = 'submissions'
   );
 
--- Kebijakan Storage: Admin yang login dapat mengelola & menghapus file
 drop policy if exists "Admin manage kenangan photos" on storage.objects;
 create policy "Admin manage kenangan photos"
   on storage.objects
