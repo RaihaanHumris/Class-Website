@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -12,12 +12,13 @@ import Hero from '../components/common/Hero';
 import StudentWall from '../components/features/StudentWall';
 import SpecialAlumniSection from '../components/features/SpecialAlumniSection';
 import MemoryGuestbook from '../components/features/MemoryGuestbook';
-import Lightbox from '../components/common/Lightbox';
 import { BirthdayBanner } from '../components/features/BirthdayCelebration';
 import { infoKelas } from '../data/kelas';
-import { daftarAnggota, siswaAktif, sahabatPindah } from '../data/anggota';
+import { siswaAktif, sahabatPindah } from '../data/anggota';
 import { albumGaleri } from '../data/galeri';
 import { fetchApprovedPhotos, isSupabaseConfigured } from '../lib/supabase';
+
+const Lightbox = lazy(() => import('../components/common/Lightbox'));
 
 export default function Beranda({ onOpenBirthdayModal }) {
   const [dbPhotos, setDbPhotos] = useState([]);
@@ -31,15 +32,18 @@ export default function Beranda({ onOpenBirthdayModal }) {
   const [hasDragged, setHasDragged] = useState(false);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return;
+    if (!isSupabaseConfigured) return undefined;
     let mounted = true;
-    fetchApprovedPhotos()
-      .then((rows) => {
-        if (mounted) setDbPhotos(rows);
-      })
-      .catch(() => {});
+    const timer = window.setTimeout(() => {
+      fetchApprovedPhotos()
+        .then((rows) => {
+          if (mounted) setDbPhotos(rows);
+        })
+        .catch(() => {});
+    }, 250);
     return () => {
       mounted = false;
+      window.clearTimeout(timer);
     };
   }, []);
 
@@ -96,7 +100,7 @@ export default function Beranda({ onOpenBirthdayModal }) {
               <span className="font-editorial text-xl sm:text-3xl font-semibold text-[#03045E] tabular-nums block">
                 {allMemories.length} Foto
               </span>
-              <span className="text-[11px] sm:text-xs text-slate-500 mt-1 block leading-snug">
+              <span className="text-[11px] sm:text-xs text-slate-600 mt-1 block leading-snug">
                 Momen terdokumentasi di album kelas
               </span>
             </div>
@@ -105,16 +109,16 @@ export default function Beranda({ onOpenBirthdayModal }) {
               <span className="font-editorial text-xl sm:text-3xl font-semibold text-[#03045E] tabular-nums block">
                 {siswaAktif.length} Siswa
               </span>
-              <span className="text-[11px] sm:text-xs text-slate-500 mt-1 block leading-snug">
+              <span className="text-[11px] sm:text-xs text-slate-600 mt-1 block leading-snug">
                 Angkatan aktif kelas XII PPLG 3
               </span>
             </div>
 
             <div className="p-3.5 sm:p-0 rounded-xl sm:rounded-none bg-[#FAF8F3]/65 sm:bg-transparent border border-slate-200/80 sm:border-0 lg:px-6">
-              <span className="font-editorial text-xl sm:text-3xl font-semibold text-amber-700 tabular-nums block">
+              <span className="font-editorial text-xl sm:text-3xl font-semibold text-amber-800 tabular-nums block">
                 {sahabatPindah.length} Sahabat
               </span>
-              <span className="text-[11px] sm:text-xs text-slate-500 mt-1 block leading-snug">
+              <span className="text-[11px] sm:text-xs text-slate-600 mt-1 block leading-snug">
                 Pernah bersama sebelum pindah sekolah
               </span>
             </div>
@@ -123,7 +127,7 @@ export default function Beranda({ onOpenBirthdayModal }) {
               <span className="font-editorial text-xl sm:text-3xl font-semibold text-[#03045E] tabular-nums block">
                 {infoKelas.tahunAjaran}
               </span>
-              <span className="text-[11px] sm:text-xs text-slate-500 mt-1 block leading-snug">
+              <span className="text-[11px] sm:text-xs text-slate-600 mt-1 block leading-snug">
                 Tiga tahun kebersamaan di {infoKelas.sekolah}
               </span>
             </div>
@@ -138,13 +142,13 @@ export default function Beranda({ onOpenBirthdayModal }) {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-12 sm:py-16">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div className="space-y-1.5">
-            <p className="text-xs font-semibold text-[#0077B6]">
+            <p className="text-xs font-semibold text-[#005A8D]">
               Sorotan Dokumentasi &amp; Momen Kelas
             </p>
             <h2 className="font-editorial text-2xl sm:text-3xl font-semibold text-[#03045E]">
               Lembaran Foto Kenangan
             </h2>
-            <p className="text-sm text-slate-600 max-w-xl">
+            <p className="text-sm text-slate-700 max-w-xl">
               Klik foto untuk memperbesar cerita di baliknya, atau buka mode Panggung 3D di halaman Galeri.
             </p>
           </div>
@@ -154,7 +158,7 @@ export default function Beranda({ onOpenBirthdayModal }) {
               <button
                 type="button"
                 onClick={handleScrollLeft}
-                className="w-10 h-10 rounded-full bg-white border border-slate-200 text-[#03045E] flex items-center justify-center hover:border-[#0077B6] transition-colors cursor-pointer"
+                className="w-10 h-10 rounded-full bg-white border border-slate-300 text-[#03045E] flex items-center justify-center hover:border-[#005A8D] transition-colors cursor-pointer"
                 aria-label="Geser ke foto sebelumnya"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -162,7 +166,7 @@ export default function Beranda({ onOpenBirthdayModal }) {
               <button
                 type="button"
                 onClick={handleScrollRight}
-                className="w-10 h-10 rounded-full bg-white border border-slate-200 text-[#03045E] flex items-center justify-center hover:border-[#0077B6] transition-colors cursor-pointer"
+                className="w-10 h-10 rounded-full bg-white border border-slate-300 text-[#03045E] flex items-center justify-center hover:border-[#005A8D] transition-colors cursor-pointer"
                 aria-label="Geser ke foto berikutnya"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -171,7 +175,7 @@ export default function Beranda({ onOpenBirthdayModal }) {
 
             <Link
               to="/galeri"
-              className="inline-flex items-center gap-1.5 text-[#0077B6] hover:text-[#03045E] font-semibold text-xs sm:text-sm group whitespace-nowrap px-3 py-2"
+              className="inline-flex items-center gap-1.5 text-[#005A8D] hover:text-[#03045E] font-semibold text-xs sm:text-sm group whitespace-nowrap px-3 py-2"
             >
               <span>Buka Galeri 3D</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -195,13 +199,16 @@ export default function Beranda({ onOpenBirthdayModal }) {
               onClick={() => {
                 if (!hasDragged) handleOpenLightbox(idx);
               }}
-              className="w-[82vw] sm:w-[340px] shrink-0 snap-start group bg-white border border-slate-200/80 rounded-2xl overflow-hidden cursor-pointer hover:border-[#0077B6]/50 transition-all flex flex-col"
+              className="w-[82vw] sm:w-[340px] shrink-0 snap-start group bg-white border border-slate-200/80 rounded-2xl overflow-hidden cursor-pointer hover:border-[#005A8D]/50 transition-all flex flex-col"
             >
               <div className="aspect-[16/10] overflow-hidden bg-slate-100 relative">
                 <img
                   src={foto.thumb}
                   alt={foto.judul}
+                  width="640"
+                  height="400"
                   loading="lazy"
+                  decoding="async"
                   draggable="false"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
@@ -209,12 +216,12 @@ export default function Beranda({ onOpenBirthdayModal }) {
               </div>
               <div className="p-5 flex-1 flex flex-col justify-between space-y-2">
                 <div>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 mb-1.5">
-                    <span className="font-semibold text-[#0077B6]">{foto.kategori}</span>
+                  <div className="flex items-center gap-2 text-xs text-slate-600 mb-1.5">
+                    <span className="font-semibold text-[#005A8D]">{foto.kategori}</span>
                     <span aria-hidden="true">·</span>
                     <span className="font-mono text-[11px]">{foto.tanggal}</span>
                   </div>
-                  <h3 className="font-heading font-bold text-base text-[#03045E] line-clamp-1 group-hover:text-[#0077B6] transition-colors">
+                  <h3 className="font-heading font-bold text-base text-[#03045E] line-clamp-1 group-hover:text-[#005A8D] transition-colors">
                     {foto.judul}
                   </h3>
                   <p className="text-xs text-slate-600 line-clamp-2 mt-1 leading-relaxed">
@@ -227,12 +234,12 @@ export default function Beranda({ onOpenBirthdayModal }) {
         </div>
 
         <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-slate-200/70">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-600">
             Punya foto momen kelas yang belum masuk album? Ajukan agar Admin menayangkannya.
           </p>
           <Link
             to="/kirim-foto"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-xl sm:rounded-lg bg-[#03045E] hover:bg-[#0077B6] text-white text-xs font-semibold transition-colors min-h-[44px] sm:min-h-[40px]"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-xl sm:rounded-lg bg-[#03045E] hover:bg-[#005A8D] text-white text-xs font-semibold transition-colors min-h-[44px] sm:min-h-[40px]"
           >
             <Camera className="w-4 h-4" />
             <span>Ajukan Tambah Foto</span>
@@ -247,7 +254,7 @@ export default function Beranda({ onOpenBirthdayModal }) {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 w-full py-10 sm:py-14">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0077B6]">
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#005A8D]">
               <Clock className="w-4 h-4" />
               <span>Kilas Balik 2024–2027</span>
             </div>
@@ -257,7 +264,7 @@ export default function Beranda({ onOpenBirthdayModal }) {
           </div>
           <Link
             to="/jejak"
-            className="text-xs sm:text-sm font-semibold text-[#0077B6] hover:text-[#03045E] inline-flex items-center gap-1.5 group whitespace-nowrap"
+            className="text-xs sm:text-sm font-semibold text-[#005A8D] hover:text-[#03045E] inline-flex items-center gap-1.5 group whitespace-nowrap"
           >
             <span>Buka Jejak Lengkap</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -274,13 +281,16 @@ export default function Beranda({ onOpenBirthdayModal }) {
                 <img
                   src={item.foto}
                   alt={item.judul}
+                  width="640"
+                  height="400"
                   loading="lazy"
+                  decoding="async"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="p-5 sm:p-6 space-y-2 flex-1 flex flex-col">
-                <span className="text-xs font-mono font-medium text-[#0077B6]">
+                <span className="text-xs font-mono font-medium text-[#005A8D]">
                   {item.fase}
                 </span>
                 <h3 className="font-editorial text-lg font-semibold text-[#03045E] leading-snug">
@@ -314,6 +324,10 @@ export default function Beranda({ onOpenBirthdayModal }) {
             <img
               src="/images/kenangan/hari-pahlawan.jpg"
               alt="Foto kenangan Hari Pahlawan keluarga besar XII PPLG 3"
+              width="640"
+              height="480"
+              loading="lazy"
+              decoding="async"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover"
             />
@@ -327,13 +341,18 @@ export default function Beranda({ onOpenBirthdayModal }) {
       {/* 8. Dinding 25 Nama Kenangan */}
       <StudentWall />
 
-      <Lightbox
-        isOpen={lightboxOpen}
-        images={allMemories}
-        currentIndex={activePhotoIndex}
-        onClose={() => setLightboxOpen(false)}
-        onNavigate={(newIndex) => setActivePhotoIndex(newIndex)}
-      />
+      {lightboxOpen && (
+        <Suspense fallback={null}>
+          <Lightbox
+            isOpen={lightboxOpen}
+            images={allMemories}
+            currentIndex={activePhotoIndex}
+            onClose={() => setLightboxOpen(false)}
+            onNavigate={(newIndex) => setActivePhotoIndex(newIndex)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
+

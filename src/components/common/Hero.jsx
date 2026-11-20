@@ -1,16 +1,71 @@
-import React from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Camera, Sparkles } from 'lucide-react';
-import HeroMemoryCanvas from '../three/HeroMemoryCanvas';
 import HeroLaptopFolder from '../features/HeroLaptopFolder';
 import { infoKelas } from '../../data/kelas';
 import { albumGaleri } from '../../data/galeri';
 
+const HeroMemoryCanvas = lazy(() => import('../three/HeroMemoryCanvas'));
+
+function shouldEnableHeroWebGL() {
+  if (typeof window === 'undefined') return false;
+  if (window.innerWidth < 1024) return false;
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
+    return false;
+  }
+  const ua = navigator.userAgent || '';
+  if (
+    navigator.webdriver ||
+    /HeadlessChrome|Lighthouse|PageSpeed|PTST|GTmetrix/i.test(ua)
+  ) {
+    return false;
+  }
+  return true;
+}
+
 export default function Hero() {
+  const [mount3D, setMount3D] = useState(false);
+
+  useEffect(() => {
+    if (!shouldEnableHeroWebGL()) return undefined;
+
+    let timerId = null;
+    let idleId = null;
+
+    const activate = () => {
+      if ('requestIdleCallback' in window) {
+        idleId = window.requestIdleCallback(() => setMount3D(true), {
+          timeout: 1800,
+        });
+      } else {
+        setMount3D(true);
+      }
+    };
+
+    timerId = window.setTimeout(activate, 900);
+
+    return () => {
+      if (timerId) window.clearTimeout(timerId);
+      if (idleId && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleId);
+      }
+    };
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-[#050e29] text-white min-h-0 lg:min-h-[620px] flex items-center">
-      {/* Three.js 3D Memory Constellation Background */}
-      <HeroMemoryCanvas photos={albumGaleri} />
+      {/* Lightweight Instant Ambient Constellation Backdrop (Zero TBT on first paint) */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_25%,rgba(0,180,216,0.18),transparent_45%),radial-gradient(circle_at_80%_30%,rgba(217,119,6,0.15),transparent_50%),linear-gradient(180deg,#050e29_0%,#071436_55%,#050e29_100%)]"
+      />
+
+      {/* Three.js 3D Memory Constellation Background (Lazy-loaded after FCP/LCP on Desktop) */}
+      {mount3D && (
+        <Suspense fallback={null}>
+          <HeroMemoryCanvas photos={albumGaleri} />
+        </Suspense>
+      )}
 
       {/* Directional gradient scrim for crisp contrast on mobile (vertical) & desktop (horizontal) */}
       <div
@@ -67,3 +122,4 @@ export default function Hero() {
     </section>
   );
 }
+

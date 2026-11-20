@@ -81,7 +81,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2.5 shrink-0">
             <Link
               to="/admin"
-              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-lg bg-[#D97706] hover:bg-[#EA580C] text-white text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap shrink-0 min-h-[38px] sm:min-h-[40px] shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-[#0B1D3A] text-xs sm:text-sm font-bold transition-colors whitespace-nowrap shrink-0 min-h-[38px] sm:min-h-[40px] shadow-xs"
             >
               <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>Admin</span>

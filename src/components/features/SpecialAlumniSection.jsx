@@ -117,6 +117,10 @@ export default function SpecialAlumniSection({
                         <img
                           src={activePhoto}
                           alt={sahabat.nama}
+                          width="48"
+                          height="48"
+                          loading="lazy"
+                          decoding="async"
                           referrerPolicy="no-referrer"
                           onError={() =>
                             setFailedImages((prev) => ({
@@ -124,15 +128,15 @@ export default function SpecialAlumniSection({
                               [activePhoto]: true,
                             }))
                           }
-                          className="w-12 h-12 rounded-full object-cover object-[50%_20%] border-2 border-amber-500 ring-2 ring-amber-100 shrink-0"
+                          className="w-12 h-12 rounded-full object-cover object-[50%_20%] border-2 border-amber-600 ring-2 ring-amber-100 shrink-0"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 text-white font-editorial font-semibold text-base flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#B45309] to-[#9A3412] text-white font-editorial font-semibold text-base flex items-center justify-center shrink-0">
                           {getInitials(sahabat.nama)}
                         </div>
                       )}
                       <div className="min-w-0">
-                        <span className="text-[11px] font-mono text-amber-700 block tabular-nums">
+                        <span className="text-[11px] font-mono text-amber-800 block tabular-nums">
                           Kenangan #{String(idx + 1).padStart(2, '0')} · {sahabat.periode || 'Masa Awal PPLG 3'}
                         </span>
                         <h3 className="font-editorial font-semibold text-base sm:text-lg text-[#03045E] leading-snug">

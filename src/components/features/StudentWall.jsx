@@ -18,7 +18,7 @@ export default function StudentWall() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E6DFD3] pb-4">
           <div>
-            <p className="text-xs font-semibold text-[#D97706]">
+            <p className="text-xs font-semibold text-[#9A3412]">
               Keluarga Besar Angkatan 2024–2027
             </p>
             <h2 className="font-editorial text-2xl sm:text-3xl font-semibold text-[#0B1D3A] mt-1">
@@ -28,7 +28,7 @@ export default function StudentWall() {
 
           <Link
             to="/anggota"
-            className="text-xs sm:text-sm font-semibold text-[#D97706] hover:text-[#0B1D3A] inline-flex items-center gap-1.5 group whitespace-nowrap"
+            className="text-xs sm:text-sm font-semibold text-[#9A3412] hover:text-[#0B1D3A] inline-flex items-center gap-1.5 group whitespace-nowrap"
           >
             <span>Lihat Profil Lengkap ({members.length} Orang)</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -48,10 +48,10 @@ export default function StudentWall() {
                 to="/anggota"
                 className={`group flex flex-col items-center p-3.5 rounded-xl border transition-all ${
                   birthdayToday
-                    ? 'bg-amber-50 border-[#D97706] shadow-xs'
+                    ? 'bg-amber-50 border-[#B45309] shadow-xs'
                     : isSpecial
-                    ? 'bg-amber-50/60 border-amber-300/80 hover:border-[#D97706]'
-                    : 'bg-[#FAF6EE] border-[#E6DFD3] hover:border-[#D97706] hover:bg-white'
+                    ? 'bg-amber-50/60 border-amber-300/80 hover:border-[#B45309]'
+                    : 'bg-[#FAF6EE] border-[#E6DFD3] hover:border-[#B45309] hover:bg-white'
                 }`}
                 title={`${siswa.nama} · ${siswa.peran}`}
               >
@@ -60,11 +60,15 @@ export default function StudentWall() {
                     <img
                       src={siswa.foto}
                       alt={siswa.nama}
+                      width="44"
+                      height="44"
+                      loading="lazy"
+                      decoding="async"
                       referrerPolicy="no-referrer"
-                      className="w-11 h-11 rounded-full object-cover border-2 border-[#D97706] transition-transform group-hover:scale-105"
+                      className="w-11 h-11 rounded-full object-cover border-2 border-[#B45309] transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#D97706] to-[#EA580C] text-white flex items-center justify-center font-editorial font-bold text-sm transition-transform group-hover:scale-105 shadow-2xs">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#B45309] to-[#9A3412] text-white flex items-center justify-center font-editorial font-bold text-sm transition-transform group-hover:scale-105 shadow-2xs">
                       {initials}
                     </div>
                   )}
@@ -80,12 +84,12 @@ export default function StudentWall() {
                 <span
                   className={`text-[10px] line-clamp-1 text-center mt-0.5 ${
                     birthdayToday
-                      ? 'font-bold text-[#D97706] inline-flex items-center gap-0.5'
+                      ? 'font-bold text-[#9A3412] inline-flex items-center gap-0.5'
                       : isSpecial
-                      ? 'font-semibold text-amber-800'
+                      ? 'font-semibold text-amber-900'
                       : isPengurus
-                      ? 'font-semibold text-[#D97706]'
-                      : 'text-slate-500'
+                      ? 'font-semibold text-[#9A3412]'
+                      : 'text-slate-600'
                   }`}
                 >
                   {birthdayToday ? (

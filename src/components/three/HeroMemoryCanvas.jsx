@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { buildPolaroidGroup, detectSoftwareWebGL } from './threeUtils';
 
 // Pre-allocated math helpers outside render loop (zero GC)
@@ -17,6 +16,9 @@ export default function HeroMemoryCanvas({ photos = [] }) {
 
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
     const isSoftwareGl = detectSoftwareWebGL();
+    if (isSoftwareGl) {
+      return undefined;
+    }
 
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || 560;
@@ -29,17 +31,16 @@ export default function HeroMemoryCanvas({ photos = [] }) {
     camera.position.set(0, 0.35, 9.6);
 
     const renderer = new THREE.WebGLRenderer({
-      antialias: !isSoftwareGl,
+      antialias: false,
       powerPreference: 'high-performance',
       alpha: false,
     });
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.08;
-    renderer.setPixelRatio(isSoftwareGl ? 1 : Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(width, height);
-    renderer.shadowMap.enabled = !isSoftwareGl;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.enabled = false;
 
     const canvas = renderer.domElement;
     canvas.style.width = '100%';
@@ -47,19 +48,12 @@ export default function HeroMemoryCanvas({ photos = [] }) {
     canvas.style.display = 'block';
     container.appendChild(canvas);
 
-    // Mandatory studio environment reflection
-    const pmremGenerator = new THREE.PMREMGenerator(renderer);
-    const envTexture = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
-    scene.environment = envTexture;
-    pmremGenerator.dispose();
-
     // 3-point warm/cool studio lighting
-    const hemiLight = new THREE.HemisphereLight(0x90e0ef, 0x071436, 0.9);
+    const hemiLight = new THREE.HemisphereLight(0x90e0ef, 0x071436, 1.15);
     scene.add(hemiLight);
 
     const keyLight = new THREE.DirectionalLight(0xfff1d6, 2.2);
     keyLight.position.set(5, 7, 6);
-    keyLight.castShadow = !isSoftwareGl;
     scene.add(keyLight);
 
     const rimLight = new THREE.DirectionalLight(0x00b4d8, 1.4);
@@ -67,7 +61,7 @@ export default function HeroMemoryCanvas({ photos = [] }) {
     scene.add(rimLight);
 
     // 1. Instanced Golden & Sky-Blue Memory Fireflies
-    const particleCount = 140;
+    const particleCount = 90;
     const particleGeo = new THREE.IcosahedronGeometry(0.045, 0);
     const particleMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
@@ -94,7 +88,6 @@ export default function HeroMemoryCanvas({ photos = [] }) {
       _dummy.updateMatrix();
       particlesMesh.setMatrixAt(i, _dummy.matrix);
 
-      // Alternating warm amber gold and ocean cyan tint
       if (i % 3 === 0) {
         _color.setHex(0xfbbf24);
       } else if (i % 3 === 1) {
@@ -109,9 +102,9 @@ export default function HeroMemoryCanvas({ photos = [] }) {
     particlesMesh.computeBoundingSphere();
     scene.add(particlesMesh);
 
-    // 2. Orbital Memory Constellation Rings (subtle architectural accent)
+    // 2. Orbital Memory Constellation Rings
     const ringGroup = new THREE.Group();
-    const ringGeo1 = new THREE.TorusGeometry(4.4, 0.015, 12, 96);
+    const ringGeo1 = new THREE.TorusGeometry(4.4, 0.015, 10, 64);
     const ringMat1 = new THREE.MeshStandardMaterial({
       color: 0x38bdf8,
       roughness: 0.25,
@@ -125,7 +118,7 @@ export default function HeroMemoryCanvas({ photos = [] }) {
     ring1.position.set(2.3, -0.2, -1.6);
     ringGroup.add(ring1);
 
-    const ringGeo2 = new THREE.TorusGeometry(5.6, 0.012, 12, 96);
+    const ringGeo2 = new THREE.TorusGeometry(5.6, 0.012, 10, 64);
     const ringMat2 = new THREE.MeshStandardMaterial({
       color: 0xf59e0b,
       roughness: 0.2,
@@ -142,7 +135,7 @@ export default function HeroMemoryCanvas({ photos = [] }) {
 
     // 3. Composite 3D Polaroid Memory Frames
     const selectedPhotos = photos.slice(0, 6);
-    const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+    const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
     const frameEntries = [];
     const framesGroup = new THREE.Group();
     framesGroup.position.set(2.45, 0.05, 0);
@@ -170,10 +163,6 @@ export default function HeroMemoryCanvas({ photos = [] }) {
       });
     });
     scene.add(framesGroup);
-
-    if (!isSoftwareGl) {
-      renderer.compile(scene, camera);
-    }
 
     // Pointer parallax state
     const targetPointer = { x: 0, y: 0 };
@@ -209,47 +198,38 @@ export default function HeroMemoryCanvas({ photos = [] }) {
 
     let frameId = 0;
     let disposed = false;
+    let isVisible = true;
     const clock = new THREE.Clock();
 
-    function afterDraw(cb) {
-      const gl = renderer.getContext();
-      if (!gl || typeof gl.fenceSync !== 'function') {
-        frameId = window.setTimeout(cb, 80);
-        return;
-      }
-      const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
-      gl.flush();
-      const poll = () => {
-        if (disposed) {
-          if (sync) gl.deleteSync(sync);
-          return;
-        }
-        const state = sync && gl.getSyncParameter(sync, gl.SYNC_STATUS);
-        if (state === gl.UNSIGNALED) {
-          frameId = window.setTimeout(poll, 5);
-        } else {
-          if (sync) gl.deleteSync(sync);
-          frameId = window.setTimeout(cb, 80);
-        }
-      };
-      frameId = window.setTimeout(poll, 5);
-    }
+    const observer =
+      typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver(
+            (entries) => {
+              isVisible = Boolean(entries[0]?.isIntersecting);
+            },
+            { threshold: 0.05 }
+          )
+        : null;
+    if (observer) observer.observe(container);
 
     function tick() {
       if (disposed) return;
+      if (!isVisible) {
+        frameId = window.setTimeout(tick, 250);
+        return;
+      }
+
       const delta = Math.min(clock.getDelta(), 0.1);
       const elapsed = clock.getElapsedTime();
 
       currentPointer.x = THREE.MathUtils.damp(currentPointer.x, targetPointer.x, 3.5, delta);
       currentPointer.y = THREE.MathUtils.damp(currentPointer.y, targetPointer.y, 3.5, delta);
 
-      // Gentle camera parallax
       camera.position.x = currentPointer.x * 0.55;
       camera.position.y = 0.35 - currentPointer.y * 0.35;
       camera.lookAt(0.7, 0, 0);
 
       if (!prefersReducedMotion) {
-        // Animate Polaroid frames softly floating
         for (let i = 0; i < frameEntries.length; i++) {
           const item = frameEntries[i];
           const t = elapsed * 0.55 + item.phase;
@@ -258,11 +238,9 @@ export default function HeroMemoryCanvas({ photos = [] }) {
           item.group.rotation.x = item.basePos.rx + Math.cos(t * 0.5) * 0.04;
         }
 
-        // Rotate orbital rings slowly
         ring1.rotation.z = elapsed * 0.06;
         ring2.rotation.y = -elapsed * 0.05;
 
-        // Drift memory fireflies
         for (let i = 0; i < particleSeeds.length; i++) {
           const p = particleSeeds[i];
           const t = elapsed * p.speed + p.phase;
@@ -281,20 +259,17 @@ export default function HeroMemoryCanvas({ photos = [] }) {
       renderer.render(scene, camera);
 
       if (prefersReducedMotion) {
-        return; // Render single static frame when reduced-motion is preferred
+        return;
       }
 
-      if (isSoftwareGl) {
-        afterDraw(tick);
-      } else {
-        frameId = requestAnimationFrame(tick);
-      }
+      frameId = requestAnimationFrame(tick);
     }
 
     tick();
 
     return () => {
       disposed = true;
+      if (observer) observer.disconnect();
       cancelAnimationFrame(frameId);
       clearTimeout(frameId);
       window.removeEventListener('pointermove', onPointerMove);
@@ -316,7 +291,6 @@ export default function HeroMemoryCanvas({ photos = [] }) {
           }
         }
       });
-      envTexture.dispose();
       renderer.dispose();
       if (canvas.parentNode === container) {
         container.removeChild(canvas);

@@ -66,7 +66,7 @@ export default function MemoryGuestbook() {
         {/* Form Tulis Pesan Kenangan */}
         <div className="lg:col-span-5 bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-7 space-y-5">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#0077B6]">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#005A8D]">
               <MessageSquareHeart className="w-4 h-4" />
               <span>Buku Kenangan Digital</span>
             </div>
@@ -85,28 +85,36 @@ export default function MemoryGuestbook() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#03045E] mb-1.5">
+                <label
+                  htmlFor="guestbook-nama"
+                  className="block text-xs font-semibold text-[#03045E] mb-1.5"
+                >
                   Nama Lengkap
                 </label>
                 <input
+                  id="guestbook-nama"
                   type="text"
                   required
                   maxLength={80}
                   value={nama}
                   onChange={(e) => setNama(e.target.value)}
                   placeholder="Contoh: Muhammad Raihaan Humris"
-                  className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-300 bg-[#FAF8F3] focus:bg-white focus:border-[#0077B6] focus:outline-none min-h-[44px]"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-300 bg-[#FAF8F3] focus:bg-white focus:border-[#005A8D] focus:outline-none min-h-[44px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#03045E] mb-1.5">
+                <label
+                  htmlFor="guestbook-peran"
+                  className="block text-xs font-semibold text-[#03045E] mb-1.5"
+                >
                   Peran / Status
                 </label>
                 <select
+                  id="guestbook-peran"
                   value={peran}
                   onChange={(e) => setPeran(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-300 bg-[#FAF8F3] focus:bg-white focus:border-[#0077B6] focus:outline-none min-h-[44px]"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-300 bg-[#FAF8F3] focus:bg-white focus:border-[#005A8D] focus:outline-none min-h-[44px]"
                 >
                   <option value="Siswa XII PPLG 3">Siswa XII PPLG 3</option>
                   <option value="Sahabat Seperjuangan (Pindah Sekolah)">Sahabat Seperjuangan (Pindah Sekolah)</option>
@@ -116,17 +124,21 @@ export default function MemoryGuestbook() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#03045E] mb-1.5">
+                <label
+                  htmlFor="guestbook-pesan"
+                  className="block text-xs font-semibold text-[#03045E] mb-1.5"
+                >
                   Pesan Kenangan
                 </label>
                 <textarea
+                  id="guestbook-pesan"
                   required
                   rows={3}
                   maxLength={500}
                   value={pesan}
                   onChange={(e) => setPesan(e.target.value)}
                   placeholder="Tuliskan momen paling berkesan bersama XII PPLG 3..."
-                  className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-300 bg-[#FAF8F3] focus:bg-white focus:border-[#0077B6] focus:outline-none resize-none"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-slate-300 bg-[#FAF8F3] focus:bg-white focus:border-[#005A8D] focus:outline-none resize-none"
                 />
               </div>
 
@@ -147,7 +159,7 @@ export default function MemoryGuestbook() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full min-h-[44px] px-5 py-2.5 rounded-lg bg-[#03045E] hover:bg-[#0077B6] disabled:opacity-60 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                className="w-full min-h-[44px] px-5 py-2.5 rounded-lg bg-[#03045E] hover:bg-[#005A8D] disabled:opacity-60 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
                 <Send className="w-4 h-4" />
                 <span>{submitting ? 'Menyimpan...' : 'Kirim Pesan Kenangan'}</span>
@@ -162,13 +174,13 @@ export default function MemoryGuestbook() {
             <h3 className="font-editorial text-xl font-semibold text-[#03045E]">
               Catatan Sahabat &amp; Angkatan
             </h3>
-            <span className="text-xs font-mono text-slate-500 tabular-nums">
+            <span className="text-xs font-mono text-slate-600 tabular-nums">
               {notes.length} Pesan Tersimpan
             </span>
           </div>
 
           {loading ? (
-            <div className="p-8 rounded-2xl bg-white border border-slate-200/80 text-center text-sm text-slate-500">
+            <div className="p-8 rounded-2xl bg-white border border-slate-200/80 text-center text-sm text-slate-600">
               Memuat catatan buku kenangan dari Supabase...
             </div>
           ) : notes.length === 0 ? (
@@ -176,7 +188,7 @@ export default function MemoryGuestbook() {
               <p className="font-semibold text-sm text-[#03045E]">
                 Belum ada pesan di Buku Kenangan
               </p>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
+              <p className="text-xs text-slate-600 max-w-md mx-auto">
                 Jadilah yang pertama menuliskan kesan, doa, atau cerita lucu selama bersama keluarga besar XII PPLG 3.
               </p>
             </div>
@@ -193,9 +205,9 @@ export default function MemoryGuestbook() {
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
                     <div className="min-w-0">
                       <p className="font-semibold text-[#03045E] truncate">{note.nama}</p>
-                      <p className="text-[11px] text-slate-500 truncate">{note.peran}</p>
+                      <p className="text-[11px] text-slate-600 truncate">{note.peran}</p>
                     </div>
-                    <span className="font-mono text-[10px] text-slate-400 shrink-0 tabular-nums">
+                    <span className="font-mono text-[10px] text-slate-600 shrink-0 tabular-nums">
                       {new Date(note.created_at).toLocaleDateString('id-ID', {
                         day: 'numeric',
                         month: 'short',

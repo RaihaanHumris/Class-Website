@@ -11,13 +11,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           {/* Identitas Album Kenangan */}
           <div className="md:col-span-5 space-y-2.5">
-            <h3 className="font-editorial font-semibold text-xl text-white">
+            <h2 className="font-editorial font-semibold text-xl text-white">
               {infoKelas.nama} · {infoKelas.sekolah}
-            </h3>
+            </h2>
             <p className="text-xs text-amber-300">
               {infoKelas.jurusan} · Angkatan {infoKelas.tahunAjaran}
             </p>
-            <p className="text-xs text-slate-300 leading-relaxed max-w-sm pt-1">
+            <p className="text-xs text-slate-200 leading-relaxed max-w-sm pt-1">
               "{infoKelas.tagline}" — Buku kenangan digital kelas XII PPLG 3 Madrasah Aliyah Kejuruan Negeri Ende.
             </p>
           </div>
@@ -27,7 +27,7 @@ export default function Footer() {
             <span className="font-semibold text-amber-300 block">
               Jelajahi Kenangan
             </span>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-slate-300">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-slate-200">
               <Link to="/" className="hover:text-white transition-colors">Beranda</Link>
               <Link to="/galeri" className="hover:text-white transition-colors">Galeri &amp; Panggung 3D</Link>
               <Link to="/anggota" className="hover:text-white transition-colors">Anggota &amp; Sahabat</Link>
@@ -39,22 +39,22 @@ export default function Footer() {
           </div>
 
           {/* Info Wali Kelas & Lokasi */}
-          <div className="md:col-span-3 space-y-2 text-xs text-slate-300">
+          <div className="md:col-span-3 space-y-2 text-xs text-slate-200">
             <span className="font-semibold text-[#90E0EF] block">
               Wali Kelas &amp; Madrasah
             </span>
             <p>
               Wali Kelas: <strong className="text-white font-semibold">{infoKelas.waliKelas.nama}</strong>
             </p>
-            <p className="text-slate-400 leading-relaxed pt-1">
+            <p className="text-slate-300 leading-relaxed pt-1">
               {infoKelas.kontak.alamat}
             </p>
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+        <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-300">
           <p>© {currentYear} Album Kenangan {infoKelas.nama} {infoKelas.sekolah}.</p>
-          <p className="font-mono text-[11px] text-[#90E0EF]/80">22 Siswa Aktif · 3 Sahabat Seperjuangan</p>
+          <p className="font-mono text-[11px] text-[#90E0EF]">22 Siswa Aktif · 3 Sahabat Seperjuangan</p>
         </div>
       </div>
     </footer>

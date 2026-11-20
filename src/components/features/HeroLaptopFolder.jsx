@@ -162,12 +162,12 @@ export default function HeroLaptopFolder() {
 
               <div className="flex items-center gap-1.5 text-[11px] font-mono text-white min-w-0">
                 <FolderOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span className="text-slate-400 hidden sm:inline">Arsip</span>
-                <ChevronRight className="w-3 h-3 text-slate-500 hidden sm:inline shrink-0" />
+                <span className="text-slate-300 hidden sm:inline">Arsip</span>
+                <ChevronRight className="w-3 h-3 text-slate-300 hidden sm:inline shrink-0" />
                 <span className="font-bold text-[#90E0EF] truncate">XII PPLG 3</span>
               </div>
 
-              <span className="text-[10px] font-mono text-slate-400 shrink-0">
+              <span className="text-[10px] font-mono text-slate-300 shrink-0">
                 {FOLDER_FILES.length} file
               </span>
             </div>
@@ -176,18 +176,18 @@ export default function HeroLaptopFolder() {
             <div className="grid grid-cols-12">
               {/* Sidebar Lokasi Folder */}
               <div className="hidden sm:flex sm:col-span-4 flex-col gap-1 p-2 bg-[#071230] border-r border-white/10 text-[11px]">
-                <span className="px-2 py-1 text-[9px] font-mono uppercase tracking-wider text-slate-400">
+                <span className="px-2 py-1 text-[9px] font-mono uppercase tracking-wider text-slate-300">
                   Direktori
                 </span>
                 <div className="px-2 py-1.5 rounded-md bg-[#0077B6]/35 border border-[#00B4D8]/40 text-white font-semibold flex items-center gap-1.5">
                   <FolderOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                   <span className="truncate">XII PPLG 3</span>
                 </div>
-                <div className="px-2 py-1.5 rounded-md text-slate-300 flex items-center gap-1.5">
+                <div className="px-2 py-1.5 rounded-md text-slate-200 flex items-center gap-1.5">
                   <HardDrive className="w-3.5 h-3.5 text-[#00B4D8] shrink-0" />
                   <span className="truncate">Lab RPL</span>
                 </div>
-                <div className="mt-auto pt-2 border-t border-white/10 px-2 text-[10px] font-mono text-slate-400 leading-tight">
+                <div className="mt-auto pt-2 border-t border-white/10 px-2 text-[10px] font-mono text-slate-300 leading-tight">
                   22 Siswa Aktif
                   <br />3 Sahabat Pindah
                 </div>
@@ -219,7 +219,7 @@ export default function HeroLaptopFolder() {
                           <p className="text-[10.5px] sm:text-[11px] font-mono font-semibold truncate text-white">
                             {file.name}
                           </p>
-                          <p className="text-[9.5px] sm:text-[10px] text-slate-400 truncate">
+                          <p className="text-[9.5px] sm:text-[10px] text-slate-300 truncate">
                             {file.kind}
                           </p>
                         </div>
